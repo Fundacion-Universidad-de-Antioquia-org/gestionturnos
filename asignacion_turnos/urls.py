@@ -4,6 +4,7 @@ from . import views
 from .forms import LoginForm
 
 urlpatterns = [
+    path('https://app-gestionturnos-test-001-e0akhyhrfyd5e8hc.eastus-01.azurewebsites.net/',views.vista_principal,name ="vista_principal"),
     path('login/', auth_views.LoginView.as_view(authentication_form=LoginForm), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='registration/logged_out.html'), name='logout'),
     path('sucesiones_trenes/',views.vista_cargarSucesionTrenes, name= 'vista_cargarSucesionTrenes'),

@@ -22,6 +22,9 @@ from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
 
 
+def vista_principal(request):
+    return render(request, 'home.html/')
+
 @login_required
 def vista_home(request):
     return render(request,'account/home.html')
