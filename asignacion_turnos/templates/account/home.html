@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url("{% static 'images/fondoHomeTres.PNG' %}");
+       background-size: auto;               /* ✅ mantiene el tamaño original */
+      background-repeat: no-repeat;        /* ✅ no repite la imagen */
+      background-position: center center; 
+      background-color: #ffffff; /* color verde muy suave de fondo */
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .overlay {
+  margin-top: 80px;
+  position: relative;
+  z-index: 1;
+  background: rgba(230, 255, 235, 0.35); /* verde claro translúcido */
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+  color: #1D5031;
+  animation: aparecerBanner 1.2s ease-out forwards;
+  transform: translateY(80px); /* 👈 más bajo (ajusta el valor a gusto) */
+  opacity: 0;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+
+    @keyframes aparecerBanner {
+      0% {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .overlay h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .overlay p {
+      font-size: 1.3rem;
+      line-height: 1.6;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        background-size: 140%;
+      }
+      .overlay h1 {
+        font-size: 2rem;
+      }
+      .overlay p {
+        font-size: 1rem;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="overlay">
+    <h1>Bienvenido al Sistema de Gestión de Turnos</h1>
+    <p>Accede a todas las funcionalidades de forma rápida y eficiente.</p>
+  </div>
+{% endblock %}

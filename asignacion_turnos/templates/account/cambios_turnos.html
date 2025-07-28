@@ -1,0 +1,448 @@
+{% extends 'base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="usuario-bar position-relative">
+
+<!-- Izquierda: Foto + saludo -->
+<div class="d-flex align-items-center flex-shrink-0">
+  <img src="{% static 'images/admin_img.png' %}" 
+       alt="Foto de perfil" class="perfil-img">
+  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+</div>
+
+
+  <!-- Centro (posición absoluta centrada) -->
+  <div class="position-absolute top-50 start-50 translate-middle text-center">
+    <h4 class="titulo-template m-0">Solicitudes cambios de turnos</h4>
+  </div>
+
+  <!-- Derecha -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+  </form>
+</div>
+
+  <!-- Acordeón de filtros -->
+<div class="accordion-container" style="margin-top: 14px;">
+  <div class="accordion-header">Filtros de Búsqueda</div>
+  <div class="accordion-body">
+    <div class="filtros-horizontal">
+      <div class="filtro-item">
+        <label for="filtroNombre">Nombre:</label>
+        <input type="text" id="filtroNombre" placeholder="Buscar por nombre">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCodigo">Código:</label>
+        <input type="text" id="filtroCodigo" placeholder="Buscar por código">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroTurno">Turno:</label>
+        <input type="text" id="filtroTurno" placeholder="Buscar por turno">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCargo">Cargo:</label>
+        <select name="select" id="filtroCargo">
+            <option value="">Todos</option>
+            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+            <option value="OPERADOR DE CONDUCCION" >OPERADOR DE CONDUCCION</option>
+            <option value="MANIOBRISTA TRENES" >MANIOBRISTA TRENES</option>
+            <option value="MANIOBRISTA TRANVIA" >MANIOBRISTA TRANVIA</option>
+            <option value="INCONSISTENCIA">INCONSISTENCIA</option>
+        </select>
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Fecha de cambio:</label>
+        <input type="date" id="filtroFechaCambio">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Estado de solicitud:</label>
+        <select name="" id="filtroEstadoSolicitud">
+          <option value="pendiente" selected>pendiente</option>
+          <option value="aprobado">aprobado</option>
+          <option value="desaprobado">desaprobado</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Tabla de datos-->
+
+<table class="styled-table display" id="tablaDatos">
+  <thead>
+    <tr>
+      <th>Solicitante</th>
+      <th>Código</th>
+      <th>Cargo</th>
+      <th>Formacion solicitante</th>
+      <th>Turno Original</th>
+      <th>Turno Deseado</th>
+      <th>Fecha de cambio</th>
+      <th>Receptor</th>
+      <th>Código</th>
+      <th>Cargo</th>
+      <th>Formacion receptor</th>
+      <th>Turno Original</th>
+      <th>Turno Deseado</th>
+      <th>Aprobado EMP</th>
+      <th>Aprobado ADM</th>
+      <th class="checkbox-cell">
+        <button type="button" id="seleccionarTodos">Seleccionar todos</button>
+      </th>
+    </tr>
+  </thead>
+  <tbody id="tablaBody">
+    
+    {% for data in resultadosCambiosTurnos %}
+    <tr>
+      <td>{{ data.nombre_solicitante }}</td>
+      <td class="codigoSolicitante">{{ data.codigo_solicitante }}</td>
+      <td>{{ data.cargo_solicitante }}</td>
+      <td><span style="border-radius: 8px; background-color: #efad21; padding: 7px;">{{ data.formacion_solicitante }}</span></td>
+      <td>{{ data.turno_solicitante_original }}</td>
+      <td class="turnoSolicitanteDiaDeseado">{{ data.turno_solicitante_nuevo}}</td>
+      <td class="fechaCambio">{{ data.fecha_solicitud_cambio|date:"d/m/Y" }}</td>
+      <td>{{ data.nombre_receptor }}</td>
+      <td class="codigoReceptor">{{ data.codigo_receptor }}</td>
+      <td>{{ data.cargo_receptor }}</td>
+      <td><span style="border-radius: 8px; background-color: #efad21; padding: 7px;">{{ data.formacion_receptor}}</span></td>
+      <td>{{ data.turno_receptor_original }}</td>
+      <td class="turnoReceptorDiaDeseado">{{ data.turno_receptor_nuevo }}</td>
+      <td>{{ data.estado_cambio_emp }}</td>
+      <td class="aprobadoAdm">{{ data.estado_cambio_admin }}</td>
+      <td class="checkbox-cell"><input type="checkbox" class="checkbox-item"></td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="12">No hay solicitudes de cambio por ahora</td>
+    </tr>
+
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="acciones-finales">
+  <button id="aprobarCambios" class="btn-aprobar">Aprobar cambios</button>
+  <button class="btn-eliminar" id="desaprobarCambios">Rechazar solicitudes </button>
+</div>
+{% endblock %}
+{% block scripts %}
+<!-- Scripts boton seleccionar todos los elementos de la tabla-->
+<script>
+document.getElementById("seleccionarTodos").addEventListener('click', function () {
+    const checkboxes = document.querySelectorAll('.checkbox-item');
+    const filas = Array.from(checkboxes).map(cb => cb.closest('tr'));
+    
+    const soloPendientes = filas.filter(fila => 
+        fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase() === "pendiente"
+    );
+
+    const allChecked = soloPendientes.every(fila => fila.querySelector('.checkbox-item').checked);
+
+    soloPendientes.forEach(fila => {
+        const cb = fila.querySelector('.checkbox-item');
+        cb.checked = !allChecked;
+    });
+
+    this.textContent = allChecked ? 'Seleccionar todos' : 'Deseleccionar todos';
+});
+
+</script>
+
+<!--Scripts DOM-->
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  aplicarFiltros();
+
+})
+</script>
+
+<!--Script boton aprobar cambios de turnos-->
+<script>
+document.getElementById("aprobarCambios").addEventListener("click", function () {
+    const datos = [];
+
+    const checkboxesSeleccionados = document.querySelectorAll('.checkbox-item:checked');
+
+    if (checkboxesSeleccionados.length === 0) {
+        Swal.fire({
+            icon: "warning",
+            title: "Ningún cambio seleccionado",
+            text: "Por favor, selecciona al menos un cambio de turno para aprobar.",
+        });
+        return;
+    }
+
+   checkboxesSeleccionados.forEach(checkbox => {
+    const fila = checkbox.closest('tr');
+
+    const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
+    
+    if (estadoAdmin === "pendiente") {
+        const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
+        const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
+
+        const codigoReceptor = fila.querySelector('.codigoReceptor')?.textContent.trim();
+        const turnoReceptorDiaDeseado = fila.querySelector('.turnoReceptorDiaDeseado')?.textContent.trim();
+
+        const fechaCambioTexto = fila.querySelector('.fechaCambio')?.textContent.trim();
+
+        const fechaCambio = /^\d{2}\/\d{2}\/\d{4}$/.test(fechaCambioTexto)
+            ? (() => {
+                const [d, m, y] = fechaCambioTexto.split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            })()
+            : fechaCambioTexto;
+
+        datos.push({
+            fechaCambio,
+            codigoSolicitante,
+            codigoReceptor,
+            turnoSolicitanteDiaDeseado,
+            turnoReceptorDiaDeseado
+        });
+
+         fetch("{% url 'aprobar_solicitudes_cambios_turnos' %}", {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ solicitudes: datos })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error en la aprobación");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success){
+              Swal.fire({
+                title: "Good job!",
+                text: data.message,
+                icon: "success"
+              })
+             .then(()=>{
+                    location.reload();
+                })
+                
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "No se pudieron aprobar los cambios",
+                    text: data.message || "Ocurrió un error inesperado",
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Error en fetch:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error en la solicitud",
+                text: "Error:",error
+            });
+        });
+
+    }else{
+      Swal.fire({
+                    icon: "error",
+                    title: "Solo se pueden aprobar solicitudes de cambios de turnos en estado pendiente",
+                    
+                });
+
+    }
+});
+
+ function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+   
+});
+
+</script>
+
+<!-- Script boton eliminar o des aprobar cambios de turnos-->
+ <script>
+   document.getElementById("desaprobarCambios").addEventListener("click", function () {
+    const datos = [];
+    const checkboxesSeleccionados = document.querySelectorAll('.checkbox-item:checked');
+
+    if (checkboxesSeleccionados.length === 0) {
+        Swal.fire({
+            icon: "warning",
+            title: "Ningún elemento seleccionado",
+            text: "Por favor, selecciona al menos un cambio de turno para desaprobar.",
+        });
+        return;
+    }
+
+    checkboxesSeleccionados.forEach(checkbox => {
+        const fila = checkbox.closest('tr');
+        const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
+
+        if (estadoAdmin === "pendiente") {
+            const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
+            const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
+            const codigoReceptor = fila.querySelector('.codigoReceptor')?.textContent.trim();
+            const turnoReceptorDiaDeseado = fila.querySelector('.turnoReceptorDiaDeseado')?.textContent.trim();
+            const fechaCambioTexto = fila.querySelector('.fechaCambio')?.textContent.trim();
+            const fechaCambio = /^\d{2}\/\d{2}\/\d{4}$/.test(fechaCambioTexto)
+                ? (() => {
+                    const [d, m, y] = fechaCambioTexto.split('/');
+                    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                })()
+                : fechaCambioTexto;
+
+            datos.push({
+                fechaCambio,
+                codigoSolicitante,
+                codigoReceptor,
+                turnoSolicitanteDiaDeseado,
+                turnoReceptorDiaDeseado
+            });
+        }
+    });
+
+    if (datos.length === 0) {
+        Swal.fire({
+            icon: "error",
+            title: "Ninguna solicitud válida",
+            text: "Solo se pueden desaprobar solicitudes con estado 'pendiente'.",
+        });
+        return;
+    }
+
+    fetch("{% url 'desaprobar_solicitudes_cambios_turnos' %}", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ solicitudes: datos })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error en la desaprobación");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: "Solicitudes desaprobadas correctamente",
+                    text: data.message,
+                    width: 600,
+                    padding: "3em",
+                    color: "#ffffff",
+                    background: "url(https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3lybnlpa2N3eG1ibGkxMmkwYXpmY2xkbXRzN2l2aWpkcjhnZjJlOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jJQC2puVZpTMO4vUs0/giphy.gif)",
+                    backdrop: `rgba(198, 215, 207, 0.8)`
+                }).then(function(){
+                  location.reload()
+                })
+                
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "No se pudieron desaprobar los cambios",
+                    text: data.message || "Ocurrió un error inesperado",
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Error en fetch:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error en la solicitud",
+                text: "Ocurrió un error en la comunicación con el servidor.",
+            });
+        });
+
+    // Función para obtener CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+ </script>
+
+ <!--Script filtros-->
+<script>
+  // Acordeón toggle
+    document.querySelectorAll('.accordion-header').forEach(hdr => {
+      hdr.addEventListener('click', () => {
+        hdr.classList.toggle('active');
+        const body = hdr.nextElementSibling;
+        body.classList.toggle('active');
+      });
+    });
+
+
+  // Elementos de filtro
+  const filtros = {
+    nombre: document.getElementById('filtroNombre'),
+    codigo: document.getElementById('filtroCodigo'),
+    cargo: document.getElementById('filtroCargo'),
+    fecha: document.getElementById('filtroFechaCambio'),
+    estado: document.getElementById('filtroEstadoSolicitud'),
+  };
+
+  // Asignar eventos
+  Object.values(filtros).forEach(input => {
+    input.addEventListener('input', aplicarFiltros);
+    input.addEventListener('change', aplicarFiltros);
+  });
+
+ function aplicarFiltros() {
+  document.getElementById("tablaBody").style.display = "";
+  
+  const valorNombre = filtros.nombre.value.toLowerCase().trim();
+  const valorCodigo = filtros.codigo.value.toLowerCase().trim();
+  const valorCargo = filtros.cargo.value.toLowerCase().trim();  
+  const valorFecha = filtros.fecha.value;
+  const valorEstado = filtros.estado.value.toLowerCase().trim();
+  
+
+  document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
+    const tNombre = row.cells[0].textContent.toLowerCase().trim();
+    const tCodigo = row.cells[1].textContent.toLowerCase().trim();
+    const tCargo = row.cells[2].textContent.toLowerCase().trim(); 
+    const tFecha = row.cells[6].textContent.trim();
+    const tEstado = row.cells[14].textContent.toLowerCase().trim();
+
+    const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
+    const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;
+    const coincideCargo = !valorCargo || tCargo === valorCargo; // Comparación exacta
+    const coincideFecha = !valorFecha || tFecha === valorFecha;
+    const coincideEstado = !valorEstado || tEstado === valorEstado;
+
+    row.style.display = (coincideNombre && coincideCodigo  && coincideCargo && coincideFecha && coincideEstado) ? '' : 'none';
+  });
+}
+
+</script>
+{% endblock %}

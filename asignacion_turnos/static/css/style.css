@@ -1,0 +1,1384 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", serif;
+    font-size: 14px;
+}
+
+body {
+    min-height: 100vh;
+    /*background: linear-gradient(135deg, #ffffff, #f1f9ef, #d6eacb); */
+    background: white;
+}
+
+body {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: auto;
+}
+
+.content {
+    width: 100%;
+    margin-left: 250px;
+    padding: 20px;
+}
+
+
+.sidebar.collapsed {
+    width: 60px;
+}
+
+
+.sidebar.collapsed + .content {
+    margin-left: 80px; /* menos espacio cuando sidebar está colapsado */
+}
+
+.sidebar {
+    width: 220px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background-color: #1d5031;
+    transition: all 0.4s ease;
+}
+
+
+.sidebar.collapsed {
+    width: 85px;
+}
+
+.sidebar .sidebar-header {
+    display: flex;
+    position: relative;
+    align-items: center;
+    padding: 25px 20px;
+    justify-content: space-between;
+}
+
+.sidebar-header .header-logo img {
+    height: 46px;
+    width: 46px;
+    display: block;
+    object-fit: contain;
+    border-radius: 85%;
+}
+
+.sidebar-header .sidebar-toggler { /* Boton que colapsa el sidebar*/
+    position: absolute;
+    right: 20px;
+    height: 35px;
+    width: 35px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background-color: #EEF2FF;
+    transition: 0.4s ease;
+    top: 75px;
+    right: 35px;
+}
+
+.sidebar-header .sidebar-toggler:hover {
+    background: #d9e1fd;  /*Color original: #d9e1fd*/
+}
+
+.sidebar.collapsed .sidebar-toggler {
+    transform: translate(10px, 65px);
+}
+
+.sidebar-header .sidebar-toggler span {
+    font-size: 1.75rem;
+    
+}
+
+.sidebar.collapsed .sidebar-toggler span {
+    transform: rotate(180deg);
+    transition: 0.4s ease;
+}
+
+.sidebar-nav {
+    padding-top: 35px;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-nav {
+    overflow: visible;
+}
+
+.sidebar-nav .nav-list {
+    list-style: none;
+    display: flex;
+    gap: 4px;
+    padding: 0 15px;
+    flex-direction: column;
+    transform: translateY(15px);
+    transition: 0.4s ease;
+}
+
+.sidebar-nav .primary-nav {
+    overflow: auto;
+    height: calc(100vh - 204px);
+    padding-bottom: 50px;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.sidebar-nav .primary-nav:hover {
+    scrollbar-color: #EEF2FF transparent;
+}
+
+.sidebar.collapsed .sidebar-nav .primary-nav {
+    overflow-y: unset;
+    transform: translateY(65px);
+}
+
+.sidebar-nav .nav-item {
+    position: relative;
+}
+
+.sidebar-nav .nav-item .nav-link {
+    color: #FFF;
+    display: flex;
+    gap: 12px;
+    white-space: nowrap;
+    padding: 11px 15px;
+    align-items: center;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 1px solid #1d5031;
+    transition: 0.4s ease;
+}
+
+.sidebar-nav .nav-item:hover > .nav-link:not(.dropdown-title) {
+    color: #151A2E;
+    background-color: #EEF2FF;
+}
+
+.sidebar-nav .nav-link :where(.nav-label, .dropdown-icon) {
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .nav-link :where(.nav-label, .dropdown-icon) {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar-nav .secondary-nav {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+    background-color: #1D5031;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.logo-text {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .logo-text {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Menú desplegable */
+.sidebar-nav .dropdown-container .dropdown-icon {
+    margin: 0 -4px 0 auto;
+    transition: transform 0.4s ease, opacity 0.3s 0.2s ease;
+}
+
+.sidebar.collapsed .dropdown-container .dropdown-icon {
+    transition: opacity 0.3s 0s;
+}
+
+.sidebar-nav .dropdown-container.open .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.sidebar-nav .dropdown-menu {
+    height: 0;
+    overflow-y: hidden;
+    list-style: none;
+    padding: 10px 0 10px 15px;
+    transition: height 0.4s ease;
+}
+
+.dropdown-menu .nav-item .nav-link {
+    padding: 9px 15px;
+}
+
+.sidebar.collapsed .dropdown-menu .nav-item .nav-link {
+    padding: 9px 15px;
+}
+
+/* Dropdown colapsado (hover para mostrar) */
+.sidebar.collapsed .dropdown-container .dropdown-menu {
+    position: absolute;
+    left: 100%;
+    top: -10px;
+    opacity: 0;
+    height: auto !important;
+    overflow: visible;
+    pointer-events: none;
+    background: #1D5031;
+    padding: 7px 10px 7px 24px;
+    border-radius: 0 10px 10px 0;
+    min-width: 180px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transform: translateY(0px);
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .dropdown-container:hover .dropdown-menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(10px);
+}
+
+/* Opcional: Mostrar título si deseas */
+.dropdown-menu .nav-item .nav-link .dropdown-title {
+    display: block;
+}
+
+.sidebar.collapsed .dropdown-menu .nav-item .dropdown-title {
+    display: block;
+}
+
+
+
+/*Estilos de tabla*/
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 25px 0;
+    /*font-size: 14px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+    /*min-width: unset;*/
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+     /* que use todo el ancho disponible */
+}
+
+.styled-table thead tr {
+    background-color: #1D5031;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #dddddd;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #1D5031;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+/* Redondear las esquinas del encabezado */
+.styled-table thead tr th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.styled-table thead tr th:last-child {
+    border-top-right-radius: 10px;
+}
+
+/* Para mejorar el efecto visual, evitar que el colapso de bordes lo anule */
+.styled-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.styled-table thead tr {
+    background-color: #1D5031;
+    color: #ffffff;
+    text-align: left;
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.1);
+}
+
+
+/* Estilos del template admin.html*/
+
+/* Estilo para títulos */
+.container h1, .container h2 {
+    color: #1D5031;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* Estilo para el párrafo de bienvenida */
+.container p {
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+/* Botón cerrar sesión */
+/*Banner*/
+/* Botón cerrar sesión dentro de la barra de usuario */
+
+/* Barra de usuario: saludo a la izquierda y botón a la derecha */
+.usuario-bar {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background-color: #e7f2ec; /* Sin fondo blanco */
+    animation: fadeSlideDown 0.6s ease-in-out;
+    transition: box-shadow 0.3s ease;
+    max-width: 100%;
+}
+
+.usuario-bar .saludo {
+    font-size: 1.05rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.usuario-bar form {
+    margin: 0;
+}
+
+.perfil-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #3498db;
+  display: inline-block; /* CAMBIO: antes estaba en block */
+  vertical-align: middle;
+}
+
+
+.saludo {
+  font-size: 1rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+
+.perfil-img:hover {
+    transform: scale(1.05);
+}
+
+.titulo-template {
+    font-weight: 600;
+    color: #1D5031;
+    white-space: nowrap;
+    font-size: 1.2rem;
+    text-align: center; 
+}
+
+.usuario-bar button.btn-danger {
+    margin-left: 10px;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background-color: #e74c3c;
+    border: none;
+    color: #fff;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+}
+
+.usuario-bar button.btn-danger:hover {
+    background-color: #c0392b;
+    transform: translateY(-1px);
+}
+
+@keyframes fadeSlideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Botón cargar archivos */
+button.btn-primary {
+    background-color: #1D5031;
+    border-color: #1D5031;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #EEF2FF;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+button.btn-primary:hover {
+    background-color: #2e6b45;
+    border-color: #2e6b45;
+    transform: scale(1.05); /* Animación suave */
+}
+
+button.btn-primary:active {
+    transform: scale(0.98); /* Pequeño efecto al hacer click */
+}
+
+button.btn-secondary {
+    background-color: #0f9e46  ;
+    border-color: #0f9e46 ;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #EEF2FF;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+button.btn-secondary:hover {
+    background-color: #cfc20f;
+    border-color: #cfc20f;
+    transform: scale(1.05); /* Animación suave */
+}
+
+button.btn-secondary:active {
+    transform: scale(0.98); /* Pequeño efecto al hacer click */
+}
+
+button.btn-third{
+    background-color: #0f9e46  ;
+    border-color: #0f9e46 ;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #EEF2FF;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+button.btn-third:hover {
+    background-color: #fffffe;
+    border-color: #fffffe;
+    color: #0f9e46;
+    transform: scale(1.05); /* Animación suave */
+}
+
+button.btn-third:active {
+    transform: scale(0.98); /* Pequeño efecto al hacer click */
+}
+
+button.btn-fourth{
+    background-color: #cc2610  ;
+    border-color: #f13b04 ;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #EEF2FF;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+button.btn-fourth:hover {
+
+    background-color: #f06204;
+    border-color: #f06204;
+    transform: scale(1.05); /* Animación suave */
+}
+
+button.btn-fourth:active {
+    transform: scale(0.98); /* Pequeño efecto al hacer click */
+}
+
+/* Boton eliminar:danger*/
+button.btn-eliminar {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+button.btn-eliminar:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+    transform: scale(1.05);
+}
+
+button.btn-eliminar:active {
+    transform: scale(0.98);
+}
+
+button.btn-eliminar i {
+    font-size: 14px;
+}
+
+button.btn-editar {
+  background-color: #2a3eb1;                /* Azul intermedio, profesional */
+  border: 2px solid #1e2e91;                /* Borde marcado y contrastante */
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+button.btn-editar:hover {
+  background-color: #1e2e91;               /* Azul más oscuro al pasar el mouse */
+  border-color: #1e2e91;
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(30, 46, 145, 0.4);
+}
+
+button.btn-editar:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+button.btn-editar i {
+  font-size: 15px;
+}
+
+/* Estilo para resultados */
+.container p b {
+    color: #2e6b45;
+}
+
+/* Espaciado general */
+.container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+/* Filtros acordeon */
+ /* Contenedor general */
+.accordion-container {
+  margin-bottom: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Header con degradado, esquinas redondeadas y flecha */
+.accordion-header {
+  background: linear-gradient(135deg, #1D5031, #3b7d4b);
+  color: white;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+/* Flecha indicadora */
+.accordion-header::after {
+  content: "▼";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  transition: transform 0.3s ease;
+  font-size: 0.8rem;
+}
+
+/* Cuando esté abierto (añade .active vía JS al hacer click) */
+.accordion-header.active {
+  background: linear-gradient(135deg, #3b7d4b, #1D5031);
+}
+.accordion-header.active::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* Cuerpo con transición de altura y opacidad */
+.accordion-body {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
+  background-color: #f9f9f9;
+  padding: 0 16px;
+}
+
+/* Cuando esté abierto (añade .active al body) */
+.accordion-body.active {
+  max-height: 500px; /* suficiente para tu contenido */
+  opacity: 1;
+  padding: 16px;
+  border-top: 1px solid #ddd;
+}
+
+/* Filtros horizontales más elegantes */
+.filtros-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-end;
+  margin-top: 12px;
+}
+
+/* Cada item con sombra suave y hover */
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: box-shadow 0.3s ease;
+}
+.filtro-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Label y controles */
+.filtro-item label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.filtro-item input,
+.filtro-item select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.filtro-item input:focus,
+.filtro-item select:focus {
+  border-color: #3b7d4b;
+  box-shadow: 0 0 4px rgba(59,125,75,0.4);
+  outline: none;
+}
+
+/*Estilos para la paginacion de los resultados*/
+ #paginacion button {
+    padding: 6px 10px;
+    cursor: pointer;
+    border: 1px solid #1D5031;
+    border-radius: 4px;
+    background: white;
+    color: #1D5031;
+    font-weight: 500;
+  }
+
+  #paginacion .btn-primary {
+    background-color: #1D5031;
+    color: #fff;
+  }
+
+  #paginacion .btn-secondary {
+    background-color: #f0f0f0;
+    color: #777;
+    border: none;
+    cursor: default;
+  }
+
+  #paginacion button:hover:not(:disabled) {
+    background-color: #e8f2ea;
+  }
+
+/*Estilos modal - editar Empleado y Horario*/
+.modal-custom {
+  display: none;
+  position: fixed;
+  z-index: 1001;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px); /* efecto de desenfoque de fondo */
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content-custom {
+  background-color: #ffffff;
+  margin: auto;
+  margin-top: 5%;
+  padding: 24px 30px;
+  border-radius: 12px;
+  width: 440px;
+  max-width: 95%;
+  max-height: 85vh;         /* 👈 limita la altura al 85% del viewport */
+  overflow-y: auto;         /* 👈 activa scroll interno si se necesita */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: slideDown 0.4s ease;
+}
+
+/* Inputs y Textareas */
+.modal-content-custom input,
+.modal-content-custom textarea,
+.modal-content-custom select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+}
+
+.modal-content-custom input:focus,
+.modal-content-custom textarea:focus,
+.modal-content-custom select:focus {
+  border-color: #5c9c31;
+  box-shadow: 0 0 5px rgba(92, 156, 49, 0.3);
+  outline: none;
+}
+
+.campo-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+/* Botones */
+#guardarCambios,
+#cerrarBotonManual,
+#editarTablaDatos {
+  background-color: #1D5031;
+  color: white;
+  padding: 9px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  margin-right: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+#guardarCambios:hover,
+#cerrarBotonManual:hover,
+#editarTablaDatos:hover {
+  background-color: #2e6b45;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Cierre del modal */
+.cerrar-modal {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 1.7rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #aaa;
+  transition: color 0.3s ease;
+}
+
+.cerrar-modal:hover {
+  color: #333;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content-custom::-webkit-scrollbar-thumb {
+  background-color: #cccccc;
+  border-radius: 4px;
+}
+
+.modal-content-custom::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.modal-header-custom {
+  background: linear-gradient(135deg, #1d5031, #3b7d4b);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 10px 10px 0 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.4s ease;
+  margin: -24px -30px 20px -30px; /* sobresale para cubrir el padding del modal */
+}
+
+/* Icono de cierre dentro del header */
+.modal-header-custom .cerrar-modal {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #ffffffcc;
+  transition: color 0.3s ease;
+}
+
+.modal-header-custom .cerrar-modal:hover {
+  color: #ffffff;
+}
+
+/*Estilos para el bloque de carga de archivos / Horarios / Sucesiones */
+.input-archivo {
+  padding: 8px;
+  border: 1px solid #1D5031;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 14px;
+  background-color: #f9f9f9;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.input-archivo:hover {
+  background-color: #eef6ee;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/*Estilos modal eliminar horario*/
+/* Backdrop más suave con blur */
+.modal-eliminar {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  overflow-y: auto;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Contenedor flex vertical para separar header y body */
+.modal-content-eliminar {
+  background-color: #fff;
+  position: relative;
+  margin: 6% auto;
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+  animation: slideDown 0.4s ease;
+}
+
+/* Header: estiliza el primer H3 que tengas */
+.modal-content-eliminar h3:first-of-type {
+  margin: 0;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #1d5031, #3b7d4b);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Botón de cierre ya posicionado encima */
+.modal-content-eliminar .cerrar-modal-eliminar {
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  font-size: 1.6rem;
+  color: #ffffffcc;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.modal-content-eliminar .cerrar-modal-eliminar:hover {
+  color: #fff;
+}
+
+/* Cuerpo del modal con scroll */
+.modal-content-eliminar #contenidoHorarios {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  background-color: #fafafa;
+}
+
+/* Tabla con bordes suaves y sombreado */
+.modal-content-eliminar table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px #ddd;
+}
+
+.modal-content-eliminar th,
+.modal-content-eliminar td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.modal-content-eliminar th {
+  background-color: #2e6b45;
+  color: #fff;
+  font-weight: 500;
+}
+
+.modal-content-eliminar tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Animaciones */
+@keyframes slideDown {
+  from { transform: translateY(-30px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Asegura que el contenedor permita posicionar el botón */
+.modal-content-eliminar {
+  position: relative;
+}
+
+/* Estilo y posición para la “×” de cierre */
+.modal-content-eliminar .cerrar-modal-eliminar {
+  display: block;                /* Que no esté oculto */
+  position: absolute;
+  top: 12px;                     /* Ajusta a tu gusto */
+  right: 16px;                   /* Ajusta a tu gusto */
+  font-size: 1.7rem;             /* Tamaño visible */
+  color: #aaa;                   /* Color inicial */
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;                   /* Encima de todo */
+  transition: color 0.3s ease;
+}
+
+/* Hover más destacado */
+.modal-content-eliminar .cerrar-modal-eliminar:hover {
+  color: #333;
+}
+
+/*Modal insertar / editar turno - horario dentro del template editarHorario*/
+.modal-custom {
+  display: none;
+  position: fixed;
+  z-index: 1001;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px); /* efecto de desenfoque de fondo */
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content-custom {
+  background-color: #ffffff;
+  margin: auto;
+  margin-top: 5%;
+  padding: 24px 30px;
+  border-radius: 12px;
+  width: 440px;
+  max-width: 95%;
+  max-height: 85vh;         /* 👈 limita la altura al 85% del viewport */
+  overflow-y: auto;         /* 👈 activa scroll interno si se necesita */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: slideDown 0.4s ease;
+}
+
+/* Inputs y Textareas */
+.modal-content-custom input,
+.modal-content-custom textarea,
+.modal-content-custom select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+}
+
+.modal-content-custom input:focus,
+.modal-content-custom textarea:focus,
+.modal-content-custom select:focus {
+  border-color: #5c9c31;
+  box-shadow: 0 0 5px rgba(92, 156, 49, 0.3);
+  outline: none;
+}
+
+.campo-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+/* Botones */
+#guardarCambios,
+#cerrarBotonManual,
+#guardarCambiosModalEditar,
+#cerrarBotonManualModalEditar,
+#editarTablaDatos {
+  background-color: #1D5031;
+  color: white;
+  padding: 9px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  margin-right: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+#guardarCambios:hover,
+#cerrarBotonManual:hover,
+#guardarCambiosModalEditar:hover,
+#cerrarBotonManualModalEditar:hover,
+#editarTablaDatos:hover {
+  background-color: #2e6b45;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Cierre del modal */
+.cerrar-modal {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 1.7rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #aaa;
+  transition: color 0.3s ease;
+}
+
+.cerrar-modal:hover {
+  color: #333;
+}
+
+.cerrar-modal-modalEditar {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 1.7rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #aaa;
+  transition: color 0.3s ease;
+}
+
+.cerrar-modal-modalEditar:hover {
+  color: #333;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content-custom::-webkit-scrollbar-thumb {
+  background-color: #cccccc;
+  border-radius: 4px;
+}
+
+.modal-content-custom::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.modal-header-custom {
+  background: linear-gradient(135deg, #1d5031, #3b7d4b);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 10px 10px 0 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.4s ease;
+  margin: -24px -30px 20px -30px; /* sobresale para cubrir el padding del modal */
+}
+
+/* Icono de cierre dentro del header */
+.modal-header-custom .cerrar-modal {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #ffffffcc;
+  transition: color 0.3s ease;
+}
+
+.modal-header-custom .cerrar-modal:hover {
+  color: #ffffff;
+}
+
+/*Estilos tabla solicitudes de cambios de turnos*/
+.tabla-cambios-turno {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin-bottom: 30px;
+}
+
+.tabla-cambios-turno thead {
+  background-color: #1D5031;
+  color: white;
+}
+
+.tabla-cambios-turno th,
+.tabla-cambios-turno td {
+  padding: 12px 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.tabla-cambios-turno tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.tabla-cambios-turno tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+.tabla-cambios-turno button {
+  background-color: #1D5031;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tabla-cambios-turno button:hover {
+  background-color: #146021;
+}
+
+.acciones-finales {
+  text-align: right;
+  margin-top: 15px;
+}
+
+.checkbox-cell {
+    
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.btn-aprobar {
+    background-color: #1D5031;
+    border-color: #1D5031;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #EEF2FF;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-aprobar:hover {
+    background-color: #2e6b45;
+    border-color: #2e6b45;
+    transform: scale(1.05); 
+}
+
+
+/* Ocultar el checkbox original */
+.checkbox-item {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #fff;
+  margin: 0;
+  font: inherit;
+  color: currentColor;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #1D5031;
+  border-radius: 4px;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.checkbox-item::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  transition: transform 0.2s ease-in-out;
+  box-shadow: inset 1em 1em #1D5031;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 20%, 80% 0%, 43% 62%);
+}
+
+/* Animación al hacer check */
+.checkbox-item:checked::before {
+  transform: scale(1);
+}
+
+/* Sombra al hacer hover */
+.checkbox-item:hover {
+  box-shadow: 0 0 4px rgba(29, 80, 49, 0.4);
+}
+
+
+
+
+
+
+
+
+/* --- Ajustes Responsive --- */
+@media (max-width: 992px) {
+  .sidebar {
+    position: fixed;
+    width: 85px;
+  }
+
+  .sidebar.collapsed + .content,
+  .content {
+    margin-left: 85px !important;
+  }
+
+  .sidebar .logo-text,
+  .sidebar .nav-label,
+  .sidebar .dropdown-icon {
+    display: none;
+  }
+
+  .sidebar .sidebar-toggler {
+    top: 15px;
+    right: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    margin-left: 0 !important;
+    padding: 15px;
+  }
+
+  .usuario-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .filtros-horizontal {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .filtro-item {
+    width: 100%;
+  }
+
+  .styled-table {
+    font-size: 1.4rem;
+    min-width: unset;
+  }
+
+  .styled-table th,
+  .styled-table td {
+    padding: 8px 10px;
+  }
+}

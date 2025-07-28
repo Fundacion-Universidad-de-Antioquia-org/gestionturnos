@@ -1,0 +1,600 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+ 
+  .main-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 40px;
+    padding: 0 20px;
+  }
+
+  .form-section, .viewer-section {
+    flex: 1;
+    min-width: 300px;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.6s ease;
+  }
+
+  .form-section {
+    flex: 1;
+    background-color: #fff;
+    border-left: 5px solid #1D5031;
+  }
+
+  .viewer-section {
+    background-color: #f9f9f9;
+  }
+
+  .viewer-section iframe,
+  .viewer-section img {
+    width: 100%;
+    height: 500px;
+    border: none;
+    border-radius: 8px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  select,
+  input[type="date"],
+  input[type="file"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+  }
+
+  select:focus,
+  input:focus {
+    border-color: #1D5031;
+    outline: none;
+  }
+
+.btn-third {
+    background-color: #1D5031;
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 20px;
+    display: inline-block;
+    width: auto;
+}
+
+
+  .btn-third:hover {
+    background-color: #154022;
+    transform: scale(1.03);
+  }
+
+  .text-muted {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .botones-formulario {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    } to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .viewer-section {
+    flex: 2;
+  width: 100%;
+  height: 500px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.visor-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  background-color: #f2f2f2;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.visor-placeholder span {
+  font-size: 16px;
+  margin-top: 10px;
+  color: #666;
+}
+
+.visor-placeholder iframe,
+.visor-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: none;
+  border-radius: 12px;
+}
+
+
+
+</style>
+
+<style>
+  .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+/* Animación al abrir el modal */
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mejora del modal */
+.modal-content {
+  animation: slideFadeIn 0.4s ease-in-out;
+  background-color: #fff;
+  padding: 30px 35px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Pregunta */
+.pregunta-dinamica {
+  background-color: #f5f8f6;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  animation: slideFadeIn 0.3s ease-in-out;
+}
+
+/* Inputs y selects del formulario */
+.pregunta-dinamica input[type="text"],
+.pregunta-dinamica select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 8px;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.pregunta-dinamica input[type="text"]:focus,
+.pregunta-dinamica select:focus {
+  border-color: #1D5031;
+  outline: none;
+}
+
+/* Opción múltiple */
+.pregunta-dinamica .opcion-container {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.pregunta-dinamica .opcion-container input[type="text"] {
+  flex: 1;
+  margin-right: 12px;
+}
+
+.pregunta-dinamica .opcion-container label {
+  font-size: 13px;
+  color: #444;
+  margin-right: 6px;
+}
+
+
+</style>
+
+<style>
+  .encabezado-modal {
+  display: flex;
+  align-items: center; /* centra verticalmente */
+  justify-content: center; /* centra horizontalmente */
+  gap: 16px;
+  margin-bottom: 25px;
+  text-align: center;
+  flex-wrap: wrap;
+}
+
+.logo-modal {
+  width: 90px;
+  height: auto;
+}
+
+.titulo-modal {
+  color: #1D5031;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="usuario-bar">
+  <div style="display: flex; align-items: center;">
+    <img src="{% static 'images/admin_img.png' %}" alt="Foto de perfil" class="perfil-img">
+    <span class="saludo">Bienvenido, {{ usuarioLogeado }}</span>
+  </div>
+
+  <div>
+    <h4 class="titulo-template">Cargar IO - Comunicaciones</h4>
+  </div>
+
+  <form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button class="btn-danger">Cerrar sesión</button>
+  </form>
+</div>  
+
+<div class="main-container">
+  <!-- Columna izquierda: Formulario -->
+  <div class="form-section">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <label for="tipo" class="form-label">Elemento a cargar</label>
+      <select name="tipo" id="tipo">
+        <option value="">SELECCIONE</option>
+        <option value="INSTRUCCION OPERACIONAL">INSTRUCCIÓN OPERACIONAL</option>
+        <option value="PIPO">PIPO</option>
+        <option value="COMUNICADOS">COMUNICADOS</option>
+        <option value="BOLETINES">BOLETINES</option>
+        <option value="LECCIONES APRENDIDAS">LECCIONES APRENDIDAS</option>
+      </select>
+
+      <label for="cargos" class="form-label">Cargos que podrá visualizar la información</label>
+      <button class="btn-third" type="button" id="agregarCargos" onclick="botonAgregarCargos()">➕Agregar cargos </button>
+      <select name="cargos" id="cargos">
+        <option value="TODOS">TODOS</option>
+        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+        <option value="OPERADOR DE CONDUCCION">OPERADOR DE CONDUCCION</option>
+        <option value="MANIOBRISTA">MANIOBRISTA</option>
+      </select>
+
+      <label for="fechaVigencia"  id="labelFechaVigencia" class="form-label">Fecha de vigencia</label>
+      <input id="fechaVigencia" name="fechaVigencia" type="date">
+
+      <label for="archivo" class="form-label">Archivo (PDF, video o imagen)</label>
+      <input id="archivo" name="archivo" type="file" accept="application/pdf,image/*" onchange="previewArchivo(event)">
+
+     <div class="botones-formulario">
+        <button type="submit" class="btn-third">Cargar</button>
+        <button type="button" id="cargarPipo" class="btn-third">Cargar PIPO</button>
+</div>
+
+    </form>
+  </div>
+
+  <!-- Columna derecha: Visualizador -->
+<div class="viewer-section" id="visorArchivo">
+  <div class="visor-placeholder" id="placeholder">
+    📄🖼️
+    <span id="mensajeInicial">Selecciona un archivo PDF, video o imagen para previsualizar</span>
+
+    <iframe id="visorPDF" style="display: none;"></iframe>
+    <img id="visorIMG" style="display: none;" />
+  </div>
+</div>
+
+</div>
+
+<!-- Modal cargos-->
+ <div class="modal-overlay" id="modalAgregarCargos">
+  <div class="modal-content">
+    <table class="styled-table display">
+      <thead>
+        <tr>
+          <td>Cargos</td>
+          <td>Opciones</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <tr><td>CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</td> <td><button class="btn-third"> ➕Agregar</button></td></tr>
+          <tr><td>CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</td> <td><button class="btn-third">➕Agregar</button></td></tr>
+          <tr><td>OPERADOR DE CONDUCCION</td><td><button class="btn-third">➕Agregar</button></td></tr>
+          <tr><td>MANIOBRISTA TRENES</td><td> <button class="btn-third">➕Agregar</button></td></tr>
+          <tr><td>MANIOBRISTA TRANVIA</td> <td><button class="btn-third">➕Agregar</button></td></tr>
+        </tr>
+      </tbody>
+    </table>
+    <button class="btn-eliminar" id="cerrarModalAgregarCargos" onclick="cerrarModalCargos()">Cerrar</button>
+  </div>
+  
+ </div>
+
+<!-- Modal -->
+<div id="modalPipo" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    
+    <div class="encabezado-modal">
+      <img src="{% static 'images/logo2.png' %}" alt="logoFundacion" class="logo-modal">
+      <h3 class="titulo-modal">Fundación Universidad de Antioquia - Formulario PIPO</h3>
+    </div>
+
+    <div id="preguntas-container"></div>
+
+    <div class="botones-formulario">
+      <button type="button" class="btn-third" onclick="agregarPregunta()">➕ Agregar pregunta</button>
+      <button type="button" class="btn-third" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const botonPipo = document.getElementById("cargarPipo");
+    const selectTipo = document.getElementById("tipo");
+    const fechaVigencia = document.getElementById("fechaVigencia")
+    const labelFechaVigencia = document.getElementById("labelFechaVigencia")
+    botonPipo.style.display = "none";
+    fechaVigencia.style.display = "none";
+    labelFechaVigencia.style.display = "none";
+
+    document.getElementById("modalAgregarCargos").style.display = "none";
+  
+    
+    selectTipo.addEventListener("change", function () {
+      if (this.value === "PIPO") {
+        botonPipo.style.display = "block";
+      } else {
+        botonPipo.style.display = "none";
+      }
+    });
+  
+    selectTipo.addEventListener("change",function(){
+        if(this.value === "INSTRUCCION OPERACIONAL"){
+             fechaVigencia.style.display = "block";
+              labelFechaVigencia.style.display = "block";
+      }else{
+        labelFechaVigencia.style.display = "none";
+        fechaVigencia.style.display = "none";
+      }
+    })
+});
+ 
+
+  function previewArchivo(event) {
+    const file = event.target.files[0];
+    const visorPDF = document.getElementById("visorPDF");
+    const visorIMG = document.getElementById("visorIMG");
+    const mensajeInicial = document.getElementById("mensajeInicial");
+
+    if (file) {
+      const url = URL.createObjectURL(file);
+
+      if (file.type.includes("pdf")) {
+        visorPDF.src = url;
+        visorPDF.style.display = "block";
+        visorIMG.style.display = "none";
+        mensajeInicial.style.display = "none";
+      } else if (file.type.startsWith("image")) {
+        visorIMG.src = url;
+        visorIMG.style.display = "block";
+        visorPDF.style.display = "none";
+        mensajeInicial.style.display = "none";
+      } else {
+        visorPDF.style.display = "none";
+        visorIMG.style.display = "none";
+        mensajeInicial.style.display = "block";
+      }
+    }
+  }
+
+
+  function mostrarCagarPipoFormulario(){
+    document.getElementById("tipo").addEventListener("change", function(){
+        const seleccion = this.value;
+
+        if(seleccion === "PIPO"){
+             document.getElementById("cargarPipo").style.display = "block";
+        }else{
+            document.getElementById("cargarPipo").style.display = "block";
+        }
+   
+    })
+  }
+
+</script>
+
+<!--Script del formulario - PIPO-->
+<script>
+  document.getElementById("cargarPipo").addEventListener("click", function () {
+  document.getElementById("modalPipo").style.display = "flex";
+  document.getElementById("preguntas-container").innerHTML = ""; // limpiar
+  agregarPregunta(); // agregar pregunta inicial
+});
+
+function cerrarModal() {
+  document.getElementById("modalPipo").style.display = "none";
+}
+
+let contadorPreguntas = 0;
+
+function agregarPregunta() {
+  const contenedor = document.getElementById("preguntas-container");
+  const id = contadorPreguntas++;
+
+  const divPregunta = document.createElement("div");
+  divPregunta.classList.add("pregunta-dinamica");
+  divPregunta.style.marginBottom = "25px";
+  divPregunta.innerHTML = `
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <label class="form-label">Pregunta ${id + 1}</label>
+    <button type="button" class="btn-third" style="padding: 6px 12px; font-size: 12px;" onclick="eliminarPregunta(this)">
+      ❌ Eliminar
+    </button>
+  </div>
+
+  <input type="text" name="pregunta_${id}" class="form-input" placeholder="Escribe la pregunta" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 10px;">
+
+  <label class="form-label">Tipo de pregunta</label>
+  <select name="tipo_pregunta_${id}" class="form-select" onchange="manejarCambioTipoPregunta(${id}, this)">
+    <option value="">Seleccione</option>
+    <option value="abierta">Respuesta Abierta</option>
+    <option value="multiple">Respuesta Múltiple</option>
+  </select>
+
+  <div id="opciones_${id}" style="margin-top: 10px;"></div>
+  <hr style="margin-top: 20px;">
+`;
+
+
+  contenedor.appendChild(divPregunta);
+}
+
+function manejarCambioTipoPregunta(id, select) {
+
+  const contenedorOpciones = document.getElementById(`opciones_${id}`);
+  contenedorOpciones.innerHTML = "";  // Siempre limpiamos antes
+
+  if (select.value === "multiple") {
+    const listaOpciones = document.createElement("div");
+    listaOpciones.id = `lista_opciones_${id}`;
+
+    const btnAgregarOpcion = document.createElement("button");
+    btnAgregarOpcion.type = "button";
+    btnAgregarOpcion.className = "btn-third";
+    btnAgregarOpcion.innerText = "➕ Agregar opción";
+    btnAgregarOpcion.style.marginTop = "10px";
+    btnAgregarOpcion.onclick = function () {
+      const numOpciones = listaOpciones.children.length;
+
+      const div = document.createElement("div");
+      div.className = "opcion-container";
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.name = `opcion_${id}[]`;
+      input.placeholder = `Opción ${numOpciones + 1}`;
+      input.required = true;
+
+      const label = document.createElement("label");
+      label.innerText = "Correcta";
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = `correcta_${id}`;
+      radio.value = numOpciones;
+
+      div.appendChild(input);
+      div.appendChild(label);
+      div.appendChild(radio);
+      listaOpciones.appendChild(div);
+    };
+
+    contenedorOpciones.appendChild(listaOpciones);
+    contenedorOpciones.appendChild(btnAgregarOpcion);
+
+    // Agrega una opción por defecto
+    btnAgregarOpcion.click();
+  }
+
+  else if (select.value === "abierta") {
+    const textarea = document.createElement("textarea");
+    textarea.name = `respuesta_abierta_${id}`;
+    textarea.placeholder = "Respuesta del usuario...";
+    textarea.rows = 3;
+    textarea.style = "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;";
+
+    contenedorOpciones.appendChild(textarea);
+  }
+}
+
+function eliminarPregunta(boton) {
+  const pregunta = boton.closest(".pregunta-dinamica");
+  if (pregunta) {
+    pregunta.remove();
+  }
+}
+</script>
+
+<script>
+ function botonAgregarCargos(){
+    document.getElementById("modalAgregarCargos").style.display = "block";
+ }
+ function cerrarModalCargos(){
+  document.getElementById("modalAgregarCargos").style.display = "none";
+ 
+ }
+</script>
+{% endblock %}

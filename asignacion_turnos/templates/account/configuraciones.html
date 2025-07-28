@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestión de turnos - {{ usuarioLogeado }}{% endblock %}
+{% block titulo_template %}Carga de horarios y{% endblock %}
+
+{% block styles %}
+
+{% endblock %}
+
+{% block content %}
+<div class="usuario-bar">
+  <!-- Foto y saludo -->
+  <div style="display: flex; align-items: center;">
+    <img src="{% static 'images/admin_img.png' %}" 
+         alt="Foto de perfil" class="perfil-img" />
+    <span class="saludo">Bienvenido, {{ usuarioLogeado }}</span>
+  </div>
+
+  <!-- Título -->
+  <div class="titulo-template">Configuraciones y parametros de consulta</div>
+  <!-- Logout -->
+  <form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+  </form>
+</div>
+
+<!-- Primera tabla -->
+
+  <table class="styled-table display" id="tablaDatos">
+    <thead>
+      <tr>
+        <th>Cambios - hora inicio</th>
+        <th>Cambios - hora final</th>
+        <th>Solicitudes - día inicio</th>
+        <th>Solicitudes - día final</th>
+        <th>Solicitudes - hora inicio</th>
+        <th>Solicitudes - hora final</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in parametrosGestionTurnos %}
+      <tr>
+        <td>{{ p.hora_inicio_permitida_cambios }}</td>
+        <td>{{ p.hora_final_permitida_cambios }}</td>
+        <td>{{ p.dia_inicio_permitida_cambios }}</td>
+        <td>{{ p.dia_final_permitida_cambios }}</td>
+        <td></td>
+        <td></td>
+        <td><button class="btn-editar">Editar</button></td>
+       
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+
+<!-- Segunda tabla -->
+
+  <table class="styled-table display">
+    <thead>
+      <tr>
+        <th>Estados</th>
+        <th>Fecha carga</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in estadosServicios %}
+      <tr>
+        <td>{{ e.estado }}</td>
+        <td>{{ e.fecha_carga }}</td>
+        <td>
+          <button class="btn-editar">Editar</button>
+          <button class="btn-eliminar">Eliminar</button>
+      </td>
+        
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

@@ -1,0 +1,953 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestión de turnos -  {{usuarioLogeado}}{% endblock %}
+{% block titulo_template%} Cargué de horarios y {% endblock %}
+
+{%block styles %}
+
+<!-- Loader-->
+ <style>
+ #loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay-loader {
+  text-align: center;
+}
+
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #1D5031; /* color institucional */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+ </style>
+
+<!--Estilos de filtros-->
+
+<!--Estilos para la paginación-->
+
+
+<!--Estilos del modal-->
+
+<!--Estilos para cargar los archivos-->
+<style>
+
+</style>
+
+<!-- Modal - eliminar horario-->
+<style>
+
+
+</style>
+
+{% endblock %}
+{% block content %}
+
+{% load static %}
+<div class="usuario-bar position-relative">
+
+<!-- Izquierda: Foto + saludo -->
+<div class="d-flex align-items-center flex-shrink-0">
+  <img src="{% static 'images/admin_img.png' %}" 
+       alt="Foto de perfil" class="perfil-img">
+  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+</div>
+
+
+  <!-- Centro (posición absoluta centrada) -->
+  <div class="position-absolute top-50 start-50 translate-middle text-center">
+    <h4 class="titulo-template m-0">Cargue de horarios y sucesiones</h4>
+  </div>
+
+  <!-- Derecha -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+  </form>
+
+</div>
+
+<!-- Loader cargar datos-->
+<div id="loader" style="display: none;" >
+  <div class="overlay-loader">
+    <div class="spinner"></div>
+    <p>Cargando, por favor espera...</p>
+  </div>
+</div>
+
+<!-- Acordeon carga de archivos-->
+<div class="accordion-container"  style="margin-top: 14px;">
+  <div class="accordion-header">Carga de Archivos</div>
+  <div class="accordion-body" id="acordeonCarga">
+    <div class="" id="botonesCargos">
+      <button class="btn btn-third" id="trenes">Trenes</button>
+      <button class="btn btn-third" id="tranvia">Tranvia</button>
+      <button class="btn btn-third" id="maniobras">Maniobras</button>
+      <button class="btn btn-third" id="operadores">Operadores de conducción</button>
+    </div>
+    <form action="{% url 'vista_cargarSucesionTrenes' %}" method="post" id="formCargaDatos" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="filtros-horizontal">
+        <div class="filtros-horizontal">
+  <div class="filtro-item filtro" id="lunesViernes">
+    <label for="file_cuadroServicios">Cuadro de servicios Lunes a Viernes</label>
+    <input type="file" name="file_cuadroServicios" id="archivoCuadroTurnos" class="input-archivo">
+  </div>
+  <div class="filtro-item filtro" id="sabados" >
+    <label for="file_cuadroServiciosSabado">Cuadro de servicios Sábados</label>
+    <input type="file" name="file_cuadroServiciosSabado" id="archivoCuadroTurnosSabados" class="input-archivo">
+  </div>
+  <div class="filtro-item filtro" id="domingos">
+    <label for="file_cuadroServiciosDomingo">Cuadro de servicios Domingos y Festivos</label>
+    <input type="file" name="file_cuadroServiciosDomingo" id="archivoCuadroTurnosDomingo" class="input-archivo">
+  </div>
+  <div class="filtro-item filtro" id="especial">
+    <label for="file_cuadroServiciosEspecial">Cuadro de servicios Especiales</label>
+    <input type="file" name="file_cuadroServiciosEspecial" id="archivoCuadroTurnosEspeciales" class="input-archivo">
+  </div>
+  <div class="filtro-item filtro" id="sucesion">
+    <label for="file_sucesion">Archivo Sucesión</label>
+    <input type="file" name="file_sucesion" id="archivoSucesion" class="input-archivo">
+  </div>
+</div>
+
+      </div>
+      <div style="margin-top: 15px;">
+        <button type="submit" class="btn btn-primary" name="action" value="cargar" id="btnCargar">Cargar archivos</button>
+        <button type="submit" class="btn btn-primary" name="action" value="publicar" id="btnPublicar">Publicar sucesión</button>
+        <button type="button" onclick="abrirModalHorarios()" class="btn-eliminar" id="btnEliminar" >Actualizar cuadro de turnos</button>
+      </div>
+    </form>
+      
+    
+  </div>
+</div>
+
+    <!-- Acordeón de filtros -->
+<div class="accordion-container">
+  <div class="accordion-header">Filtros de Búsqueda</div>
+  <div class="accordion-body">
+    <div class="filtros-horizontal">
+      <div class="filtro-item">
+        <label for="filtroNombre">Nombre:</label>
+        <input type="text" id="filtroNombre" placeholder="Buscar por nombre">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCodigo">Código:</label>
+        <input type="text" id="filtroCodigo" placeholder="Buscar por código">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroTurno">Turno:</label>
+        <input type="text" id="filtroTurno" placeholder="Buscar por turno">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCargo">Cargo:</label>
+        <select name="select" id="filtroCargo">
+            <option value="">Todos</option>
+            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO" selected>CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+            <option value="OPERADOR DE CONDUCCION" >OPERADOR DE CONDUCCION</option>
+            <option value="MANIOBRISTA TRENES" >MANIOBRISTA TRENES</option>
+            <option value="MANIOBRISTA TRANVIA" >MANIOBRISTA TRANVIA</option>
+            <option value="INCONSISTENCIA">INCONSISTENCIA</option>
+        </select>
+      </div>
+      <div class="filtro-item">
+        <label for="filtroEstado">Estado:</label>
+        <select name="select" id="filtroEstado">
+            <option value="revision" selected >revision</option>
+            <option value="publicado">publicado</option>
+            
+        </select>
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Fecha:</label>
+        <input type="datetime" id="filtroFecha">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Tabla de datos-->
+    <table class="styled-table display" id="tablaDatos" >
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Código</th>
+                <th>Turno</th> 
+                <th>Cargo</th>
+                <th>Fecha</th>
+                <th>Estación inicio</th>
+                <th>Estación final</th>
+                <th>Hora inicio</th>
+                <th>Hora final</th>
+                <th>Particularidades</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaBody" style="display: none;">
+                {% for s in datos_sucesion %}
+            <tr>
+                <td>{{ s.nombre }}</td>
+                <td>{{ s.codigo }}</td>
+                <td>{{ s.codigo_horario }}</td>
+                <td>{%if s.empleado.cargo %}
+                    {{s.empleado.cargo}}
+                    {% else %}
+                    <span style="color: red">INCONSISTENCIA</span>
+                    {% endif %}
+                </td>
+                <td>{{ s.fecha|date:"d/m/Y" }}</td>
+                <td>{% if s.horario.inilugar %}
+                        {{ s.horario.inilugar }}
+                    {% else %}
+                        
+                    {% endif %}
+                </td>
+                <td>{% if s.horario.finallugar %}
+                        {{s.horario.finallugar}}
+                    {% else %}
+
+                    {% endif %}
+                </td>
+
+                <td>{{ s.horario.inihora|time:"H:i" }}</td>
+                <td>{{ s.horario.finalhora|time:"H:i" }}</td>
+                <td>
+                    {% if s.horario.observaciones %}
+                        {{ s.horario.observaciones }}
+                    {% else %}
+                        Sin horario asignado
+                    {% endif %}
+                </td>
+                <td>
+                    {{s.estado_sucesion}}
+                </td>
+                <td>
+                    <!-- Botones-->
+                     <button class="btn-editar" id="editarTablaDatos">Editar</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="12">No hay registros de sucesión</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<!-- Paginación -->
+<div id="paginacion" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
+
+<!-- [ MODALES ] -->
+<!--Modal  - editar por filas-->
+<div id="modalEditar" class="modal-custom">
+  <div class="modal-content-custom">
+      <div class="modal-header-custom">
+        Actualizar empleado o turno
+        <span class="cerrar-modal" id="cerrarModal">&times;</span>
+      </div>
+
+    <label>Nombre</label>
+    <input type="text" id="editNombre">
+
+    <label>Código</label>
+    <input type="text" id="editCodigo" readonly>
+
+     <div class="filtro-item">
+        <label>Cargo</label>
+    <select name="" id="editCargo">
+        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">OPERADOR DE CONDUCCION</option>
+        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">MANIOBRISTA</option>
+    </select>
+    </div>
+
+    <h3>Editar información del turno</h3>
+    <label>Turno</label>
+    <input type="text" name="" id="editTurno"> 
+     <label>Fecha turno</label>
+    <input type="datetime" id="editFecha" readonly>
+
+    <label>Estación de inicio</label>
+    <input type="text" id="editEstacionIni">
+
+    <label>Estación final</label>
+    <input type="text" id="editEstacionFin">
+
+    <label>Hora de inicio</label>
+    <input type="text" id="editHoraIni">
+
+    <label>Hora final</label>
+    <input type="text" id="editHoraFin">
+    
+    <label>Particularidades</label>
+    <textarea name="" id="editParticularidades" class="campo-textarea" rows="7"></textarea>
+    
+
+    <div style="text-align: right; margin-top: 15px;">
+      
+        
+        <button id="cerrarBotonManual">Cerrar</button>
+        <button id="guardarCambios" type="submit">Guardar</button>
+       
+        
+    </div>
+
+    
+  </div>
+</div>
+<!-- TOKEN DJANGO GLOBAL-->
+<input type="hidden" id="csrfTokenGlobal" value="{{ csrf_token }}">
+
+<!--Modal eliminar cuadro de turnos-->
+<div id="modalHorarios" class="modal-eliminar">
+  <div class="modal-content-eliminar">
+    <span class="cerrar-modal-eliminar" onclick="cerrarModalHorarios()">&times;</span>
+    <h3>Horarios Cargados Recientemente</h3>
+    <div id="contenidoHorarios"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+
+<!-- DOM Contend loaded-->
+ <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+    formulario = document.getElementById("formCargaDatos"); 
+    const loaderCarga = document.getElementById("loader");
+      
+    ocultarBotonesCarga();
+    mostrarPagina(1);
+    aplicarFiltros();
+    mostrarBotonesCargaTrenes();
+    
+    
+
+      setTimeout(() => {
+          tablaBody.style.display = "";
+          loader.style.display = "none";
+      }, 500); 
+    
+   
+
+   /* document.getElementById("formCargaDatos").addEventListener("submit",function(){
+        document.getElementById("loader").style.display = "block";
+        document.getElementById("tablaBody").style.display = "";
+        document.getElementById("loader").style.display = "none";
+
+    }) */
+
+   /* formulario.addEventListener("submit", function(e){
+      loaderCarga.style.display = "block";
+      document.querySelectorAll("button").forEach(btn => btn.disabled = true);
+    }); */
+
+  });
+
+  function mostrarBotonesCargaTrenes(){
+      
+      document.getElementById("trenes").addEventListener("click",function(){
+        document.getElementById("formCargaDatos").style.display = "block";
+      document.querySelectorAll('.filtro').forEach((elemento)=>{
+        elemento.style.display = "block";
+      })
+    })
+
+      document.getElementById("tranvia").addEventListener("click",function(){
+        document.getElementById("formCargaDatos").style.display = "block";
+      document.querySelectorAll('.filtro').forEach((elemento)=>{
+        elemento.style.display = "block";
+      })
+    })
+    
+      document.getElementById("maniobras").addEventListener("click",function(){
+        document.getElementById("formCargaDatos").style.display = "block";
+        document.getElementById('lunesViernes').style.display = "block";
+        document.getElementById('sabados').style.display = "none";
+        document.getElementById('domingos').style.display = "none";
+        document.getElementById('sucesion').style.display = "block";
+        document.getElementById('especial').style.display = "none";
+    })
+
+    document.getElementById("operadores").addEventListener("click",function(){
+      document.getElementById("formCargaDatos").style.display = "block";
+      document.getElementById('lunesViernes').style.display = "block";
+      document.getElementById('sabados').style.display = "none";
+      document.getElementById('domingos').style.display = "none";
+      document.getElementById('sucesion').style.display = "block";
+      document.getElementById('especial').style.display = "none";
+    })
+
+  }
+
+  function ocultarBotonesCarga(){
+
+    document.getElementById("formCargaDatos").style.display = "none";
+   document.querySelectorAll('.filtro').forEach((elemento)=>{
+      elemento.style.display = "none";
+    })
+  }
+
+  function capturarErroresCargaSucesion(){
+     
+    const erroresSemana = JSON.parse('{{ erroresSemana|safe|escapejs }}');
+    const erroresSabados = JSON.parse('{{ erroresSabados|safe|escapejs }}');
+    const erroresDomingo = JSON.parse('{{ erroresDomingo|safe|escapejs }}');
+    const erroresEspecial = JSON.parse('{{ erroresEspecial|safe|escapejs }}');
+
+    let errores = ""
+    erroresSemana.forEach(error =>{
+      errores += "Errores generados: "+error
+    })
+
+     Swal.fire({
+                    icon: "success",
+                    title: "Correcto",
+                    text: data.errores,
+                      })
+
+
+  }
+ </script>
+
+<!--Script filtros-->
+<script>
+  // Acordeón toggle
+    document.querySelectorAll('.accordion-header').forEach(hdr => {
+      hdr.addEventListener('click', () => {
+        hdr.classList.toggle('active');
+        const body = hdr.nextElementSibling;
+        body.classList.toggle('active');
+      });
+    });
+
+
+
+  // Elementos de filtro
+  const filtros = {
+    nombre: document.getElementById('filtroNombre'),
+    codigo: document.getElementById('filtroCodigo'),
+    turno: document.getElementById('filtroTurno'),
+    cargo: document.getElementById('filtroCargo'),
+    fecha: document.getElementById('filtroFecha'),
+    estado: document.getElementById('filtroEstado'),
+  };
+
+  // Asignar eventos
+  Object.values(filtros).forEach(input => {
+    input.addEventListener('input', aplicarFiltros);
+    input.addEventListener('change', aplicarFiltros);
+  });
+
+ function aplicarFiltros() {
+  document.getElementById("tablaBody").style.display = "";
+  
+  const valorNombre = filtros.nombre.value.toLowerCase().trim();
+  const valorCodigo = filtros.codigo.value.toLowerCase().trim();
+  const valorTurno = filtros.turno.value.toLowerCase().trim();
+  const valorCargo = filtros.cargo.value.toLowerCase().trim();  //
+  const valorFecha = filtros.fecha.value;
+  const valorEstado = filtros.estado.value.toLowerCase().trim();
+  
+
+  document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
+    const tNombre = row.cells[0].textContent.toLowerCase().trim();
+    const tCodigo = row.cells[1].textContent.toLowerCase().trim();
+    const tTurno = row.cells[2].textContent.toLowerCase().trim();
+    const tCargo = row.cells[3].textContent.toLowerCase().trim(); //
+    const tFecha = row.cells[4].textContent.trim();
+    const tEstado = row.cells[10].textContent.toLowerCase().trim();
+
+    const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
+    const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;
+    const coincideTurno = !valorTurno || tTurno.includes(valorTurno);
+    const coincideCargo = !valorCargo || tCargo === valorCargo; // Comparación exacta
+    const coincideFecha = !valorFecha || tFecha === valorFecha;
+    const coincideEstado = !valorEstado || tEstado === valorEstado;
+
+    row.style.display = (coincideNombre && coincideCodigo && coincideTurno && coincideCargo && coincideFecha && coincideEstado) ? '' : 'none';
+  });
+}
+
+</script>
+
+<!--Script paginación-->
+<script>
+  const filasOriginales = Array.from(document.querySelectorAll("#tablaBody tr"));
+  const filasPorPagina = 10;
+  let paginaActual = 1;
+
+  function mostrarPagina(pagina) {
+    const inicio = (pagina - 1) * filasPorPagina;
+    const fin = inicio + filasPorPagina;
+
+    document.querySelectorAll("#tablaBody tr").forEach((fila, i) => {
+      fila.style.display = (i >= inicio && i < fin) ? "" : "none";
+    });
+
+    paginaActual = pagina;
+    actualizarControlesPaginacion();
+  }
+
+  function generarPaginacion(totalPaginas, paginaActual) {
+    const rango = 2;
+    const mostrarPaginas = [];
+
+    if (totalPaginas <= 10) {
+      for (let i = 1; i <= totalPaginas; i++) mostrarPaginas.push(i);
+    } else {
+      const inicio = Math.max(2, paginaActual - rango);
+      const fin = Math.min(totalPaginas - 1, paginaActual + rango);
+
+      mostrarPaginas.push(1);
+
+      if (inicio > 2) mostrarPaginas.push("...");
+
+      for (let i = inicio; i <= fin; i++) mostrarPaginas.push(i);
+
+      if (fin < totalPaginas - 1) mostrarPaginas.push("...");
+
+      mostrarPaginas.push(totalPaginas);
+    }
+
+    return mostrarPaginas;
+  }
+
+  function actualizarControlesPaginacion() {
+    const totalPaginas = Math.ceil(filasOriginales.length / filasPorPagina);
+    const paginacionDiv = document.getElementById("paginacion");
+    paginacionDiv.innerHTML = "";
+
+    const botones = generarPaginacion(totalPaginas, paginaActual);
+
+    botones.forEach(num => {
+      const btn = document.createElement("button");
+
+      if (num === "...") {
+        btn.textContent = "...";
+        btn.disabled = true;
+        btn.className = "btn btn-sm btn-secondary";
+      } else {
+        btn.textContent = num;
+        btn.className = "btn btn-sm " + (num === paginaActual ? "btn-primary" : "btn-outline-primary");
+        btn.addEventListener("click", () => mostrarPagina(num));
+      }
+
+      paginacionDiv.appendChild(btn);
+    });
+  }
+
+
+</script>
+
+<!--Script para modificar el required del fomulario de carga de archivos-->
+<script>
+  document.getElementById('btnPublicar').addEventListener('click', function (e) {
+    // Eliminar validación obligatoria de archivos al publicar
+    document.getElementById('archivoCuadroTurnos').removeAttribute('required');
+    document.getElementById('archivoSucesion').removeAttribute('required');
+  });
+</script>
+
+<!--Script para el Modal editar-->
+<script>
+  let filaSeleccionada = null;
+
+const camposTurno = [
+  "editEstacionIni",
+  "editEstacionFin",
+  "editHoraIni",
+  "editHoraFin",
+  "editParticularidades"
+];
+
+// Script boton editar de la tabla de datos, este boton abre el modal
+document.querySelectorAll(".btn-editar").forEach(boton => {
+  boton.addEventListener("click", function () {
+    filaSeleccionada = this.closest("tr");
+    const celdas = filaSeleccionada.querySelectorAll("td");
+
+    document.getElementById("editNombre").value = celdas[0].textContent;
+    document.getElementById("editCodigo").value = celdas[1].textContent;
+    document.getElementById("editCargo").value = celdas[3].textContent.trim();
+    document.getElementById("editTurno").value = celdas[2].textContent;
+    document.getElementById("editFecha").value = celdas[4].textContent;
+    document.getElementById("editEstacionIni").value = celdas[5].textContent.toUpperCase().trim();
+    document.getElementById("editEstacionFin").value = celdas[6].textContent.toUpperCase().trim();
+    document.getElementById("editHoraIni").value = celdas[7].textContent.trim();
+    document.getElementById("editHoraFin").value = celdas[8].textContent.trim();
+    document.getElementById("editParticularidades").value = celdas[9].textContent.trim();
+
+
+    //Datos originales
+    const datosOriginales = {
+      nombre: celdas[0].textContent,
+      codigo: celdas[1].textContent,
+      cargo: celdas[3].textContent.trim(),
+      turno: celdas[2].textContent,
+      fecha: celdas[4].textContent,
+      estacionIni: celdas[5].textContent.trim(),
+      estacionFin: celdas[6].textContent.trim(),
+      horaIni: celdas[7].textContent,
+      horaFin: celdas[8].textContent,
+      particularidades: celdas[9].textContent.trim()
+    };
+    localStorage.setItem("datosOriginales", JSON.stringify(datosOriginales));
+
+
+    //Deshabilitar campos relacionados al turno
+    camposTurno.forEach(id => {
+      document.getElementById(id).disabled = true;
+    });
+
+    document.getElementById("modalEditar").style.display = "block";
+  });
+});
+
+document.getElementById("cerrarModal").addEventListener("click", function () {
+  document.getElementById("modalEditar").style.display = "none";
+  
+});
+
+
+// Script boton buscar dentro del Modal, este busca en el modelo Horario la información referente al turno.
+/*document.getElementById("buscarTurno").addEventListener("click", function () {
+  const codigo = document.getElementById("editTurno").value.trim().toUpperCase();
+
+  if (!codigo) {
+    alert("Por favor ingrese un código de turno.");
+    return;
+  }
+
+  fetch(`/account/api/consultar_turno/?codigo=${codigo}`) // <<<------Recordar cambiar esta URL cuando el proeycto este ok.
+    .then(response => {
+      if (!response.ok) throw new Error("Turno no encontrado");
+      return response.json();
+    })
+    .then(data => {
+      if (data.length === 0) {
+        alert("No se encontró información del turno.");
+        return;
+      }
+
+      const turno = data[0];  
+
+      // Rellenar los campos con los datos obtenidos
+      document.getElementById("editEstacionIni").value = turno.inilugar || "";
+      document.getElementById("editEstacionFin").value = turno.finallugar || "";
+      document.getElementById("editHoraIni").value = turno.inihora || "";
+      document.getElementById("editHoraFin").value = turno.finalhora || "";
+      document.getElementById("editParticularidades").value = turno.observaciones || "";
+
+      // Habilitar los campos si estaban deshabilitados
+      ["editEstacionIni", "editEstacionFin", "editHoraIni", "editHoraFin", "editParticularidades"].forEach(id => {
+        document.getElementById(id).disabled = false;
+      });
+
+    })
+    .catch(error => {
+      console.error("Error al consultar el turno:", error);
+      alert("No se pudo consultar el turno.");
+    });
+}); */
+
+//Script del boton guardar cambios dentro del MOdal, este permite acentar los cambios en el modelo correspondiente, ya sea Empleados o Horario.
+document.getElementById("guardarCambios").addEventListener("click", function () {
+    const datosOriginales = JSON.parse(localStorage.getItem("datosOriginales") || "{}");
+
+    const datosNuevos = {
+        nombre : document.getElementById("editNombre").value,
+        codigo : document.getElementById("editCodigo").value,
+        cargo : document.getElementById("editCargo").value,
+        turno : document.getElementById("editTurno").value,
+        fecha : document.getElementById("editFecha").value,
+        estacionIni : document.getElementById("editEstacionIni").value,
+        estacionFin : document.getElementById("editEstacionFin").value,
+        horaIni : document.getElementById("editHoraIni").value,
+        horaFin : document.getElementById("editHoraFin").value,
+        particularidades : document.getElementById("editParticularidades").value
+
+    }
+
+    if(datosOriginales.nombre !== datosNuevos.nombre || datosOriginales.codigo !== datosNuevos.codigo || datosOriginales.cargo !== datosNuevos.cargo){
+      /*Actualización de datos del empleado*/
+      alert("Se modifico el empleado")
+      
+    }else if(datosOriginales.turno !== datosNuevos.turno || datosOriginales.estacionIni !== datosNuevos.estacionIni 
+    || datosOriginales.estacionFin !== datosNuevos.estacionFin || datosOriginales.horaIni !== datosNuevos.horaIni 
+    || datosOriginales.horaFin !== datosNuevos.horaFin || datosOriginales.particularidades !== datosNuevos.particularidades){
+
+        //alert("se modifico el turno")
+        /*Actualización de datos del turno*/
+      if(datosNuevos.turno !== ""){
+          if(datosNuevos.turno !== "COMPE" && datosNuevos.turno !== "LIBRE" && datosNuevos.turno !== "FUNDA" && datosNuevos.turno !== "SUSPEN"){ // SRM548
+              if(datosNuevos.estacionIni !== "" && datosNuevos.estacionFin !== "" && datosNuevos.horaIni !== "" && datosNuevos.horaFin !== "" && datosNuevos.particularidades !==  ""){
+                  
+                fetch("http://localhost:8000/account/api/actualizar_turno/",{
+                  method:"POST",
+                  headers:{"Content-Type": "application/json",
+                          "X-CSRFToken": getCookie("csrftoken")},
+                  body: JSON.stringify({
+                    turno: datosNuevos.turno.toUpperCase(),
+                    inilugar: datosNuevos.estacionIni.toUpperCase(),
+                    finallugar: datosNuevos.estacionFin.toUpperCase(),
+                    inihora: datosNuevos.horaIni,
+                    finalhora: datosNuevos.horaFin,
+                    observaciones: datosNuevos.particularidades.toUpperCase()
+                  })
+                })
+                .then(response => response.json())
+                .then(data => { 
+                  Swal.fire({
+                    icon: "success",
+                    title: "Correcto",
+                    text: data.message,
+                      }).then(()=>{
+                        localStorage.clear();
+                        window.location.reload();
+                      })
+                  
+
+                  
+                })
+                .catch(error => console.error("Error en la actualización"))
+
+              }else{
+                  alert("Se dectaron campos vacios en la estación de inicio - final u horas del turno")
+              }
+            
+          }
+      }else{
+         Swal.fire({
+                    icon: "warning",
+                    title: "Advertencia",
+                    text: "Se detectaron campos vacios"
+                    });
+      }
+
+    }else{
+      Swal.fire({
+                    icon: "warning",
+                    title: "Advertencia",
+                    text: "No se modifico ningun detalle del servicio"
+                    });
+    }
+
+        function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+  document.getElementById("modalEditar").style.display = "none";
+});
+
+
+// Habilitar los campos de detalle del turno-servicio, si el usuario hace clic en el input de turno.
+document.getElementById("editTurno").addEventListener("focus", function () {
+  camposTurno.forEach(id => {
+    document.getElementById(id).disabled = false;
+  });
+});
+
+// Limpiar campos si el valor es LIBRE o FUNDA
+document.getElementById("editTurno").addEventListener("input", function () {
+  const turno = this.value.trim().toUpperCase();
+
+  if (["COMPE", "LIBRE", "FUNDA","SUSPEN"].includes(turno)) {
+    camposTurno.forEach(id => {
+      document.getElementById(id).value = "";
+    });
+  }else if(["CAF","RECERT"].includes(turno)){
+    document.getElementById("editEstacionIni").value = "PBE";
+    document.getElementById("editEstacionFin").value = "PBE";
+    document.getElementById("editHoraIni").value = "";
+    document.getElementById("editHoraFin").value = "";
+        if(["CAF"].includes(turno)){
+            document.getElementById("editParticularidades").value = "CAPACITACIÓN CAF";
+        }else{
+            document.getElementById("editParticularidades").value = "RECERTIFICACIÓN";
+        }
+    
+  }
+  
+});
+
+// Botón cerrar manual desde el boton
+
+ document.getElementById("cerrarBotonManual").addEventListener("click", function () {
+    document.getElementById("modalEditar").style.display = "none";
+  });
+
+</script>
+
+<!-- Script para el modal Eliminar - Horario -->
+ <script>
+    function abrirModalHorarios(){
+
+      const modal = document.getElementById("modalHorarios");
+      const contenedor = document.getElementById("contenidoHorarios");
+
+      contenedor.innerHTML = "<p> Cargando datos </p>"
+    
+      modal.style.display = "block"
+      
+      fetch("{% url 'traer_horarios' %}", {
+       /* headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }*/
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.horarios && data.horarios.length > 0){
+        const csrfToken = document.getElementById("csrfTokenGlobal").value;
+         const html = `
+              <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th>Nombre Horario</th>
+                    <th>Fecha Vigencia</th>
+                    <th>Fecha Carga</th>
+                    <th>Turnos Cargados</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${
+                    data.horarios.map(h => `
+                      <tr>
+                        <td>${h.horario}</td>
+                        <td>${h.fechavigencia}</td>
+                        <td>${h.fecha_carga}</td>
+                        <td>${h.numeroDatos}</td>
+                        <td>
+                          <form action="/account/editarHorario.html/" method="POST">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                            <input type="hidden" name="horario" value="${h.horario}">
+                            <input type="hidden" name="fechavigencia" value="${h.fechavigencia}">
+                            <input type="hidden" name="fecha_carga" value="${h.fecha_carga}">
+                            <button class="btn-editar" type="submit">Editar</button>
+                          </form>
+                        </td>
+                        <td> <button class="btn-eliminar" onclick="eliminarHorario('${h.horario}', '${h.fechavigencia}', '${h.fecha_carga}')">Eliminar</button> </td>
+                        
+                      </tr>
+                    `).join('')
+                    }
+                </tbody>
+              </table>
+            `;
+            
+            contenedor.innerHTML = html;
+        }else{
+          contenedor.innerHTML = "<p>No hay horarios recientes.</p>";
+        }
+
+      })
+      .catch(error => {
+      contenedor.innerHTML = "<p>Error al cargar los horarios.</p>";
+      console.error(error);
+      });
+
+    }
+
+    function eliminarHorario(horario, fechaVigencia,fechaCarga){
+    
+      fetch("{% url 'eliminar_horario' %}",{
+        method : "POST",
+        headers : { 'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')},
+        body: JSON.stringify({
+          'horario': horario,
+          'fechavigencia': fechaVigencia,
+          'fecha_carga': fechaCarga
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.success){
+          cerrarModalHorarios();
+          Swal.fire({
+            icon: "success",
+            title: "Eliminado",
+            text: data.message
+        });
+        }else{
+            cerrarModalHorarios();
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: data.message,
+              
+            });
+        }
+      })
+      .catch(error => { 
+        console.error("Error al eliminar: ", error);
+        alert("Existe una relacion");
+      })
+
+    }
+
+        function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+  function cerrarModalHorarios() {
+    document.getElementById("modalHorarios").style.display = "none";
+  }
+</script>
+
+{% endblock %}

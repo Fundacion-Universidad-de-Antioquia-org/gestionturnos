@@ -1,0 +1,673 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block styles %}
+
+<!--Estilos para el panel de adm-->
+<style>
+#panelControl {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  justify-content: flex-start;
+  align-items: center;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+#panelControl button {
+  background: #8fc415; /* verde corporativo */
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#panelControl button:hover {
+  background-color: #174427;
+  transform: translateY(-1px);
+}
+
+#panelControl button:active {
+  background-color: #133820;
+  transform: translateY(1px);
+}
+
+</style>
+
+
+{% endblock%}
+
+{% block content%}
+
+<!-- Banner contenedor -->
+<div class="usuario-bar position-relative">
+
+<!-- Izquierda: Foto + saludo -->
+<div class="d-flex align-items-center flex-shrink-0">
+  <img src="{% static 'images/admin_img.png' %}" 
+       alt="Foto de perfil" class="perfil-img">
+  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+</div>
+
+  <!-- Centro (posición absoluta centrada) -->
+  <div class="position-absolute top-50 start-50 translate-middle text-center">
+    <h4 class="titulo-template m-0">Editar Horarios</h4>
+  </div>
+
+  <!-- Derecha -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+  </form>
+
+</div>
+<!--Modal insertar turnos -->
+<div  class="modal-custom" id="modalInsertarTurnos">
+  <div class="modal-content-custom">
+      <div class="modal-header-custom">
+        Insertar turno
+        <span class="cerrar-modal" id="cerrarModal">&times;</span>
+      </div>
+
+    <label>Nombre horario</label>
+    <input type="text" name="" id="editHorario" readonly> 
+
+    <label >Versión</label>
+    <input type="text" id="editVersion" readonly>
+
+    <label>Fecha vigencia</label>
+    <input type="datetime" id="editFechaVigencia" readonly>
+
+     <label>Fecha carga</label>
+    <input type="datetime" id="editFechaCarga" readonly>
+
+    <label>Turno</label>
+    <input type="text" name="" id="editTurno"> 
+
+    <label>Circulación de inicio</label>
+    <input type="text" id="editCirculacionIni">
+
+    <label>Circulación de final</label>
+    <input type="text" id="editCirculacionFin">
+
+    <label>Estación de inicio</label>
+    <input type="text" id="editEstacionIni">
+
+    <label>Estación final</label>
+    <input type="text" id="editEstacionFin">
+
+    <label>Hora de inicio</label>
+    <input type="time" id="editHoraIni">
+
+    <label>Hora final</label>
+    <input type="time" id="editHoraFin" step="60">
+
+    <label for="">Duracion efectiva</label>
+    <input type="text" id="editDuracion">
+    
+    <label>Particularidades</label>
+    <textarea name="" id="editParticularidades" class="campo-textarea" rows="7"></textarea>
+    
+
+    <div style="text-align: right; margin-top: 15px;">
+      
+        
+        <button id="cerrarBotonManual">Cerrar</button>
+        <button id="guardarCambios" type="submit">Guardar</button>
+       
+        
+    </div>
+
+    
+  </div>
+</div>
+
+<!--Panel de control-->
+<div id="panelControl">
+    <button id="insertarTurno" onclick="">➕ Nuevo turno</button>
+</div>
+
+   <!-- Acordeón de filtros -->
+<div class="accordion-container">
+  <div class="accordion-header">Filtros de Búsqueda</div>
+  <div class="accordion-body">
+    <div class="filtros-horizontal">
+      <div class="filtro-item">
+        <label for="filtroCodigo">Código turno:</label>
+        <input type="text" id="filtroTurno" placeholder="Buscar por turno">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroEstacionIni">Estación inicial:</label>
+        <input type="text" id="filtroEstacionIni" placeholder="Buscar por estación inicial">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroEstacionFin">Estación final:</label>
+        <input type="text" id="filtroEstacionFin" placeholder="Buscar por estación final">
+      </div>
+       <div class="filtro-item">
+        <label for="filtroCirculacionIni">Circulació inicial:</label>
+        <input type="text" id="filtroCirculacionIni" placeholder="Buscar por circulación inicial">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCirculacionFin">Circulació final:</label>
+        <input type="text" id="filtroCirculacionFin" placeholder="Buscar por circulación final">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla de datos-->
+    {% for th in turnos_por_horario %}
+            {% if forloop.first %}
+                <div id="datosTurnos"
+                data-horario="{{ th.horario }}"
+                data-fecha-vigencia="{{ th.fechavigencia|date:"d/m/Y" }}"
+                data-version="{{ th.version }}"
+                data-fecha-carga="{{ th.fecha_carga|date:"d/m/Y" }}">
+                </div>
+            {% endif %}
+        {% endfor %}
+
+       <table class="styled-table" id="tablaDatos">
+    <thead>
+        <tr>
+            <th>Nombre horario</th>
+            <th>Fecha vigencia</th>
+            <th>Fecha carga</th>
+            <th>Versión</th>
+            <th>Código turno</th>
+            <th>Estación de inicio</th>
+            <th>Hora de inicio</th>
+            <th>N° Circulación inicio</th>
+            <th>Estación final</th>
+            <th>Hora final</th>
+            <th>Circulación final</th>
+            <th>Duración</th>
+            <th>Particularidades</th>
+            <th>Editar</th>
+        </tr>
+    </thead>
+    <tbody style="display: none;" id="tablaBody">
+        {% for th in turnos_por_horario %}
+        <tr>
+            <td>{{ th.horario }}</td>
+            <td>{{ th.fechavigencia|date:"d/m/Y" }}</td>
+            <td>{{ th.fecha_carga|date:"d/m/Y" }}</td>
+            <td>{{ th.version }}</td>
+            <td>{{ th.turno }}</td>
+            <td>{{ th.inilugar }}</td>
+            <td>{{ th.inihora|time:"H:i"}}</td>
+            <td>{{ th.inicir }}</td>
+            <td>{{ th.finallugar }}</td>
+            <td>{{ th.finalhora|time:"H:i" }}</td>
+            <td>{{ th.finbalcir }}</td>
+            <td>{{ th.duracion }}</td>
+            <td>{{ th.observaciones }}</td>
+            <td>
+                <button class="btn-editar">Editar</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!--Modal  - editar por filas-->
+<div id="modalEditar" class="modal-custom">
+  <div class="modal-content-custom">
+      <div class="modal-header-custom">
+          📑Editar turno - horario
+        <span class="cerrar-modal-modalEditar" id="cerrarModalEditar">&times;</span>
+      </div>
+    <h3>Editar información del turno</h3>
+    <label>Nombre horario</label>
+    <input type="text" name="" id="editHorarioEditar" readonly> 
+
+     <label>Fecha vigencia</label>
+    <input type="datetime" id="editFechaVigenciaEditar" readonly>
+
+    <label>Fecha carga</label>
+    <input type="datetime" id="editFechaCargaEditar" readonly>
+
+    <label>Código turno</label>
+    <input type="text" id="editTurnoEditar" readonly>
+
+    <label>Estación de inicio</label>
+    <input type="text" id="editEstacionIniEditar">
+
+    <label>Estación Final</label>
+    <input type="text" id="editEstacionFinEditar">
+
+    <label>Hora de inicio</label>
+    <input type="text" id="editHoraIniEditar">
+
+    <label>N° Circulción inicio</label>
+    <input type="text" id="editCirIniEditar">
+
+    <label>Hora final</label>
+    <input type="text" id="editHoraFinEditar">
+
+    <label>N° Circulción final</label>
+    <input type="text" id="editCirFinEditar">
+
+    <label>Duración</label>
+    <input type="text" id="editDuracionEditar">
+
+    <label>Particularidades</label>
+    <textarea name="" id="editParticularidadesEditar" class="campo-textarea" rows="7"></textarea>
+    
+    <div style="text-align: right; margin-top: 15px;">
+      
+        <button id="cerrarBotonManualModalEditar">Cerrar</button>
+        <button id="guardarCambiosModalEditar" type="submit">Guardar</button>
+    </div>
+
+  </div>
+</div>
+{% endblock%}
+
+{% block scripts%}
+<!--Script para cargar el DOM -->
+<script>
+    document.addEventListener("DOMContentLoaded",function(){
+      document.getElementById("tablaBody").style.display = "";
+      const headers = document.querySelectorAll(".accordion-header");
+      headers.forEach(header => {
+      header.addEventListener("click", () => {
+      const body = header.nextElementSibling;
+
+      // Alternar clases
+      header.classList.toggle("active");
+      body.classList.toggle("active");
+    });
+  });
+
+    })
+</script>
+
+<!--Script para abrir y cerrar el modal el Modal-->
+<script>
+
+    document.getElementById("insertarTurno").addEventListener("click",function(){
+    
+        const datos = document.getElementById("datosTurnos");
+
+        const horario = datos.dataset.horario;
+        const fechaVigencia = datos.dataset.fechaVigencia;
+        const version = datos.dataset.version;
+        const fechaCarga = datos.dataset.fechaCarga;
+
+        document.getElementById("editHorario").value = horario;
+        document.getElementById("editFechaVigencia").value = fechaVigencia;
+        document.getElementById("editVersion").value = version;
+        document.getElementById("editFechaCarga").value = fechaCarga;
+
+        document.getElementById("modalInsertarTurnos").style.display = "block";
+
+        document.getElementById("editHoraFin").addEventListener("input", function(){
+
+            const horaInicio = document.getElementById("editHoraIni").value;
+            const horaFinal = document.getElementById("editHoraFin").value;
+
+            if (horaInicio && horaFinal){
+                 const duracion = convertirHoraAMinutos(horaFinal) - convertirHoraAMinutos(horaInicio)
+                document.getElementById("editDuracion").value = convertirMinutosAFormatoHora(duracion);
+            }
+           
+        })
+
+        function convertirHoraAMinutos(horaStr) {
+            const [horas, minutos] = horaStr.split(":").map(Number);
+            return horas * 60 + minutos;
+
+            }
+
+        function convertirMinutosAFormatoHora(minutosTotales) {
+          const horas = Math.floor(minutosTotales / 60);
+          const minutos = minutosTotales % 60;
+
+          const horasStr = horas.toString().padStart(2, "0");
+          const minutosStr = minutos.toString().padStart(2, "0");
+
+          return `${horasStr}:${minutosStr}`;
+}
+
+
+
+    })
+
+    document.getElementById("cerrarBotonManual").addEventListener("click",function(){
+        document.getElementById("modalInsertarTurnos").style.display = "none";
+    })
+
+    document.getElementById("cerrarModal").addEventListener("click",function(){
+        document.getElementById("modalInsertarTurnos").style.display = "none";
+    })
+
+</script>
+
+  <!--Script para guardar los datos del modal e insertar-->
+<script>
+  document.getElementById("guardarCambios").addEventListener("click",function(){
+
+        horario = document.getElementById("editHorario").value.toUpperCase();
+
+        fechaVigenciaSinformato = document.getElementById("editFechaVigencia").value.toUpperCase();
+        const partes = fechaVigenciaSinformato.split("/");  // ["02", "07", "2025"]
+        const fechaVigencia = `${partes[2]}-${partes[1]}-${partes[0]}`; // "2025-07-02"
+
+        fechaCargaSinfoormato = document.getElementById("editFechaCarga").value
+        const partesFecha = fechaCargaSinfoormato.split("/");  // ["02", "07", "2025"]
+        const fechaCarga = `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`;
+
+        version = document.getElementById("editVersion").value.toUpperCase();
+        turno = document.getElementById("editTurno").value.toUpperCase();
+        cirIni= document.getElementById("editCirculacionIni").value.toUpperCase();
+        cirFin = document.getElementById("editCirculacionFin").value.toUpperCase();
+        estaIni = document.getElementById("editEstacionIni").value.toUpperCase();
+        estaFin = document.getElementById("editEstacionFin").value.toUpperCase();
+        horaIni = document.getElementById("editHoraIni").value.toUpperCase();
+        horaFin = document.getElementById("editHoraIni").value.toUpperCase();
+        duracion = document.getElementById("editDuracion").value.toUpperCase();
+        particularidades = document.getElementById("editParticularidades").value.toUpperCase();
+    
+
+
+        const camposHorario = [horario, fechaVigencia,fechaCarga,turno,cirIni,cirFin,estaIni,estaFin,horaIni,horaFin,duracion,particularidades];
+
+    const validarVacios = camposHorario.some(valor => valor.trim() == "");
+
+    if (validarVacios){
+        Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Se detectaron campos vacios"
+        });
+    }else{  
+            
+    fetch("{%url 'insertar_horario' %}",{
+        method : "POST",
+        headers: {'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')},
+        body : JSON.stringify({
+            horario: horario,
+            fechavigencia: fechaVigencia,
+            fechaimplementacion: fechaVigencia,
+            fecha_carga : fechaCarga,
+            version : version,
+            turno: turno,
+            inilugar: estaIni,
+            finallugar: estaFin,
+            inihora: horaIni,
+            finalhora: horaFin,
+            inicir : cirIni,
+            finbalcir : cirFin,
+            duracion : duracion,
+            observaciones : particularidades
+        }) 
+    })
+    .then(response => response.json())
+    .then(data => {
+            if (data.success){
+                    document.getElementById("modalInsertarTurnos").style.display = "none";
+                    Swal.fire({
+                    icon: "success",
+                    title: "Se inserto correctamente el turno",
+                    text: data.message
+                    }).then(function(){
+                      window.location.reload()
+                    })
+                    
+            }else{
+              document.getElementById("modalInsertarTurnos").style.display = "none"
+              Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: data.message,
+                    });
+            }
+    })
+
+
+
+    }
+
+    //Funcion que valida el token -> CSRFToken
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+  })
+</script>
+
+<!--Script filtros acordeon-->
+<script>
+  // Acordeón toggle
+ document.querySelectorAll('.accordion-header').forEach(header => {
+  header.addEventListener('click', () => {
+    const body = header.nextElementSibling;
+    body.style.display = (body.style.display === 'block') ? 'none' : 'block';
+  });
+});
+
+  // Elementos de filtro
+  const filtros = {
+    turno: document.getElementById('filtroTurno'),
+    estacionIni: document.getElementById('filtroEstacionIni'),
+    estacionFin: document.getElementById('filtroEstacionFin'),
+    cirulacionIni: document.getElementById('filtroCirculacionIni'),
+    cirulacionFin: document.getElementById('filtroCirculacionFin'),
+  };
+
+  // Asignar eventos
+  Object.values(filtros).forEach(input => {
+    input.addEventListener('input', aplicarFiltros);
+    input.addEventListener('change', aplicarFiltros);
+  });
+
+ function aplicarFiltros() {
+  const valorTurno = filtros.turno.value.toLowerCase().trim();
+  const valorEstacionIni = filtros.estacionIni.value.toLowerCase().trim(); 
+  const valorEstacionFin = filtros.estacionFin.value.toLowerCase().trim();  
+  const valorCirulacionIni = filtros.cirulacionIni.value.toLowerCase().trim();
+  const valorCirulacionFin = filtros.cirulacionFin.value.toLowerCase().trim();
+  
+
+  document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
+    
+    const tTurno = row.cells[4].textContent.toLowerCase().trim();
+    const tEstacionIni = row.cells[5].textContent.toLowerCase().trim();
+    const tEstacionFin = row.cells[8].textContent.trim().toLowerCase().trim();
+    const tCirculacionIni = row.cells[7].textContent.toLowerCase().trim();
+    const tCirculacionFin = row.cells[10].textContent.toLowerCase().trim();
+
+
+  
+    const coincideTurno = !valorTurno || tTurno.includes(valorTurno);
+    const coincideEstacionIni= !valorEstacionIni || tEstacionIni === valorEstacionIni;
+    const coincideEstacionFin= !valorEstacionFin || tEstacionFin === valorEstacionFin;
+    const coincideCirulacionIni = !valorCirulacionIni || tCirculacionIni === valorCirulacionIni;
+    const coincideCirulacionFin = !valorCirulacionFin || tCirculacionFin === valorCirulacionFin;
+
+    row.style.display = (coincideTurno && coincideEstacionIni && coincideEstacionFin && coincideCirulacionIni && coincideCirulacionFin) ? '' : 'none';
+  });
+}
+
+</script>
+
+<!--Script para el Modal editar-->
+<script>
+  let filaSeleccionada = null;
+
+// Script boton editar de la tabla de datos, este boton abre el modal
+document.querySelectorAll(".btn-editar").forEach(boton => {
+  boton.addEventListener("click", function () {
+    filaSeleccionada = this.closest("tr");
+    const celdas = filaSeleccionada.querySelectorAll("td");
+
+    document.getElementById("editHorarioEditar").value = celdas[0].textContent;
+    document.getElementById("editFechaVigenciaEditar").value = celdas[1].textContent;
+    document.getElementById("editFechaCargaEditar").value = celdas[2].textContent;
+    document.getElementById("editTurnoEditar").value = celdas[4].textContent;
+    document.getElementById("editEstacionIniEditar").value = celdas[5].textContent.toUpperCase().trim();
+    document.getElementById("editHoraIniEditar").value = celdas[6].textContent.toUpperCase().trim();
+    document.getElementById("editCirIniEditar").value = celdas[7].textContent.toUpperCase().trim();
+    document.getElementById("editEstacionFinEditar").value = celdas[8].textContent.toUpperCase().trim();
+    document.getElementById("editHoraFinEditar").value = celdas[9].textContent.trim();
+    document.getElementById("editCirFinEditar").value = celdas[10].textContent.toUpperCase().trim();
+    document.getElementById("editDuracionEditar").value = celdas[11].textContent.trim();
+    document.getElementById("editParticularidadesEditar").value = celdas[12].textContent.trim();
+
+    //Datos originales
+    const datosOriginales = {
+      estacionIni: celdas[5].textContent.trim(),
+      estacionFin: celdas[9].textContent.trim(),
+      circulacionIni: celdas[7].textContent,
+      circulacionFin: celdas[10].textContent,
+      horaIni: celdas[6].textContent,
+      horaFin: celdas[9].textContent,
+      duracion: celdas[11].textContent,
+      particularidades: celdas[12].textContent.trim()
+    };
+    localStorage.setItem("datosOriginales", JSON.stringify(datosOriginales));
+    document.getElementById("modalEditar").style.display = "block";
+  });
+});
+
+  document.getElementById("cerrarModalEditar").addEventListener("click", function () {
+  document.getElementById("modalEditar").style.display = "none";
+  
+});
+
+document.getElementById("guardarCambiosModalEditar").addEventListener("click", function () {
+   
+
+    const datosOriginales = JSON.parse(localStorage.getItem("datosOriginales") || "{}");
+
+    const datosNuevos = {
+        turno: document.getElementById("editTurnoEditar").value,
+        estacionIni : document.getElementById("editEstacionIniEditar").value,
+        estacionFin : document.getElementById("editHoraFinEditar").value,
+        circulacionIni : document.getElementById("editCirIniEditar").value,
+        circulacionFin : document.getElementById("editCirFinEditar").value,
+        horaIni : document.getElementById("editHoraIniEditar").value,
+        horaFin : document.getElementById("editHoraFinEditar").value,
+        duracion : document.getElementById("editDuracionEditar").value,
+        particularidades : document.getElementById("editParticularidadesEditar").value
+        
+
+    }
+
+    if(datosOriginales.estacionIni !== datosNuevos.estacionIni || datosOriginales.estacionFin !== datosNuevos.estacionFin || 
+        datosOriginales.horaIni !== datosNuevos.horaIni||
+        datosOriginales.horaFin !== datosNuevos.horaFin ||
+        datosOriginales.circulacionIni !== datosNuevos.circulacionIni || 
+        datosOriginales.circulacionFin !== datosNuevos.circulacionFin ||
+        datosOriginales.duracion !== datosNuevos.duracion ||
+        datosOriginales.particularidades !== datosNuevos.particularidades){
+         /*alert("se modifico el turno")*/
+        /*Actualización de datos del turno*/
+
+        if(datosNuevos.estacionIni !== "" && datosNuevos.estacionFin !== "" && datosNuevos.horaIni !== "" && datosNuevos.horaFin !== "" && datosNuevos.particularidades !==  ""){
+         
+            fetch("http://localhost:8000/account/api/actualizar_turno/",{
+                  method:"POST",
+                  headers:{"Content-Type": "application/json",
+                          "X-CSRFToken": getCookie("csrftoken")},
+                  body: JSON.stringify({
+                    turno: datosNuevos.turno.toUpperCase(),
+                    inilugar: datosNuevos.estacionIni.toUpperCase(),
+                    finallugar: datosNuevos.estacionFin.toUpperCase(),
+                    inihora: datosNuevos.horaIni,
+                    finalhora: datosNuevos.horaFin,
+                    circulacionIni : datosNuevos.circulacionIni,
+                    circulacionFin : datosNuevos.circulacionFin,
+                    duracion : datosNuevos.duracion,
+                    observaciones: datosNuevos.particularidades.toUpperCase()
+                  })
+                })
+                .then(response => response.json())
+                .then(data => { 
+                  Swal.fire({
+                    icon: "success",
+                    title: "Correcto",
+                    text: data.message,
+                    }).then(()=>{
+                      localStorage.clear();
+                      window.location.reload();
+                    });
+                })
+                .catch(error => console.error("Error en la actualización"))
+        }else{
+            Swal.fire({
+                    icon: "warning",
+                    title: "Advertencia",
+                    text: "Se dectaron campos vacios en la estación de inicio - final u horas del turno"
+                    });
+        }
+        
+      }else{
+          Swal.fire({
+                    icon: "warning",
+                    title: "Advertencia",
+                    text: "No se modifico ningun detalle del servicio"
+                    });
+      }
+
+        function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+  document.getElementById("modalEditar").style.display = "none";
+});
+
+
+// Habilitar los campos de detalle del turno-servicio, si el usuario hace clic en el input de turno.
+document.getElementById("editTurno").addEventListener("focus", function () {
+  camposTurno.forEach(id => {
+    document.getElementById(id).disabled = false;
+  });
+});
+
+
+// Botón cerrar manual desde el boton
+
+ document.getElementById("cerrarBotonManualModalEditar").addEventListener("click", function () {
+    document.getElementById("modalEditar").style.display = "none";
+  });
+
+</script>
+{% endblock %}
