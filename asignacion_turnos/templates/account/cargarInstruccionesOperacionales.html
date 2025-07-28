@@ -294,7 +294,7 @@
     <h4 class="titulo-template">Cargar IO - Comunicaciones</h4>
   </div>
 
-  <form action="{% url 'logout' %}" method="post">
+  <form action="{% url 'identity.logout' %}" method="post">
     {% csrf_token %}
     <button class="btn-danger">Cerrar sesión</button>
   </form>

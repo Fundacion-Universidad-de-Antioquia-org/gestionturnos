@@ -20,7 +20,7 @@
   <!-- Título -->
   <div class="titulo-template">Configuraciones y parametros de consulta</div>
   <!-- Logout -->
-  <form action="{% url 'logout' %}" method="post">
+  <form action="{% url 'identity.logout' %}" method="post">
     {% csrf_token %}
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
