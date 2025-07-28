@@ -20,15 +20,15 @@ from asignacion_turnos.models import Sucesion
 from asignacion_turnos.models import Horario , Cambios_de_turnos, Estados_servicios,Empleado_Oddo, Parametros
 from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
+from django.conf import settings
 
-
-@login_required
-def vista_home(request):
+@settings.AUTH.login_required
+def vista_home(request, *, context):
     return render(request,'account/home.html')
 
 
-@login_required
-def vista_cargarSucesionOperador(request):
+@settings.AUTH.login_required
+def vista_cargarSucesionOperador(request, *, context):
 
     usuarioLogeado = str(request.user).upper()
     sucesionOperadores = Sucesion.objects.all()
@@ -61,8 +61,8 @@ def vista_cargarSucesionOperador(request):
 
     })
 
-@login_required
-def vista_cargarSucesionTrenes(request):
+@settings.AUTH.login_required
+def vista_cargarSucesionTrenes(request, *, context):
 
     resultadosCargarCuadro= None
     resultadosCargarSucesion= None
@@ -136,8 +136,8 @@ def vista_cargarSucesionTrenes(request):
         'datos_sucesion':sucesion_mas_particularidades
     })
 
-@login_required
-def vista_configuraciones(request):
+@settings.AUTH.login_required
+def vista_configuraciones(request, *, context):
 
     if request.method == "GET":
         if Parametros.objects.all() is not None and Estados_servicios is not None:
@@ -151,7 +151,7 @@ def vista_configuraciones(request):
         return Response({"success":False , "message":"Error de peticion"})
         
 
-@login_required
+@settings.AUTH.login_required
 def get_solicitudes_cambios_turnos(request):
     usuarioLogeado = str(request.user).upper()
     if request.method == "GET":
@@ -161,8 +161,8 @@ def get_solicitudes_cambios_turnos(request):
         'usuarioLogeado':usuarioLogeado
         })
     
-@login_required
-def editar_horario(request):
+@settings.AUTH.login_required
+def editar_horario(request, *, context):
 
     horarioNombre = request.POST.get('horario')
     fechavigencia = request.POST.get('fechavigencia')
@@ -181,8 +181,8 @@ def editar_horario(request):
     return redirect('home')
 
 
-@login_required
-def vista_cargarIo(request):
+@settings.AUTH.login_required
+def vista_cargarIo(request, *, context):
     if request.method == "GET":
         usuarioLogeado = str(request.user).upper()
         return render(request,'account/cargarInstruccionesOperacionales.html',{

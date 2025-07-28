@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from identity.django import Auth
 
 # Ruta base del proyecto
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
     'asignacion_turnos.apps.AsignacionTurnosConfig',
     'rest_framework', 
     'corsheaders',
+    'identity',  # Asegúrate de que este es el nombre correcto del paquete
 ]
 
 MIDDLEWARE = [
@@ -82,7 +84,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'gestion_turnos.wsgi.application'
-
+LOGIN_URL = "/login"
+LOGIN_REDIRECT_URL = "/home/"    # Or any other endpoint
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -112,6 +115,14 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+AUTH = Auth(
+os.getenv('CLIENT_ID'),
+client_credential=os.getenv('CLIENT_SECRET'),
+redirect_uri=os.getenv('REDIRECT_URI'),
+#scopes=os.getenv('SCOPE', "").split(),
+#scopes= ["User.Read", "GroupMember.Read.All", "Directory.Read.All", "User.Read.All", "User.ReadBasic.All"],
+authority=os.getenv('AUTHORITY'),
+)
 
 
 # Internationalization
@@ -138,8 +149,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = '/account/home.html/' #Si estas logeado te redirije a la pagina admin_gestion
-LOGIN_URL = 'login' 
+
 LOGOUT_REDIRECT_URL_ALLOWED = True
 
 CORS_ALLOW_ALL_ORIGINS = True

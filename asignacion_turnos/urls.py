@@ -2,10 +2,10 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from .forms import LoginForm
-
+from django.views.generic import TemplateView
 urlpatterns = [
     path('login/', auth_views.LoginView.as_view(authentication_form=LoginForm), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(template_name='registration/logged_out.html'), name='logout'),
+    path('logout/', TemplateView.as_view(template_name="home.html")),    
     path('sucesiones_trenes/',views.vista_cargarSucesionTrenes, name= 'vista_cargarSucesionTrenes'),
     path('operadores/',views.vista_cargarSucesionOperador, name='sucesion_operadores'),
     path ('home.html/',views.vista_home, name = 'home'),
