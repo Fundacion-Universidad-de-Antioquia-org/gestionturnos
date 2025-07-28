@@ -152,7 +152,7 @@ def vista_configuraciones(request, *, context):
         
 
 @settings.AUTH.login_required
-def get_solicitudes_cambios_turnos(request):
+def get_solicitudes_cambios_turnos(request, *, context):
     usuarioLogeado = str(request.user).upper()
     if request.method == "GET":
        cargarDatosSolicitudes =  Cambios_de_turnos.objects.all()
