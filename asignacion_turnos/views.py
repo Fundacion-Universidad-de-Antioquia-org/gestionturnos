@@ -23,7 +23,7 @@ from .resources.registrarLog import send_log
 
 
 def vista_principal(request):
-    return render(request, 'home.html/')
+    return render(request, 'registration/login.html/')
 
 @login_required
 def vista_home(request):
