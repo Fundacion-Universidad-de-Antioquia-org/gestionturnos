@@ -1,11 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Poppins", serif;
-    font-size: 14px;
+    font-family: "Poppins", "sans-serif";
+    font-size: 12px;
 }
 
 body {
@@ -45,7 +46,7 @@ body {
     left: 0;
     width: 260px;
     height: 100vh;
-    background-color: #1d5031;
+    background-color: #222121;
     transition: all 0.4s ease;
 }
 
@@ -154,11 +155,11 @@ body {
     align-items: center;
     text-decoration: none;
     border-radius: 8px;
-    border: 1px solid #1d5031;
+    border: 1px solid #599b31;
     transition: 0.4s ease;
 }
 
-.sidebar-nav .nav-item:hover > .nav-link:not(.dropdown-title) {
+.sidebar-nav .nav-item:hover > .nav-link:not(.dropdown-title) {  /*Boton que desplega */
     color: #151A2E;
     background-color: #EEF2FF;
 }
@@ -176,11 +177,11 @@ body {
     position: absolute;
     bottom: 30px;
     width: 100%;
-    background-color: #1D5031;
+    background-color: #222121;
 }
 
 .header-logo {
-    display: flex;
+    display: flex;  
     align-items: center;
     gap: 12px;
     text-decoration: none;
@@ -238,7 +239,7 @@ body {
     height: auto !important;
     overflow: visible;
     pointer-events: none;
-    background: #1D5031;
+    background: #000000;
     padding: 7px 10px 7px 24px;
     border-radius: 0 10px 10px 0;
     min-width: 180px;
@@ -270,15 +271,16 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin: 25px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     /*font-size: 14px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+    
     /*min-width: unset;*/
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
      /* que use todo el ancho disponible */
 }
 
 .styled-table thead tr {
-    background-color: #1D5031;
+    background-color: #276647;
     color: #ffffff;
     text-align: left;
 }
@@ -322,14 +324,11 @@ body {
 }
 
 .styled-table thead tr {
-    background-color: #1D5031;
+    background-color: #276647;
     color: #ffffff;
     text-align: left;
     box-shadow: inset 0 -1px 0 rgba(255,255,255,0.1);
 }
-
-
-/* Estilos del template admin.html*/
 
 /* Estilo para títulos */
 .container h1, .container h2 {
@@ -457,8 +456,8 @@ button.btn-primary:active {
 }
 
 button.btn-secondary {
-    background-color: #0f9e46  ;
-    border-color: #0f9e46 ;
+    background-color: #e93c11  ;
+    border-color: #e93c11 ;
     font-weight: 500;
     padding: 8px 16px;
     border-radius: 6px;
@@ -471,8 +470,9 @@ button.btn-secondary {
 }
 
 button.btn-secondary:hover {
-    background-color: #cfc20f;
-    border-color: #cfc20f;
+    background-color: #fffffe;
+    border-color: #fffffe;
+    color: #e93c11;
     transform: scale(1.05); /* Animación suave */
 }
 
@@ -506,8 +506,8 @@ button.btn-third:active {
 }
 
 button.btn-fourth{
-    background-color: #cc2610  ;
-    border-color: #f13b04 ;
+    background-color: #14c4db  ;
+    border-color: #14c4db ;
     font-weight: 500;
     padding: 8px 16px;
     border-radius: 6px;
@@ -521,8 +521,9 @@ button.btn-fourth{
 
 button.btn-fourth:hover {
 
-    background-color: #f06204;
-    border-color: #f06204;
+    background-color: #EEF2FF;
+    border-color: #EEF2FF;
+    color: #14c4db;
     transform: scale(1.05); /* Animación suave */
 }
 
@@ -539,7 +540,7 @@ button.btn-eliminar {
     border-radius: 6px;
     color: #fff;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     transition: background-color 0.3s ease, transform 0.2s ease;
     display: inline-flex;
     align-items: center;
@@ -560,13 +561,14 @@ button.btn-eliminar i {
     font-size: 14px;
 }
 
+/*Boton editar --> template editarHorario*/
 button.btn-editar {
   background-color: #2a3eb1;                /* Azul intermedio, profesional */
   border: 2px solid #1e2e91;                /* Borde marcado y contrastante */
   color: #ffffff;
   padding: 8px 18px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -616,7 +618,7 @@ button.btn-editar i {
 
 /* Header con degradado, esquinas redondeadas y flecha */
 .accordion-header {
-  background: linear-gradient(135deg, #1D5031, #3b7d4b);
+  background: linear-gradient(135deg, #5a9138, #276647);
   color: white;
   padding: 12px 16px;
   cursor: pointer;
@@ -637,8 +639,8 @@ button.btn-editar i {
 }
 
 /* Cuando esté abierto (añade .active vía JS al hacer click) */
-.accordion-header.active {
-  background: linear-gradient(135deg, #3b7d4b, #1D5031);
+.accordion-header.active { 
+  background: linear-gradient(135deg, #5a9138, #276647);
 }
 .accordion-header.active::after {
   transform: translateY(-50%) rotate(180deg);
@@ -792,6 +794,8 @@ button.btn-editar i {
 /* Botones */
 #guardarCambios,
 #cerrarBotonManual,
+#cerrarBotonManualEstados,
+#guardarCambiosEstados,
 #editarTablaDatos {
   background-color: #1D5031;
   color: white;
@@ -1316,6 +1320,388 @@ label {
   box-shadow: 0 0 4px rgba(29, 80, 49, 0.4);
 }
 
+
+/* Estilos para el template configuraciones*/
+#panelControl {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  justify-content: flex-start;
+  align-items: center;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+#panelControl button {
+ background-color: #5a9138  ;
+    border-color: #5a9138 ;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #EEF2FF;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#panelControl button:hover {
+  background-color: #fffffe;
+    border-color: #fffffe;
+    color: #0f9e46;
+    transform: scale(1.05); /* Animación suave */
+}
+
+#panelControl button:active {
+  transform: scale(0.98); /* Pequeño efecto al hacer click */
+}
+
+/*Estilo y configuracion del csss para ocultar la descripcion de la tabla de solicitudes GT*/
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .modal.fade.show {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-dialog {
+    margin: 10% auto;
+    width: 90%;
+    max-width: 600px;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .modal-content {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    position: relative;
+  }
+
+  .modal-title {
+    margin-top: 0;
+    color: #1D5031;
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .modal-texto {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+    white-space: pre-wrap;
+  }
+
+  .close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .close:hover {
+    color: #000;
+  }
+
+  .toggle-desc-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #0496eb;
+    transition: transform 0.2s ease;
+  }
+
+  .toggle-desc-btn:hover {
+    transform: scale(1.2);
+    color: #0496eb; 
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(-40px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+/* Modal solicitudes GT*/
+.modal-fechas-gt {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+
+.modal-fechas-gt-contenido {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 30px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.cerrar-fechas-gt {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+}
+
+.titulo-fechas-gt {
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.formulario-fechas-gt {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.input-fechas-gt {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.btn-cargar-fechas-gt {
+  background-color: #1a8f3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.btn-cargar-fechas-gt:hover {
+  background-color: #166c2f;
+}
+
+.modal-fechas-gt.mostrar {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/* Modal visor de archivos - solicitudes gt*/
+/* Overlay oculto por defecto */
+#modalVisorArchivo {
+  position: fixed; inset: 0; background: rgba(0,0,0,.65);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .25s ease, visibility .25s ease;
+  z-index: 2147483647;
+  display: grid; place-items: center;
+}
+
+/* Estado visible */
+#modalVisorArchivo.show {
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+
+/* Caja grande */
+#modalVisorArchivo .visor-dialog { width: min(96vw, 1100px); padding: 0 12px; }
+#modalVisorArchivo .visor-content {
+  background: #fff; border-radius: 12px; box-shadow: 0 12px 36px rgba(0,0,0,.35);
+  width: 100%; max-height: 88vh; overflow: hidden; position: relative;
+  transform: translateY(10px); opacity: 0; transition: transform .25s, opacity .25s;
+}
+#modalVisorArchivo.show .visor-content { transform: translateY(0); opacity: 1; }
+
+#modalVisorArchivo .visor-close {
+  position: absolute; top: 10px; right: 12px; font-size: 22px;
+  background: transparent; border: 0; cursor: pointer; line-height: 1;
+}
+
+#modalVisorArchivo .visor-header {
+  padding: 12px 16px; border-bottom: 1px solid #eee; display: flex; gap: 10px; align-items: center;
+}
+#modalVisorArchivo .visor-header a { color: #1d5031; font-weight: 600; text-decoration: none; }
+
+#modalVisorArchivo .visor-body {
+  padding: 0; height: calc(88vh - 48px); /* alto total menos header */
+  display: grid; place-items: center; background: #f8f9fa;
+}
+
+/* Contenido embebido */
+#modalVisorArchivo .visor-body iframe { width: 100%; height: 100%; border: 0; display: block; }
+#modalVisorArchivo .visor-body img { max-width: 100%; max-height: 100%; display: block; object-fit: contain; }
+
+/* ===== MODAL DESCRIPCIÓN PROFESIONAL ===== */
+.modal-descripcion-profesional .modal-dialog {
+  max-width: 650px;
+  margin: 2rem auto;
+}
+
+.modal-descripcion-profesional .modal-content {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  padding: 1.8rem;
+  animation: modalFadeIn 0.3s ease-in-out;
+}
+
+/* Animación entrada */
+@keyframes modalFadeIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Botón de cerrar */
+.modal-descripcion-profesional .close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+.modal-descripcion-profesional .close:hover {
+  color: #d63031;
+}
+
+/* Encabezado */
+.modal-descripcion-profesional .modal-header-custom-dos {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #2d3436;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+/* Texto general */
+.modal-descripcion-profesional p {
+  margin: 0.4rem 0;
+  font-size: 0.95rem;
+  color: #2f3640;
+}
+
+.modal-descripcion-profesional p strong {
+  color: #636e72;
+}
+
+/* Texto destacado */
+.modal-descripcion-profesional .modal-texto {
+  padding: 0.3rem 0.6rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #2d3436;
+}
+
+/* Botones */
+.modal-descripcion-profesional button {
+  margin-top: 0.6rem;
+  margin-right: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.modal-descripcion-profesional #btnVerAdjunto {
+  background-color: #0984e3;
+  color: white;
+}
+.modal-descripcion-profesional #btnVerAdjunto:hover {
+  background-color: #076bb3;
+}
+
+.modal-descripcion-profesional #respuestaSolicitud,
+.modal-descripcion-profesional #aprobarSolicitud {
+  background-color: #00b894;
+  color: white;
+}
+.modal-descripcion-profesional #respuestaSolicitud:hover,
+.modal-descripcion-profesional #aprobarSolicitud:hover {
+  background-color: #019170;
+}
+
+.modal-descripcion-profesional #desaprobarSolicitud {
+  background-color: #d63031;
+  color: white;
+}
+.modal-descripcion-profesional #desaprobarSolicitud:hover {
+  background-color: #b02223;
+}
+
+.modal-descripcion-profesional #guardarRespuesta {
+  background-color: #6c5ce7;
+  color: white;
+}
+.modal-descripcion-profesional #guardarRespuesta:hover {
+  background-color: #574bcb;
+}
+
+/* Campo respuesta */
+.modal-descripcion-profesional #campoRespuesta {
+  margin-top: 1rem;
+}
+
+.modal-descripcion-profesional textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #dcdde1;
+  padding: 0.6rem;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 100px;
+}
 
 
 

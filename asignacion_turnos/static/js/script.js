@@ -78,4 +78,42 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
  
+function abrirModalFechasGT() {
+  const modal = document.getElementById("modalFechasGT");
+  modal.style.display = "block";
+  setTimeout(() => {
+    modal.classList.add("mostrar");
+  }, 10); // pequeño delay para que el transition funcione
+}
+
+function cerrarModalFechasGT() {
+  const modal = document.getElementById("modalFechasGT");
+  modal.classList.remove("mostrar");
+  setTimeout(() => {
+    modal.style.display = "none";
+  }, 300); // coincide con el tiempo de transition
+}
+
+
+function cargarFechasGT() {
+    
+  const fechaInicio = document.getElementById("fechaInicioGT").value;
+  const fechaFin = document.getElementById("fechaFinGT").value;
+
+  if (!fechaInicio || !fechaFin) {
+     Swal.fire({
+                    icon: "warning",
+                    title: "Fechas vacias",
+                    text: "Debes cargar una fecha valida"
+                    });
+  }else{
+
+    const url = `${baseUrlSolicitudesGT}?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    window.location.href = url; 
+
+}
+
+
+  cerrarModalFechasGT(); // Cierra el modal
+}
 

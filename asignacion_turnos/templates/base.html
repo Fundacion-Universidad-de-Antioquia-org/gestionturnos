@@ -8,7 +8,9 @@
     
     <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=settings" />
+    <!-- Solo necesitas UNA importación general -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
     <!-- Estilos del template -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -17,6 +19,23 @@
 </head>
 
 <body>
+    <!-- Modal de fechas GT -->
+<div id="modalFechasGT" class="modal-fechas-gt">
+  <div class="modal-fechas-gt-contenido">
+    <span class="cerrar-fechas-gt" onclick="cerrarModalFechasGT()">&times;</span>
+    <h3 class="titulo-fechas-gt">Seleccionar Rango de Fechas</h3>
+
+    <div class="formulario-fechas-gt">
+      <label for="fechaInicioGT">Fecha inicial:</label>
+      <input type="date" id="fechaInicioGT" class="input-fechas-gt">
+
+      <label for="fechaFinGT">Fecha final:</label>
+      <input type="date" id="fechaFinGT" class="input-fechas-gt">
+
+      <button class="btn-cargar-fechas-gt" onclick="cargarFechasGT()">Cargar</button>
+    </div>
+  </div>
+</div>
     <!-- Sidebar -->
     <aside class="sidebar collapsed " id="sidebar">
         <!-- Sidebar Header -->
@@ -32,6 +51,12 @@
             <ul class="nav-list primary-nav">
                 <li class="nav-item">
                     <a href="{% url 'vista_cargarSucesionTrenes' %}" class="nav-link">
+                        <span class="material-symbols-outlined">security</span>
+                        <span class="nav-label">Pre-carga</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'vista_cargarSucesionTrenes' %}" class="nav-link">
                         <span class="material-symbols-rounded">upload</span>
                         <span class="nav-label">Cargar horarios</span>
                     </a>
@@ -40,6 +65,12 @@
                     <a href="{% url 'cambios_turnos' %}" class="nav-link">
                         <span class="material-symbols-rounded">autorenew</span>
                         <span class="nav-label">Autorizar cambios</span>
+                    </a>
+                </li>
+                 <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="abrirModalFechasGT()">
+                        <span class="material-symbols-outlined">assignment_add</span>
+                        <span class="nav-label">Solicitudes GT</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -62,6 +93,12 @@
                     </ul>
                 </li>
                 <li class="nav-item">
+                    <a href="{% url 'notificaciones' %}" class="nav-link">
+                        <span class="material-symbols-outlined">notifications_active</span>
+                        <span class="nav-label">Notificaciones GT</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{%url 'configuraciones' %}" class="nav-link">
                         <span class="material-symbols-outlined">settings</span>
                         <span class="nav-label">Configuraciones</span>
@@ -81,16 +118,21 @@
         </nav>
     </aside>
 
+
     <!-- Main Content -->
     <main class="content" id="mainContent">
         {% block content %}{% endblock %}
     </main>
     <!-- Scripts -->
-    <script src="{% static 'js/script.js' %}"></script>
+     
+        <script>
+        const baseUrlSolicitudesGT = "{% url 'solicitudesGt' %}";
+        </script>
+   
+     <script src="{% static 'js/script.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    {% block scripts %}
-    
-    {% endblock %}
+   {% block scripts %}
+   {% endblock %}
 
 </body>
 </html>

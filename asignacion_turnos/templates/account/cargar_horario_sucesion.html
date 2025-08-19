@@ -1,64 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
+{% static 'images/admin_img.png' as fallback_avatar %}
 
 {% block title %}Gestión de turnos -  {{usuarioLogeado}}{% endblock %}
 {% block titulo_template%} Cargué de horarios y {% endblock %}
 
 {%block styles %}
 
-<!-- Loader-->
- <style>
- #loader {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(255, 255, 255, 0.7);
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.overlay-loader {
-  text-align: center;
-}
-
-.spinner {
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #1D5031; /* color institucional */
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 1s linear infinite;
-  margin: auto;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
- </style>
-
-<!--Estilos de filtros-->
-
-<!--Estilos para la paginación-->
-
-
-<!--Estilos del modal-->
-
-<!--Estilos para cargar los archivos-->
-<style>
-
-</style>
-
-<!-- Modal - eliminar horario-->
-<style>
-
-
-</style>
 
 {% endblock %}
 {% block content %}
@@ -80,24 +28,17 @@
   </div>
 
   <!-- Derecha -->
-  <form action="{% url 'identity.logout' %}" method="post" class="flex-shrink-0">
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 
 </div>
 
-<!-- Loader cargar datos-->
-<div id="loader" style="display: none;" >
-  <div class="overlay-loader">
-    <div class="spinner"></div>
-    <p>Cargando, por favor espera...</p>
-  </div>
-</div>
 
 <!-- Acordeon carga de archivos-->
 <div class="accordion-container"  style="margin-top: 14px;">
-  <div class="accordion-header">Carga de Archivos</div>
+  <div class="accordion-header"> Carga de Archivos</div>
   <div class="accordion-body" id="acordeonCarga">
     <div class="" id="botonesCargos">
       <button class="btn btn-third" id="trenes">Trenes</button>
@@ -105,6 +46,7 @@
       <button class="btn btn-third" id="maniobras">Maniobras</button>
       <button class="btn btn-third" id="operadores">Operadores de conducción</button>
     </div>
+
     <form action="{% url 'vista_cargarSucesionTrenes' %}" method="post" id="formCargaDatos" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="filtros-horizontal">
@@ -138,8 +80,6 @@
         <button type="button" onclick="abrirModalHorarios()" class="btn-eliminar" id="btnEliminar" >Actualizar cuadro de turnos</button>
       </div>
     </form>
-      
-    
   </div>
 </div>
 
@@ -257,6 +197,8 @@
             {% endfor %}
         </tbody>
     </table>
+  
+    {{ turnoDuplicadoMismoDia|json_script:"turnoDuplicadoMismoDia-json" }}
 
 <!-- Paginación -->
 <div id="paginacion" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
@@ -343,20 +285,34 @@
     document.addEventListener("DOMContentLoaded", () => {
 
     formulario = document.getElementById("formCargaDatos"); 
-    const loaderCarga = document.getElementById("loader");
-      
     ocultarBotonesCarga();
     mostrarPagina(1);
     aplicarFiltros();
     mostrarBotonesCargaTrenes();
+    let contenedorTurnosDuplicados = ""; 
     
-    
+    const turnoDuplicadoMismoDia = JSON.parse(document.getElementById("turnoDuplicadoMismoDia-json").textContent);  
 
-      setTimeout(() => {
-          tablaBody.style.display = "";
-          loader.style.display = "none";
-      }, 500); 
-    
+    if(Array.isArray(turnoDuplicadoMismoDia) && turnoDuplicadoMismoDia.length === 0){
+      Swal.fire({
+                    icon: "success",
+                    title: "Se cargo exitosamente la Sucesión sin errores",
+                    text: contenedorTurnosDuplicados,
+                      })
+    }else{
+       
+
+      turnoDuplicadoMismoDia.forEach(turno =>{
+        contenedorTurnosDuplicados += "Fecha: "+ turno.fecha + "Codigo turno: "+ turno.codigoTurno +" - "
+      })
+       Swal.fire({
+                    icon: "warning",
+                    title: "Sucesión con turnos duplicados",
+                    text: contenedorTurnosDuplicados,
+                      })
+    }
+
+
    
 
    /* document.getElementById("formCargaDatos").addEventListener("submit",function(){
@@ -375,39 +331,75 @@
 
   function mostrarBotonesCargaTrenes(){
       
-      document.getElementById("trenes").addEventListener("click",function(){
-        document.getElementById("formCargaDatos").style.display = "block";
-      document.querySelectorAll('.filtro').forEach((elemento)=>{
-        elemento.style.display = "block";
-      })
-    })
+   document.getElementById("trenes").addEventListener("click", function () {
+    const form = document.getElementById("formCargaDatos");
+    const filtros = document.querySelectorAll('.filtro');
 
-      document.getElementById("tranvia").addEventListener("click",function(){
-        document.getElementById("formCargaDatos").style.display = "block";
-      document.querySelectorAll('.filtro').forEach((elemento)=>{
-        elemento.style.display = "block";
-      })
-    })
-    
-      document.getElementById("maniobras").addEventListener("click",function(){
-        document.getElementById("formCargaDatos").style.display = "block";
-        document.getElementById('lunesViernes').style.display = "block";
-        document.getElementById('sabados').style.display = "none";
-        document.getElementById('domingos').style.display = "none";
-        document.getElementById('sucesion').style.display = "block";
-        document.getElementById('especial').style.display = "none";
-    })
+    // Toggle manual con display
+    const isVisible = form.style.display === "block";
 
-    document.getElementById("operadores").addEventListener("click",function(){
-      document.getElementById("formCargaDatos").style.display = "block";
-      document.getElementById('lunesViernes').style.display = "block";
-      document.getElementById('sabados').style.display = "none";
-      document.getElementById('domingos').style.display = "none";
-      document.getElementById('sucesion').style.display = "block";
-      document.getElementById('especial').style.display = "none";
-    })
+    form.style.display = isVisible ? "none" : "block";
 
-  }
+    filtros.forEach((elemento) => {
+      elemento.style.display = isVisible ? "none" : "block";
+    });
+});
+
+
+ document.getElementById("tranvia").addEventListener("click", function () {
+    const form = document.getElementById("formCargaDatos");
+    const filtros = document.querySelectorAll('.filtro');
+
+    // Toggle manual con display
+    const isVisible = form.style.display === "block";
+
+    form.style.display = isVisible ? "none" : "block";
+
+    filtros.forEach((elemento) => {
+      elemento.style.display = isVisible ? "none" : "block";
+    });
+});
+
+
+  document.getElementById("maniobras").addEventListener("click", function () {
+  const form = document.getElementById("formCargaDatos");
+  const lunesViernes = document.getElementById('lunesViernes');
+  const sabados = document.getElementById('sabados');
+  const domingos = document.getElementById('domingos');
+  const sucesion = document.getElementById('sucesion');
+  const especial = document.getElementById('especial');
+
+  const isVisible = form.style.display === "block";
+
+  // Toggle
+  form.style.display = isVisible ? "none" : "block";
+  lunesViernes.style.display = isVisible ? "none" : "block";
+  sabados.style.display = "none";
+  domingos.style.display = "none";
+  sucesion.style.display = isVisible ? "none" : "block";
+  especial.style.display = "none";
+});
+
+
+ document.getElementById("operadores").addEventListener("click", function () {
+  const form = document.getElementById("formCargaDatos");
+  const lunesViernes = document.getElementById('lunesViernes');
+  const sabados = document.getElementById('sabados');
+  const domingos = document.getElementById('domingos');
+  const sucesion = document.getElementById('sucesion');
+  const especial = document.getElementById('especial');
+
+  const isVisible = form.style.display === "block";
+
+  // Toggle
+  form.style.display = isVisible ? "none" : "block";
+  lunesViernes.style.display = isVisible ? "none" : "block";
+  sabados.style.display = "none";
+  domingos.style.display = "none";
+  sucesion.style.display = isVisible ? "none" : "block";
+  especial.style.display = "none";  
+  });
+}
 
   function ocultarBotonesCarga(){
 
@@ -468,35 +460,63 @@
     input.addEventListener('change', aplicarFiltros);
   });
 
- function aplicarFiltros() {
+function aplicarFiltros() {
+  // Mostrar el tbody si lo habías ocultado
   document.getElementById("tablaBody").style.display = "";
-  
-  const valorNombre = filtros.nombre.value.toLowerCase().trim();
-  const valorCodigo = filtros.codigo.value.toLowerCase().trim();
-  const valorTurno = filtros.turno.value.toLowerCase().trim();
-  const valorCargo = filtros.cargo.value.toLowerCase().trim();  //
-  const valorFecha = filtros.fecha.value;
-  const valorEstado = filtros.estado.value.toLowerCase().trim();
-  
 
-  document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
-    const tNombre = row.cells[0].textContent.toLowerCase().trim();
-    const tCodigo = row.cells[1].textContent.toLowerCase().trim();
-    const tTurno = row.cells[2].textContent.toLowerCase().trim();
-    const tCargo = row.cells[3].textContent.toLowerCase().trim(); //
-    const tFecha = row.cells[4].textContent.trim();
-    const tEstado = row.cells[10].textContent.toLowerCase().trim();
+  // Lee los filtros (si alguno no existe, usa string vacío)
+  const valorNombre = (filtros?.nombre?.value || "").toLowerCase().trim();
+  const valorCodigo = (filtros?.codigo?.value || "").toLowerCase().trim();
+  const valorTurno  = (filtros?.turno?.value  || "").toLowerCase().trim();
+  const valorCargo  = (filtros?.cargo?.value  || "").toLowerCase().trim();
+  const valorFecha  = (filtros?.fecha?.value  || "").trim();
+  const valorEstado = (filtros?.estado?.value || "").toLowerCase().trim();
 
+  // Constantes de índice para no “adivinar” números mágicos
+  const COL_NOMBRE = 0;
+  const COL_CODIGO = 1;
+  const COL_TURNO  = 2;
+  const COL_CARGO  = 3;
+  const COL_FECHA  = 4;
+  const COL_ESTADO = 10; // ajusta si tu tabla cambia
+
+  document.querySelectorAll('#tablaDatos tbody tr').forEach((row, idx) => {
+    const cells = row.cells;
+    if (!cells || cells.length === 0) {
+      // Fila “especial”, como mensaje de vacío o separador
+      // Puedes ocultarla o dejarla tal cual
+      return;
+    }
+
+    // Si alguna columna puede no existir en ciertas filas, usa optional chaining y valor por defecto
+    const safeTxt = (el) => (el?.textContent || '').trim();
+    const safeTxtLower = (el) => safeTxt(el).toLowerCase();
+
+    // Si te falta alguna col en algunas filas, esto evita romper
+    const tNombre = safeTxtLower(cells[COL_NOMBRE]);
+    const tCodigo = safeTxtLower(cells[COL_CODIGO]);
+    const tTurno  = safeTxtLower(cells[COL_TURNO]);
+    const tCargo  = safeTxtLower(cells[COL_CARGO]);
+    const tFecha  = safeTxt(cells[COL_FECHA]); // fecha la comparas exacta, no bajas a lower
+
+    // Para estado, intenta por índice y, si no existe, busca por clase/atributo
+    const estadoCell = cells[COL_ESTADO] || row.querySelector('.col-estado, [data-col="estado"]');
+    const tEstado = safeTxtLower(estadoCell);
+
+    // Comparaciones
     const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
     const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;
-    const coincideTurno = !valorTurno || tTurno.includes(valorTurno);
-    const coincideCargo = !valorCargo || tCargo === valorCargo; // Comparación exacta
-    const coincideFecha = !valorFecha || tFecha === valorFecha;
+    const coincideTurno  = !valorTurno  || tTurno.includes(valorTurno);
+    const coincideCargo  = !valorCargo  || tCargo === valorCargo; // exacta
+    const coincideFecha  = !valorFecha  || tFecha === valorFecha; // exacta
     const coincideEstado = !valorEstado || tEstado === valorEstado;
 
-    row.style.display = (coincideNombre && coincideCodigo && coincideTurno && coincideCargo && coincideFecha && coincideEstado) ? '' : 'none';
+    row.style.display = (coincideNombre && coincideCodigo && coincideTurno &&
+                         coincideCargo && coincideFecha && coincideEstado)
+                        ? '' : 'none';
   });
 }
+
 
 </script>
 
@@ -712,7 +732,7 @@ document.getElementById("guardarCambios").addEventListener("click", function () 
           if(datosNuevos.turno !== "COMPE" && datosNuevos.turno !== "LIBRE" && datosNuevos.turno !== "FUNDA" && datosNuevos.turno !== "SUSPEN"){ // SRM548
               if(datosNuevos.estacionIni !== "" && datosNuevos.estacionFin !== "" && datosNuevos.horaIni !== "" && datosNuevos.horaFin !== "" && datosNuevos.particularidades !==  ""){
                   
-                fetch("http://localhost:8000/account/api/actualizar_turno/",{
+                fetch("{% url 'actualizar_turno' %}",{
                   method:"POST",
                   headers:{"Content-Type": "application/json",
                           "X-CSRFToken": getCookie("csrftoken")},
@@ -735,9 +755,7 @@ document.getElementById("guardarCambios").addEventListener("click", function () 
                         localStorage.clear();
                         window.location.reload();
                       })
-                  
-
-                  
+              
                 })
                 .catch(error => console.error("Error en la actualización"))
 
@@ -854,14 +872,14 @@ document.getElementById("editTurno").addEventListener("input", function () {
                 </thead>
                 <tbody>
                   ${
-                    data.horarios.map(h => `
+                    data.horarios.map(h => ` 
                       <tr>
                         <td>${h.horario}</td>
                         <td>${h.fechavigencia}</td>
                         <td>${h.fecha_carga}</td>
                         <td>${h.numeroDatos}</td>
-                        <td>
-                          <form action="/account/editarHorario.html/" method="POST">
+                        <td>  
+                          <form action="/account/editarHorario/" method="POST">
                             <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
                             <input type="hidden" name="horario" value="${h.horario}">
                             <input type="hidden" name="fechavigencia" value="${h.fechavigencia}">

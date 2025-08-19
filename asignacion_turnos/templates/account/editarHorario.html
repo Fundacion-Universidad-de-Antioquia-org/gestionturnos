@@ -3,46 +3,6 @@
 {% block styles %}
 
 <!--Estilos para el panel de adm-->
-<style>
-#panelControl {
-  display: flex;
-  gap: 15px;
-  padding: 20px;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  justify-content: flex-start;
-  align-items: center;
-  margin: 20px 0;
-  flex-wrap: wrap;
-}
-
-#panelControl button {
-  background: #8fc415; /* verde corporativo */
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-#panelControl button:hover {
-  background-color: #174427;
-  transform: translateY(-1px);
-}
-
-#panelControl button:active {
-  background-color: #133820;
-  transform: translateY(1px);
-}
-
-</style>
-
 
 {% endblock%}
 
@@ -64,7 +24,7 @@
   </div>
 
   <!-- Derecha -->
-  <form action="{% url 'identity.logout' %}" method="post" class="flex-shrink-0">
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
@@ -133,7 +93,7 @@
 
 <!--Panel de control-->
 <div id="panelControl">
-    <button id="insertarTurno" onclick="">➕ Nuevo turno</button>
+    <button id="insertarTurno" onclick=""><span class="material-symbols-outlined">add_notes</span> <span class="nav-label">Registrar nuevo turno</span></button>
 </div>
 
    <!-- Acordeón de filtros -->
@@ -206,10 +166,19 @@
             <td>{{ th.turno }}</td>
             <td>{{ th.inilugar }}</td>
             <td>{{ th.inihora|time:"H:i"}}</td>
-            <td>{{ th.inicir }}</td>
+            <td>{% if th.inicir %}
+                {{th.inicir}}
+                {% else %}
+                {% endif %}
+            </td>
             <td>{{ th.finallugar }}</td>
             <td>{{ th.finalhora|time:"H:i" }}</td>
-            <td>{{ th.finbalcir }}</td>
+            <td>{% if th.finbalcir %}
+                {{ th.finbalcir }}
+                {% else %}
+                
+                {% endif %}
+              </td>
             <td>{{ th.duracion }}</td>
             <td>{{ th.observaciones }}</td>
             <td>

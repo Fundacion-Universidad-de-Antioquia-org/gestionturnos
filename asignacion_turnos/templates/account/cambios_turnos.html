@@ -18,7 +18,7 @@
   </div>
 
   <!-- Derecha -->
-  <form action="{% url 'identity.logout' %}" method="post" class="flex-shrink-0">
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
@@ -155,7 +155,6 @@ document.getElementById("seleccionarTodos").addEventListener('click', function (
 <script>
 document.addEventListener("DOMContentLoaded",function(){
   aplicarFiltros();
-
 })
 </script>
 

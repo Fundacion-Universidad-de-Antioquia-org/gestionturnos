@@ -20,45 +20,127 @@
   <!-- Título -->
   <div class="titulo-template">Configuraciones y parametros de consulta</div>
   <!-- Logout -->
-  <form action="{% url 'identity.logout' %}" method="post">
+  <form action="{% url 'logout' %}" method="post">
     {% csrf_token %}
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
+<div id="panelControl">
+    <span class="material-symbols-outlined">settings_cinematic_blur</span><div class="titulo-template">Parametros para el cambio de turnos y solicitudes GT</div>
+    
+</div>
+
+ <div class="modal-custom" id="modalParametros">
+    <div class="modal-content-custom">
+      <div class="modal-header-custom">
+        Editar Parametros
+        <span class="cerrar-modal" id="cerrarModal">&times;</span>
+      </div>
+
+      <label>Hora inicio - Cambios de turnos</label>
+      <input type="time" id="editHoraIni">
+
+      <label>Hora final - Cambios de turnos</label>
+      <input type="time" id="editHoraFin">
+
+      <select name="" id="editDiaIni">
+        <option value="LUNES">LUNES</option>
+        <option value="MARTES">MARTES</option>
+        <option value="MIERCOLES">MIERCOLES</option>
+        <option value="JUEVES">JUEVES</option>
+        <option value="VIERNES">VIERNES</option>
+        <option value="SABADO">SABADO</option>
+        <option value="DOMINGO">DOMINGO</option>
+      </select>
+
+      <select name="" id="editDiaFin">
+        <option value="LUNES">LUNES</option>
+        <option value="MARTES">MARTES</option>
+        <option value="MIERCOLES">MIERCOLES</option>
+        <option value="JUEVES">JUEVES</option>
+        <option value="VIERNES">VIERNES</option>
+        <option value="SABADO">SABADO</option>
+        <option value="DOMINGO">DOMINGO</option>
+      </select>
+
+      <label>Hora inicio - Solicitudes GT</label>
+      <input type="time" id="editHoraIniSolicitudes">
+
+      <label>Hora final - Solicitudes GT</label>
+      <input type="time" id="editHoraFinSolicitudes">
+
+      <div style="text-align: right; margin-top: 15px;">
+        <button id="cerrarBotonManual">Cerrar</button>
+        <button id="guardarCambios" type="submit">Guardar</button>
+    </div>
+
+    </div>
+  </div>
+
+  <div class="modal-custom" id="modalEstados">
+    <div class="modal-content-custom">
+      <div class="modal-header-custom">
+        Editar Parametros
+        <span class="cerrar-modal" id="cerrarModalEstados">&times;</span>
+      </div>
+        <label for="">Estado de servicios invalidos</label>
+        <input type="text" id="estadoServicio">
+        <label for=""><span style="color: red;">Nota: </span><b>Recuerda que estos estados son aquellos en los cuales no es posible realizar una solicitud de cambio de turnos</b></label>
+
+      <div style="text-align: right; margin-top: 15px;">
+        <button id="cerrarBotonManualEstados">Cerrar</button>
+        <button id="guardarCambiosEstados" type="submit">Guardar</button>
+    </div>
+
+    </div>
+  </div>
 
 <!-- Primera tabla -->
-
   <table class="styled-table display" id="tablaDatos">
     <thead>
       <tr>
-        <th>Cambios - hora inicio</th>
-        <th>Cambios - hora final</th>
-        <th>Solicitudes - día inicio</th>
-        <th>Solicitudes - día final</th>
-        <th>Solicitudes - hora inicio</th>
-        <th>Solicitudes - hora final</th>
+        <th>Hora inicio - Cambios de turno</th>
+        <th>Hora final - Cambios de turno</th>
+        <th>Día inicio - Solicitudes GT</th>
+        <th>Día final - Solicitudes GT</th>
+        <th>Hora inicio - Solicitudes GT</th>
+        <th>Hora final - Solicitudes GT</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
       {% for p in parametrosGestionTurnos %}
       <tr>
-        <td>{{ p.hora_inicio_permitida_cambios }}</td>
-        <td>{{ p.hora_final_permitida_cambios }}</td>
+        <td>{{ p.hora_inicio_permitida_cambios|time:"H:i" }}</td>
+        <td>{{ p.hora_final_permitida_cambios|time:"H:i" }}</td>
         <td>{{ p.dia_inicio_permitida_cambios }}</td>
         <td>{{ p.dia_final_permitida_cambios }}</td>
-        <td></td>
-        <td></td>
-        <td><button class="btn-editar">Editar</button></td>
-       
+        <td>{{ p.hora_inicio_solicitudesgt|time:"H:i" }}</td>
+        <td>{{ p.hora_final_solicitudesgt|time:"H:i"}}</td>
+        <td>
+        <button  
+          class="btn-editar editarParametros"
+          data-horaini="{{ p.hora_inicio_permitida_cambios|time:'H:i' }}"
+          data-horafin="{{ p.hora_final_permitida_cambios|time:'H:i' }}"
+          data-diaini="{{ p.dia_inicio_permitida_cambios }}"
+          data-diafin="{{ p.dia_final_permitida_cambios }}"
+          data-horainisoli="{{ p.hora_inicio_solicitudesgt|time:'H:i' }}"
+          data-horafinsoli="{{ p.hora_final_solicitudesgt|time:'H:i' }}"
+          >Editar</button>
+        </td>
+
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
-
 <!-- Segunda tabla -->
-
+ 
+ <div id="panelControl">
+    <span class="material-symbols-outlined">settings_cinematic_blur</span><div class="titulo-template">Servicios invalidos para el cambio de turnos</div>
+    <button type="button" class="btn-third"  id="AgregarServicioInvalido" >➕ Nuevo parametro</button>
+</div>
+ 
   <table class="styled-table display">
     <thead>
       <tr>
@@ -70,11 +152,11 @@
     <tbody>
       {% for e in estadosServicios %}
       <tr>
-        <td>{{ e.estado }}</td>
-        <td>{{ e.fecha_carga }}</td>
+        <td>{{ e.estado }}</td> 
+        <td>{{ e.fecha_carga|date:"d/m/Y" }}</td>
+
         <td>
-          <button class="btn-editar">Editar</button>
-          <button class="btn-eliminar">Eliminar</button>
+          <button class="btn-eliminar" id="eliminarEstado">Eliminar</button>
       </td>
         
       </tr>
@@ -82,4 +164,236 @@
     </tbody>
   </table>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+ document.addEventListener("DOMContentLoaded", function(){
+
+    const modalParametros = document.getElementById("modalParametros")
+    modalParametros.style.display = "none";
+
+    const modalEstados = document.getElementById("modalEstados")
+    modalEstados.style.display = "none";
+
+    const botonesEditar = document.querySelectorAll(".editarParametros");
+
+    botonesEditar.forEach(function(boton){
+        boton.addEventListener("click", function(){
+            // Leer atributos data-* desde el botón clicado
+            const horaIni = boton.dataset.horaini;
+            const horaFin = boton.dataset.horafin;
+            const diaIni = boton.dataset.diaini;
+            const diaFin = boton.dataset.diafin;
+            const horaIniSoli = boton.dataset.horainisoli;
+            const horaFinSoli = boton.dataset.horafinsoli;
+
+            // Asignar valores a los inputs del modal
+            horaInicial = document.getElementById("editHoraIni").value
+            document.getElementById("editHoraIni").value = horaIni;
+            document.getElementById("editHoraFin").value = horaFin;
+            document.getElementById("editDiaIni").value = diaIni;
+            document.getElementById("editDiaFin").value = diaFin;
+            document.getElementById("editHoraIniSolicitudes").value = horaIniSoli;
+            document.getElementById("editHoraFinSolicitudes").value = horaFinSoli;
+
+            
+            modalParametros.style.display = "block";
+        });
+    });
+
+    document.getElementById("cerrarModal").addEventListener("click", function(){
+        modalParametros.style.display = "none";
+    });
+
+    document.getElementById("cerrarBotonManual").addEventListener("click",function(){
+      modalParametros.style.display = "none";
+    })
+
+    document.getElementById("guardarCambios").addEventListener("click",function(){
+
+      if (document.getElementById("editHoraIni").value !== "" && document.getElementById("editHoraFin").value !== "" && document.getElementById("editDiaIni").value &&  document.getElementById("editDiaFin").value){
+        
+        fetch("{% url 'actualizar_parametros' %}",{
+          method:"POST",
+          headers:{"Content-Type": "application/json","X-CSRFToken": getCookie("csrftoken")},
+          body: JSON.stringify({
+              "horaInicio":document.getElementById("editHoraIni").value,
+              "horaFin": document.getElementById("editHoraFin").value,
+              "diaIncio": document.getElementById("editDiaIni").value,
+              "diaFin":document.getElementById("editDiaFin").value,
+              "horaInicioSolicitudesGt":document.getElementById("editHoraIniSolicitudes").value,
+              "horaFinalSolicitudesGt": document.getElementById("editHoraFinSolicitudes").value
+          })
+        })
+        .then(response => response.json())
+        .then(data =>{
+          Swal.fire({
+            icon: "success",
+            title: "Correcto",
+            text: data.message,
+          }).then(()=>{
+              localStorage.clear();
+              window.location.reload();
+            })
+        })
+        .catch(error => console.error("Error en la actualización de los parametros",error))
+      }else{
+        Swal.fire({
+                    icon: "error",
+                    title: "Se detectaron campos vacios",
+                    text: "Revisa que todos los parametros sean validos, no se permiten campos vacios",
+                      })
+      }
+
+
+
+    })
+
+});
+
+</script>
+<script>
+   function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+<script>
+  document.getElementById("AgregarServicioInvalido").addEventListener("click", function(){
+    modalEstados = document.getElementById("modalEstados")
+    modalEstados.style.display = "block";
+  })
+
+   document.getElementById("cerrarModalEstados").addEventListener("click", function(){
+        modalEstados.style.display = "none";
+    });
+
+    document.getElementById("cerrarBotonManualEstados").addEventListener("click",function(){
+      modalEstados.style.display = "none";
+    })
+
+document.getElementById("guardarCambiosEstados").addEventListener("click", function(){
+
+  const estadoServicio = document.getElementById("estadoServicio").value.trim().toUpperCase();
+
+  if(estadoServicio !== ""){
+
+      fetch("{% url 'insertar_estado' %}",{
+        method: "POST",
+        headers: {"Content-Type": "application/json","X-CSRFToken": getCookie("csrftoken")},
+        body: JSON.stringify({
+          "estadoServicio" : estadoServicio,
+          "accion":"insertar"
+        })
+    })
+    .then(response => response.json())
+    .then(data =>{
+        if(data.success){
+          Swal.fire({
+            icon: "success",
+            title: "Correcto",
+            text: data.message,
+          }).then(()=>{
+             window.location.reload();
+          })
+        }else{
+            Swal.fire({
+            icon: "error",
+            title: "Ocurrio un error",
+            text: data.message,
+          }).then(()=>{
+            window.location.reload()
+          })
+        }
+    })
+    .catch(error => console.error("Error en la actualización de los parametros",error))
+
+
+  }else{
+       Swal.fire({
+                    icon: "error",
+                    title: "Se detectaron campos vacios",
+                    text: "Revisa que todos los parametros sean validos, no se permiten campos vacios",
+                      })
+  }
+})
+
+    document.querySelectorAll(".btn-eliminar").forEach(boton => {
+     
+      boton.addEventListener("click", function(){
+        
+           let estadoServicio = "";
+          Swal.fire({
+            title: "¿Seguro que quieres eliminar el estado de servicio?",
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Si, eliminar",
+            denyButtonText: `No estoy seguro`
+          }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+              const fila = this.closest('tr');
+              
+              // Captura el texto de cada celda, excepto la última
+              const datos = Array.from(fila.querySelectorAll('td'))
+                    .slice(0, -1) // excluye la celda con el botón
+                    .map(td => td.textContent.trim());
+
+              estadoServicio = datos[0]
+              
+              fetch("{% url 'insertar_estado' %}",{
+                    method: "POST",
+                    headers: {"Content-Type": "application/json","X-CSRFToken": getCookie("csrftoken")},
+                    body: JSON.stringify({
+                      "estadoServicio" : estadoServicio,
+                      "accion":"eliminar"
+                    })
+                })
+                .then(response => response.json())
+                .then(data =>{
+                    if(data.success){
+                      Swal.fire({
+                        icon: "success",
+                        title: "Correcto",
+                        text: data.message,
+                      }).then(()=>{
+                        window.location.reload();
+                      })
+                    }else{
+                        Swal.fire({
+                        icon: "error",
+                        title: "Ocurrio un error",
+                        text: data.message,
+                      }).then(()=>{
+                        window.location.reload()
+                      })
+                    }
+                })
+                .catch(error => console.error("Error en la actualización de los parametros",error))
+
+              
+            } else if (result.isDenied) {
+              Swal.fire("Estas a salvo, no se elimino el servicio"+ estadoServicio);
+            }
+          });
+
+
+
+
+      })
+    })
+    
+</script>
 {% endblock %}

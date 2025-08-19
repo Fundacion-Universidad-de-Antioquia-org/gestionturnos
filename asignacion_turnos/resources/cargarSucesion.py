@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 from asignacion_turnos.models import Sucesion
-from asignacion_turnos.models import Horario, Empleado_Oddo
+from asignacion_turnos.models import Horario, Empleado_Oddo, Estados_servicios
 from  asignacion_turnos.resources.peticion_Oddo import getOddo_datos_empleados
 
 
@@ -39,6 +39,15 @@ def procesar_sucesion_multifila(file, usuario):
     fecha_inicio = None
     total_cargadas = 0
     errores = []
+    turnoDuplicadoMismoDia = []
+    turnosInvalidos = []
+
+    estadosServicios = Estados_servicios.objects.all()
+    for e in estadosServicios:
+            turnosInvalidos.append(
+            e.estado)
+
+            print(turnosInvalidos)
 
     fila_semana = None
     for i, val in enumerate(df.iloc[:, 0]):
@@ -105,8 +114,6 @@ def procesar_sucesion_multifila(file, usuario):
         #print(f"Leyendo datos  -  pos={pos}, nombre={nombre}, codigo={codigo}")
 
         
-
-
         try:
             for dia in range(7):
                 col_base = 3 + dia * 3
@@ -119,17 +126,24 @@ def procesar_sucesion_multifila(file, usuario):
 
                 horario_relacion = Horario.objects.filter(turno=codigoTurnoFormateado).first()
                 empleado_relacion = Empleado_Oddo.objects.filter(codigo=codigoFormateado, estado="Activo").first() 
-                print(f"Código horario original: '{codigo_horario}'")
-                
-                
+                #print(f"Código horario original: '{codigo_horario}'")
 
+                if codigoTurnoFormateado not in turnosInvalidos and codigoTurnoFormateado not in ["DISPO"]:
+                    if Sucesion.objects.filter(codigo_horario=codigoTurnoFormateado, fecha=(fecha_inicio + timedelta(days=dia)).date()).exists():
+                        #print("Existe turno duplicado")
+                        turnoDuplicadoMismoDia.append({
+                            "codigoTurno": codigoTurnoFormateado,
+                            "fecha": (fecha_inicio + timedelta(days=dia)).date()
+                        })
+                
+                #Esto evita sobreescribir la sucesion ya publicada
                 if Sucesion.objects.filter(
                     nombre=nombreFormateado,
                     codigo=codigoFormateado,
                     fecha=(fecha_inicio + timedelta(days=dia)).date()
                 ).exists():
                     continue
-                
+
                 Sucesion.objects.create(
                     pos=int(pos),
                     nombre=str(nombre).strip(),
@@ -138,7 +152,7 @@ def procesar_sucesion_multifila(file, usuario):
                     cargo = str(empleado_relacion.cargo),
                     fecha=(fecha_inicio + timedelta(days=dia)).date(),
                     estado_inicio=estado_inicio,
-                    codigo_horario=codigo_horario,
+                    codigo_horario=codigoTurnoFormateado, # Codigo turnooooooooooooooooooooo
                     estado_fin=estado_fin,
                     hora_inicio=hora_inicio,
                     hora_fin=hora_fin,
@@ -147,8 +161,8 @@ def procesar_sucesion_multifila(file, usuario):
                     horario = horario_relacion,
                     empleado = empleado_relacion
 
-                    
                 )
+
                 total_cargadas += 1
 
             i += 3
@@ -160,4 +174,4 @@ def procesar_sucesion_multifila(file, usuario):
 
             
 
-    return total_cargadas, errores
+    return total_cargadas, errores , turnoDuplicadoMismoDia

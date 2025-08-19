@@ -258,7 +258,7 @@ label {
     <h4 class="titulo-template m-0 text-center flex-grow-1">Título del Template</h4>
 
     <!-- Derecha: Botón cerrar sesión -->
-    <form action="{% url 'identity.logout' %}" method="post" class="ms-3">
+    <form action="{% url 'logout' %}" method="post" class="ms-3">
       {% csrf_token %}
       <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
     </form>

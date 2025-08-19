@@ -49,7 +49,9 @@ def getOddo_datos_empleados():
                             "estado" :str(emp['estado']).strip(),
                             "cargo": str(emp['job_title']).strip(),
                             "estado": str(emp['estado']).strip(),
-                            #"zona":str(emp['zona']).strip(),
+                            "municipio": str(emp['municipio']).strip(),
+                            "direccion":str(emp['direccion']).strip(),
+                            "barrio": str(emp['barrio']).strip(),
                             "formacion" : str(emp['formacion_conduccion']).strip()
                             })
                         print(f"[{i+1}] Insertado: {emp['cedula']} - {emp['nombre']}")

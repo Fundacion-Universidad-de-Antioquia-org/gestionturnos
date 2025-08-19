@@ -68,7 +68,10 @@ class Empleado_Oddo(models.Model):
     codigo = models.CharField(max_length=10)
     estado = models.CharField(max_length=15, null= True)
     cargo = models.CharField(max_length=50)
-    #zona = models.BooleanField(default=False)
+    #zona = models.CharField(max_length=50, null= True)
+    #municipio = models.CharField(max_length=50, null=True)
+    #direccion = models.CharField(max_length=100, null=True)
+    #barrio = models.CharField(max_length=50, null= True)
     formacion =models.CharField(max_length= 100, null=True)
 
     
@@ -109,7 +112,21 @@ class Cambios_de_turnos(models.Model):
     estado_cambio_admin = models.CharField(max_length=30, default='pendiente')
     fecha_solicitud_cambio = models.DateField(default=timezone.localdate, editable=True)
     
-    
+
+class Solicitudes_Gt(models.Model):
+    nombre = models.CharField(max_length=50)
+    codigo = models.CharField(max_length=10)
+    cargo = models.CharField(max_length=50)
+    tipo_solicitud = models.CharField(max_length=50)
+    fecha_solicitud = models.DateField(auto_now_add=True)
+    fecha_inicial = models.DateField()
+    fecha_final = models.DateField(null=True, blank=True)
+    estado = models.CharField(max_length=20, default="pendiente")
+    descripcion = models.TextField()
+    urlArchivo = models.CharField(max_length=500, null=True )
+    empleado = models.ForeignKey('Empleado_Oddo', on_delete=models.SET_NULL,null=True,blank=True)
+
+
 
     def __str__(self):
         return f"{self.fecha} - {self.codigo_solicitante} - {self.codigo_receptor}"
@@ -119,15 +136,37 @@ class Parametros(models.Model):
     hora_final_permitida_cambios = models.TimeField(max_length=10)
     dia_inicio_permitida_cambios = models.CharField(max_length=20)
     dia_final_permitida_cambios = models.CharField(max_length=20)
+    hora_inicio_solicitudesgt = models.TimeField(null=True)
+    hora_final_solicitudesgt = models.TimeField(null=True)
 
 class Estados_servicios(models.Model):
     estado = models.CharField(max_length=20)
     fecha_carga = models.DateField(max_length=20,default=timezone.localdate)
 
+class Notificaciones(models.Model):
+    nombre = models.CharField(max_length=50)
+    codigo = models.CharField(max_length=50)
+    cargo = models.CharField(max_length=50)
+    tipo_solicitud = models.CharField(max_length=50, null=True)
+    fecha_solicitud = models.DateField(null=True)
+    fecha_notificacion = models.DateTimeField()
+    correo = models.CharField(max_length=50)
+    medio = models.CharField(max_length=50)
+    estado = models.CharField(max_length=20,null=True)
 
 
+class Archivos(models.Model):
+    titulo = models.CharField(max_length=50)
+    fechaCarga = models.DateField(auto_now_add=True)
+    usuarioCarga = models.CharField(max_length=50)
+    tipoComunicado = models.CharField(max_length=30)
+    fechaVigencia = models.DateField(null=True, blank=True)
+    cargoVisualizacion = models.CharField(max_length=50)
+    urlArchivo = models.CharField(max_length=200)
 
 
-
-
-
+class ConfirmacionLectura(models.Model):
+    fechaLectura = models.DateField
+    confirmacionLectura = models.CharField(max_length=10, default="pendiente")
+    archivos = models.ForeignKey('Archivos', on_delete=models.SET_NULL, null=True, blank=True)
+    empleado = models.ForeignKey('Empleado_Oddo',on_delete=models.SET_NULL,null=True,blank=True)

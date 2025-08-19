@@ -9,6 +9,9 @@ from .resources.validarExtension import validarExcel
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from datetime import datetime
+from django.conf import settings
+
 
 from datetime import datetime, timedelta, date
 from django.utils import timezone
@@ -17,18 +20,21 @@ from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from asignacion_turnos.models import Sucesion
-from asignacion_turnos.models import Horario , Cambios_de_turnos, Estados_servicios,Empleado_Oddo, Parametros
+from asignacion_turnos.models import Horario , Cambios_de_turnos, Estados_servicios,Empleado_Oddo, Parametros, Archivos, Solicitudes_Gt, Notificaciones
 from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
-from django.conf import settings
+from .resources.cargarArchivosBlob import upload_to_azure_blob
+from .resources.enviarCorreoGmail import enviarCorreoGmail, enviarCorreoGmailHTML
+
+
 
 @settings.AUTH.login_required
-def vista_home(request, *, context):
+def vista_home(request,*, context):
     return render(request,'account/home.html')
 
 
 @settings.AUTH.login_required
-def vista_cargarSucesionOperador(request, *, context):
+def vista_cargarSucesionOperador(request,*, context):
 
     usuarioLogeado = str(request.user).upper()
     sucesionOperadores = Sucesion.objects.all()
@@ -58,12 +64,15 @@ def vista_cargarSucesionOperador(request, *, context):
         'errores': errores,
         'datos_sucesion':sucesionOperadores,
         'usuarioLogeado': usuarioLogeado
-
+        
     })
 
 @settings.AUTH.login_required
-def vista_cargarSucesionTrenes(request, *, context):
+def vista_cargarSucesionTrenes(request,*, context):
 
+    user_claims = context["user"]               
+    usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
+    foto = context["user"].get("picture")
     resultadosCargarCuadro= None
     resultadosCargarSucesion= None
     sucesion_mas_particularidades = Sucesion.objects.select_related('horario').all()
@@ -72,10 +81,9 @@ def vista_cargarSucesionTrenes(request, *, context):
     erroresSemana =None
     erroresDomingos = None
     erroresEspecial = None
-
-    
+    turnoDuplicadoMismoDia = []
     errores =  []
-    usuarioLogeado = str(request.user).upper()
+
 
     if request.method == 'POST':
         form = CargarDocumentosForm(request.POST, request.FILES)
@@ -88,6 +96,7 @@ def vista_cargarSucesionTrenes(request, *, context):
                 file_cuadroServiciosDomingo = form.cleaned_data.get('file_cuadroServiciosDomingo')
                 file_cuadroServiciosEspecial = form.cleaned_data.get('file_cuadroServiciosEspecial') 
                 file_sucesion = form.cleaned_data.get('file_sucesion')
+                
                 if not any((file_cuadro, file_cuadroServiciosSabado, file_cuadroServiciosDomingo, file_cuadroServiciosEspecial, file_sucesion)):
                     form.add_error(None,"Debe cargar al menos un archivo para procesar.")
                 else:
@@ -109,7 +118,8 @@ def vista_cargarSucesionTrenes(request, *, context):
                             
                     if file_sucesion:
                         if validarExcel(file_sucesion):
-                            total_sucesion, errores = procesar_sucesion_multifila(file_sucesion, request.user)
+                            
+                            total_sucesion, errores, turnoDuplicadoMismoDia = procesar_sucesion_multifila(file_sucesion, request.user)
                             resultadosCargarSucesion = f"Se cargaron correctamente {total_sucesion} registros."
                             sucesion_mas_particularidades = Sucesion.objects.select_related('horario').all()
 
@@ -133,28 +143,34 @@ def vista_cargarSucesionTrenes(request, *, context):
         "erroresDomingo": erroresDomingos,
         "erroresEspecial":erroresEspecial,
         'usuarioLogeado': usuarioLogeado,
-        'datos_sucesion':sucesion_mas_particularidades
+        'datos_sucesion':sucesion_mas_particularidades,
+        "turnoDuplicadoMismoDia": turnoDuplicadoMismoDia,
+        "foto":foto,
     })
 
 @settings.AUTH.login_required
-def vista_configuraciones(request, *, context):
+def vista_configuraciones(request,*, context):
+
+    user_claims = context["user"]               
+    usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
 
     if request.method == "GET":
-        if Parametros.objects.all() is not None and Estados_servicios is not None:
-            parametrosGestionTurnos = Parametros.objects.all()
-            estadosServicios = Estados_servicios.objects.all()
-        return render(request, 'account/configuraciones.html/',{
+        parametrosGestionTurnos = Parametros.objects.all()
+        estadosServicios = Estados_servicios.objects.all()
+        return render(request, 'account/configuraciones.html',{
             "parametrosGestionTurnos": parametrosGestionTurnos,
-            "estadosServicios": estadosServicios
+            "estadosServicios": estadosServicios,
+            "usuarioLogeado": usuarioLogeado
         })
     else:
         return Response({"success":False , "message":"Error de peticion"})
         
 
 @settings.AUTH.login_required
-def get_solicitudes_cambios_turnos(request, *, context):
-    usuarioLogeado = str(request.user).upper()
-    if request.method == "GET":
+def get_solicitudes_cambios_turnos(request,*, context):
+    user_claims = context["user"]               
+    usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
+    if request.method == "GET":                                       #fecha_solicitud_cambio // datetime.date.today()
        cargarDatosSolicitudes =  Cambios_de_turnos.objects.all()
     return render(request,'account/cambios_turnos.html',{
         'resultadosCambiosTurnos':cargarDatosSolicitudes,
@@ -162,7 +178,7 @@ def get_solicitudes_cambios_turnos(request, *, context):
         })
     
 @settings.AUTH.login_required
-def editar_horario(request, *, context):
+def editar_horario(request,*, context):
 
     horarioNombre = request.POST.get('horario')
     fechavigencia = request.POST.get('fechavigencia')
@@ -182,14 +198,81 @@ def editar_horario(request, *, context):
 
 
 @settings.AUTH.login_required
-def vista_cargarIo(request, *, context):
+def vista_cargarIo(request,*, context):
     if request.method == "GET":
         usuarioLogeado = str(request.user).upper()
-        return render(request,'account/cargarInstruccionesOperacionales.html',{
+        return render(request,'account/cargar_instrucciones_operacionales.html',{
             "usuarioLogeado": usuarioLogeado
         })
-        
+    
+#Vista solcitudes de GT  - > Rango por fechas
+@settings.AUTH.login_required
+def vista_solicitudes_gestion_turnos(request,*, context):
+    
+    if request.method == "GET":
+
+        print("GET completo:", request.GET)
+
+        fechaInicial_peticion = request.GET.get('fecha_inicio')
+        fechaFinal_peticion = request.GET.get('fecha_fin')
+
+        fechaInicial = None
+        fechaFinal = None
+    
+
+        if fechaInicial_peticion and fechaFinal_peticion:
+
+            #Formateamos las fechas para que evitar error de formato ---> Datetime
+            fechaInicial = datetime.strptime(fechaInicial_peticion, "%Y-%m-%d").date()
+            fechaFinal = datetime.strptime(fechaFinal_peticion, "%Y-%m-%d").date()
+
+            print(f"fecha inicial {fechaInicial} fecha final: {fechaFinal}")
+
+            solicitudesGt = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal)
+         
+            if solicitudesGt.exists():
+                print("Si existen solicitudes entre estas fechas")
+                return render(request,"account/solicitudes_gestion_turnos.html",{
+                    "mensaje":f"Se cargaron {solicitudesGt.count()} solicitudes entre este rango de fechas: {fechaInicial}, {fechaFinal}",
+                    "solicitudesGt":solicitudesGt
+                })
+            else: # Si no ingresa un rango de fechas donde existan solicitudes, se devuelven todas las solicitudes pendientes
+                print("No existen solicitudes entre estas fechas")
+                solicitudesGt = Solicitudes_Gt.objects.all()
+                return render(request, "account/solicitudes_gestion_turnos.html",{
+                    "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
+                    "solicitudesGt": solicitudesGt
+                })
+        else:
+            solicitudesGt = Solicitudes_Gt.objects.all()
+            return render(request,"account/solicitudes_gestion_turnos.html",{
+                "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
+                "solicitudesGt":solicitudesGt
+            })
+    else:
+        return Response("error de peticion") # Corregir esto
+    
+@settings.AUTH.login_required
+def vista_notificaciones(request,*, context):
+    if request.method == "GET":
+        notificaciones = Notificaciones.objects.all()
+        return render(request,"account/notificaciones.html",{
+            "notificaciones": notificaciones
+        })
+
+
+
+
 # [ ------ API ------]
+
+
+
+@api_view(["GET"])
+def get_archivos_solicitudesgt(request):
+    idSolicitud = request.GET.get("idSolicitud")
+    print(idSolicitud)
+    solicitud = Solicitudes_Gt.objects.get(id =idSolicitud)
+    return Response({"success":True, "url":solicitud.urlArchivo})
 
 #Devulve los datos del turno consultado, usa como parametro el codigo de turno para devolver los datos, este GET es para el modal editar en cargar sucesion
 @api_view(["GET"])
@@ -212,7 +295,61 @@ def consultar_turno(request):
             "observaciones": t.observaciones
         })
     return Response(data)
+
+
+@api_view(["POST"])
+def gestionarSolicitudeGt(request):
+    print("accedio a la vista")
+    idSolicitud = request.data.get("idSolicitud")
+    estadoSolicitud = request.data.get("estadoSolicitud")
+    if idSolicitud and estadoSolicitud:
+        Solicitudes_Gt.objects.filter(id = idSolicitud).update(estado=estadoSolicitud)
+        return Response({
+            "success":True,
+            "message": f"Se gestiono correctamente la solicitud con id: {idSolicitud} y su nuevo estado es: {estadoSolicitud}"
+        })
+    return Response({
+        "success":False,
+        "message":"No se recepciono un id valido, verifique"
+    })    
     
+@api_view(["POST"])
+def cargar_Io(request):
+
+    print("POST KEYS:", request.POST.keys())
+    print("FILES KEYS:", request.FILES.keys())
+    print("FILES OBJ:", request.FILES)
+
+    if request is not None :
+        titulo = request.data['tituloComunicado']
+        tipoComunicado = request.data['tipoComunicado']
+        print(request.data['fechaVigenciaCargar'])
+        fechaVigencia = request.data['fechaVigenciaCargar'] if request.data['fechaVigenciaCargar'] else None
+        cargoVisualizacion = request.data['cargos']
+        
+
+        Archivos.objects.create(titulo = titulo,  usuarioCarga = "SRM", fechaVigencia = fechaVigencia,
+                                tipoComunicado = tipoComunicado, 
+                                cargoVisualizacion = cargoVisualizacion)
+        
+        comunicado = Archivos.objects.filter(titulo = titulo,  usuarioCarga = "SRM",fechaVigencia = fechaVigencia,
+                                tipoComunicado = tipoComunicado, 
+                                cargoVisualizacion = cargoVisualizacion).first()
+        
+        comunicado.id
+        print(comunicado.id)
+        nombreComunicado = f"{tipoComunicado}_{comunicado.id}"
+        print(nombreComunicado)
+        urlArchivo = upload_to_azure_blob(request.FILES['archivoCargar'], nombreComunicado)
+        Archivos.objects.filter(id = comunicado.id).update(urlArchivo = urlArchivo)
+
+        return Response({"success":True, "message": f"Se cargo correctamente el archivo con id: {nombreComunicado}"})
+    
+    else:
+        return Response({"success":False, "message":"No se cargo ningún archivo"})    
+    
+
+
 
 #---------------------------- ENDPOINTS FRONT -------------------------------------------------]
 #Consulta: http://localhost:8000/account/api/mis-turnos/?codigo=
@@ -256,7 +393,6 @@ def get_sucesion_cargo(request):
         data.append({
             "nombre":t.nombre,
             "codigo":t.codigo,
-            "cargo":t.empleado.cargo,
             "fecha":t.fecha,
             "turno":t.codigo_horario,
             "estacion_ini":t.estado_inicio if t.estado_inicio  else  'Sin estación',
@@ -394,6 +530,28 @@ def buscar_cambio_turno(request):
 
     codigoSolicitante = request.GET.get('codigoSolicitante') #Formato para la fecha: Y/m/d
     fechaCambio = datetime.strptime(request.GET.get('fechaCambio'),"%Y/%m/%d")
+
+    horaActual = datetime.now().time()
+    parametros = Parametros.objects.first()
+
+    horaInicial = parametros.hora_inicio_permitida_cambios
+    horaFinal = parametros.hora_final_permitida_cambios
+
+    print(f"Hora actual: {horaActual}, hora incial: {horaInicial} , hora final: {horaFinal}")
+
+    #Validacion de horas seegun el modelo Parametros
+
+    if horaActual < horaInicial:
+        return Response({
+            "success":False,
+            "message":f"Estas intentando realizar una solicitud de cambio por fuera del horario establecido entre: {horaInicial} y {horaFinal}, hora actual: {horaActual}"
+        })
+    
+    if horaActual > horaFinal:
+        return Response({
+            "success":False,
+            "message":f"Estas intentando realizar una solicitud de cambio por fuera del horario establecido entre: {horaInicial} y {horaFinal}, hora actual: {horaActual}"
+        })
 
     fechaAnterior =  fechaCambio - timedelta(days=1)
 
@@ -806,7 +964,7 @@ def aprobar_solicitudes_cambios_turnos(request):
 @api_view(["POST"])
 def desaprobar_solicitudes_cambios(request):
 
-    solicitudes = request.data.get('solicitudes')
+    solicitudes = request.data.get('solicitudes') 
     
     if solicitudes: 
         for solicitud in solicitudes:
@@ -831,6 +989,124 @@ def desaprobar_solicitudes_cambios(request):
                 "success":True,
                 "message":f"Se desaprobo el cambio de turno entre: {solicitud['codigoSolicitante']} y {solicitud['codigoReceptor']}, para la fecha: {solicitud['fechaCambio']}",
             }, status=200)
+
+
+
+@api_view(["POST"])
+def solicitud_gt(request):
+
+    print("Content-Type:", request.content_type)
+    print("FILES keys:", list(request.FILES.keys()))
+    print("DATA  keys:", list(request.data.keys()))
+
+    codigoSolicitante = request.data.get('codigoSolicitante')
+    tipo_solicitud = request.data.get('tipoSolicitud')
+    fecha_solicitud = request.data.get('fechaSolicitud')
+    fecha_inicial = request.data.get('fechaInicial')
+    fecha_final = request.data.get('fechaFinal')
+    descripcion = request.data.get('descripcion')
+    archivo = request.FILES.get('archivo')
+
+    validarSolicitudExistente = Solicitudes_Gt.objects.filter(codigo = codigoSolicitante, tipo_solicitud = tipo_solicitud, fecha_inicial = fecha_inicial, fecha_final = fecha_final).exists()
+
+    #Aca validamos que no tenga solicitudes exactamente iguales
+    if validarSolicitudExistente:
+        return Response({"success":False, "message":f"Error, ya tienes un solicitud de: {tipo_solicitud}, entre estas fechas, inicial: {fecha_inicial}, fecha final: {fecha_final}"})
+    
+    #ACa validamos que el empleado este activo para generar la solicitud
+    if Empleado_Oddo.objects.filter(codigo = codigoSolicitante,  estado = "Activo").exists() == False:
+        return Response({
+            "success":False,
+            "message":f"Usted no se encuentra activo para realizar este tipo de peticiones"})
+    
+    if codigoSolicitante is not None:
+
+        empleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante,  estado = "Activo").first()
+        
+        solicitud_gt = Solicitudes_Gt.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, 
+                                      tipo_solicitud = tipo_solicitud, fecha_solicitud = fecha_solicitud, 
+                                      fecha_inicial = fecha_inicial , fecha_final = fecha_final, descripcion = descripcion)
+        
+    
+        if archivo:
+            nombreArchivoSolicitud = f"{solicitud_gt.tipo_solicitud}_{solicitud_gt.id}"
+            urlArchivo = upload_to_azure_blob(archivo,nombreArchivoSolicitud,"solicitud_gt")
+            solicitud_gt.urlArchivo = urlArchivo
+            solicitud_gt.save()
+
+        mensajeGmail = f"Te queremos informar que la solicitud {tipo_solicitud} con fecha de registro: {fecha_solicitud}, quedo registrada de manera correcta en nuestro sistema, el area de Gestión de turnos evaluara la solicitud, muchas gracias"
+        asunto = f"Solicitud de Gestión de turnos - solicitud: {tipo_solicitud}"
+
+        #enviarCorreoGmail("sbastianpp@gmail.com",mensajeGmail, asunto)
+        #def enviarCorreoGmailHTML(destinatario, nombre, solicitud, fecha_registro, asunto="Estado de tu solicitud"):
+
+        estadoEnvioCorreo = enviarCorreoGmailHTML("sbastianpp@gmail.com", empleado.nombre, tipo_solicitud, fecha_solicitud, asunto)
+        fecha_notificacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if estadoEnvioCorreo:
+            Notificaciones.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, tipo_solicitud = tipo_solicitud,
+                                      fecha_solicitud = fecha_solicitud, fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "Correo Electronico", estado = "Notificado")
+            return Response({"success":True, "message":f"Se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de reigstro:{fecha_solicitud}"})
+        else:
+            Notificaciones.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, tipo_solicitud = tipo_solicitud,
+                                      fecha_solicitud = fecha_solicitud, fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "Correo Electronico", estado = "No notificado")
+            return Response({"success":False, "message":f"No se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de reigstro:{fecha_solicitud}"}) 
+    else:
+        return Response({"success":False, "message":"Parametros de solicitud vacios"})
+    
+
+
+
+@api_view(["POST"])
+def actualizar_parametros(request):
+
+    horaInicio = request.data.get('horaInicio')
+    horaFin = request.data.get('horaFin')
+    diaInico = request.data.get('diaIncio')
+    diaFin = request.data.get('diaFin')
+    horaInicioSolicitudesGt = request.data.get('horaInicioSolicitudesGt')
+    horaFinSolicitudesGt = request.data.get('horaFinalSolicitudesGt')
+
+    parametros = Parametros.objects.all().first()
+
+    Parametros.objects.filter(id = parametros.id).update(hora_inicio_permitida_cambios = horaInicio, 
+                                                        hora_final_permitida_cambios = horaFin,
+                                                        dia_inicio_permitida_cambios = diaInico,
+                                                        dia_final_permitida_cambios = diaFin,
+                                                        hora_inicio_solicitudesgt = horaInicioSolicitudesGt,
+                                                        hora_final_solicitudesgt = horaFinSolicitudesGt
+                                                        ) 
+    send_log("Sebastian Rivera", datetime.today(), "Actualizar",
+             f"Parametros actualizados, [ Cambios de turnos ] Hora incio: {horaInicio}, Hora final: {horaFin}, [ Solicitudes GT ] Día incial:  {diaInico}, Día final solicitudes : {diaFin}, Hora incio: {horaInicioSolicitudesGt}, Hora final: {horaFinSolicitudesGt}","AppGestionTurnos","Actulizar parametros",parametros.id)
+       
+    return Response({
+        "success":True,
+        "message":f"Parametros actualizados, [ Cambios de turnos ] Hora incio: {horaInicio}, Hora final: {horaFin}, [ Solicitudes GT ] Día incial:  {diaInico}, Día final solicitudes : {diaFin}, Hora incio: {horaInicioSolicitudesGt}, Hora final: {horaFinSolicitudesGt}"
+    })
+
+@api_view(["POST"])
+def insertar_estado(request):
+
+    estadoServicio = request.data.get('estadoServicio')
+    accionBoton = request.data.get('accion')
+    if estadoServicio and accionBoton:
+        if accionBoton == "insertar":
+            Estados_servicios.objects.create(estado = estadoServicio)
+            return Response({
+                "success":True,
+                "message": f"Se inserto correctamente el estado de servicio: {estadoServicio}"
+            })
+        elif accionBoton == "eliminar":
+            Estados_servicios.objects.filter(estado = estadoServicio).delete()
+            return Response({
+                "success":True,
+                "message": f"Se elimino correctamente el estado de servicio: {estadoServicio}"
+            })
+    else:
+        return Response({
+            "success":False,
+            "message":"Estado de servicio invalido, posiblemente esta llegando vacio"
+        })
 
 @api_view(["POST"])
 def reprogramar_turno(request):

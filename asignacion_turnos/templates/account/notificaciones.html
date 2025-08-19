@@ -1,0 +1,197 @@
+{% extends 'base.html'%}
+
+{% load static %}
+
+{% block content %}
+
+<div class="usuario-bar position-relative">
+
+<!-- Izquierda: Foto + saludo -->
+<div class="d-flex align-items-center flex-shrink-0">
+  <img src="{% static 'images/admin_img.png' %}" 
+       alt="Foto de perfil" class="perfil-img">
+  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+</div>
+
+
+  <!-- Centro (posición absoluta centrada) -->
+  <div class="position-absolute top-50 start-50 translate-middle text-center">
+    <h4 class="titulo-template m-0">Sistema de Notificación a Empleados</h4>
+  </div>
+
+  <!-- Derecha -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+  </form>
+
+</div>
+
+ <!-- Acordeón de filtros -->
+<div class="accordion-container" style="margin-top: 14px;">
+  <div class="accordion-header">Filtros de Búsqueda</div>
+  <div class="accordion-body">
+    <div class="filtros-horizontal">
+      <div class="filtro-item">
+        <label for="filtroNombre">Nombre:</label>
+        <input type="text" id="filtroNombre" placeholder="Buscar por nombre">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCodigo">Código:</label>
+        <input type="text" id="filtroCodigo" placeholder="Buscar por código">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCargo">Cargo:</label>
+        <select name="select" id="filtroCargo">
+            <option value="">Todos</option>
+            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+            <option value="OPERADOR DE CONDUCCION" >OPERADOR DE CONDUCCION</option>
+            <option value="MANIOBRISTA TRENES" >MANIOBRISTA TRENES</option>
+            <option value="MANIOBRISTA TRANVIA" >MANIOBRISTA TRANVIA</option>
+            <option value="INCONSISTENCIA">INCONSISTENCIA</option>
+        </select>
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Fecha solicitud:</label>
+        <input type="date" id="filtroFechaSolicitud">
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<table class="styled-table display" id="tablaDatos">
+    <thead>
+        <tr>
+            <th>Nombre solicitante</th>
+            <th>Código</th>
+            <th>Cargo</th>
+            <th>Tipo solicitud</th>
+            <th>Fecha solicitud</th>
+            <th>Fecha notificacion</th>
+            <th>Correo electronico</th>
+            <th>Medio de notificación </th>
+            <th>Estado notificación</th>
+           
+        </tr>
+    </thead>
+    <tbody id="">
+        <tr>
+        {% for s in notificaciones %}
+            <td>{{s.nombre}}</td>
+            <td>{{s.codigo}}</td>
+            <td>{{s.cargo}}</td>
+            <td>{{s.tipo_solicitud}}</td>
+            <td>{{s.fecha_solicitud|date:"d/m/Y"}}</td>
+            <td>{{s.fecha_notificacion|date:"d/m/Y H:i"}}</td>
+            <td><span style="border-radius: 8px; background-color: #2493c7; color:aliceblue; padding: 7px;">{{s.correo}}</span></td>
+            <td><span style="border-radius: 8px; background-color: #2493c7; color:aliceblue; padding: 7px;">{{s.medio}}</span></td>
+            <td><span >{{s.estado}}</span></td>
+           
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="12">No hay registros de solicitudes GT</td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+</table>
+
+<script>
+
+
+  document.addEventListener("DOMContentLoaded",function(){
+    aplicarFiltros();
+    estilizarTabla();
+  })
+</script>
+<!--Script para estilizar los estados de la tabla-->
+<script>
+
+    function estilizarTabla(){
+      const estado = "Notificado";
+  const indiceColumna = 8;
+  const filas = document.querySelectorAll("#tablaDatos tr")
+
+  filas.forEach((fila, index )=>{
+      if(index === 0) return;
+
+      const celda = fila.cells[indiceColumna];
+
+      if(celda){
+        const span = celda.querySelector("span");
+        if(span && span.textContent.trim() !== estado){
+          celda.style.textAlign = "center";
+          span.style.backgroundColor = "red";
+          span.style.color = "aliceblue";
+          span.style.padding = "7px"; 
+          span.style.borderRadius = "8px"; 
+      }else{
+        celda.style.textAlign = "center";
+      }
+    }
+  })
+    }
+</script>
+
+<!--Script para los filtros-->
+<script>
+    // Acordeón toggle
+    document.querySelectorAll('.accordion-header').forEach(hdr => {
+      hdr.addEventListener('click', () => {
+        hdr.classList.toggle('active');
+        const body = hdr.nextElementSibling;
+        body.classList.toggle('active');
+      });
+    });
+
+
+  // Elementos de filtro
+  const filtros = {
+
+    nombre: document.getElementById('filtroNombre'),
+    codigo: document.getElementById('filtroCodigo'),
+    cargo: document.getElementById('filtroCargo'),
+    fechaSolicitud: document.getElementById('filtroFechaSolicitud'),
+  };
+
+  // Asignar eventos
+  Object.values(filtros).forEach(input => {
+    input.addEventListener('input', aplicarFiltros);
+    input.addEventListener('change', aplicarFiltros);
+  });
+
+function aplicarFiltros() {
+
+  const valorNombre = filtros.nombre.value.toLowerCase().trim();
+  const valorCodigo = filtros.codigo.value.toLowerCase().trim();
+  const valorCargo = filtros.cargo.value.toLowerCase().trim(); 
+  const valorFechaSolicitud = filtros.fechaSolicitud.value;
+
+  document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
+
+    const tNombre = row.cells[0].textContent.toLowerCase().trim();
+    const tCodigo = row.cells[1].textContent.toLowerCase().trim();
+    const tCargo = row.cells[2].textContent.toLowerCase().trim(); 
+    const tTipoSolicitud = row.cells[3].textContent.toLowerCase().trim();
+    const tFechaSolicitud = row.cells[4].textContent.trim();
+
+    const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
+    const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;
+    const coincideCargo = !valorCargo || tCargo === valorCargo;
+    
+
+
+    row.style.display = (coincideNombre && coincideCodigo && coincideCargo) ? '' : 'none';
+  });
+}
+
+</script>
+
+
+
+
+{% endblock %}

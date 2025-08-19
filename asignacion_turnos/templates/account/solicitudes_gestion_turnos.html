@@ -1,0 +1,504 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="usuario-bar position-relative">
+
+<!-- Izquierda: Foto + saludo -->
+<div class="d-flex align-items-center flex-shrink-0">
+  <img src="{% static 'images/admin_img.png' %}" 
+       alt="Foto de perfil" class="perfil-img">
+  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+</div>
+
+
+
+  <!-- Centro (posición absoluta centrada) -->
+  <div class="position-absolute top-50 start-50 translate-middle text-center">
+    <h4 class="titulo-template m-0">Solicitudes Gestión Turnos</h4>
+  </div>
+
+  <!-- Derecha -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+  </form>
+</div>
+
+ <!-- Acordeón de filtros -->
+<div class="accordion-container" style="margin-top: 14px;">
+  <div class="accordion-header">Filtros de Búsqueda</div>
+  <div class="accordion-body">
+    <div class="filtros-horizontal">
+       <div class="filtro-item">
+        <label for="filtroId">Id solicitud:</label>
+        <input type="text" id="filtroId" placeholder="Buscar por id">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroNombre">Nombre:</label>
+        <input type="text" id="filtroNombre" placeholder="Buscar por nombre">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCodigo">Código:</label>
+        <input type="text" id="filtroCodigo" placeholder="Buscar por código">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCargo">Cargo:</label>
+        <select name="select" id="filtroCargo">
+            <option value="">Todos</option>
+            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+            <option value="OPERADOR DE CONDUCCION" >OPERADOR DE CONDUCCION</option>
+            <option value="MANIOBRISTA TRENES" >MANIOBRISTA TRENES</option>
+            <option value="MANIOBRISTA TRANVIA" >MANIOBRISTA TRANVIA</option>
+            <option value="INCONSISTENCIA">INCONSISTENCIA</option>
+        </select>
+      </div>
+      <div class="filtro-item">
+        <label for="filtroTipoSolicitud">Tipo solicitud:</label>
+        <select name="select" id="filtroTipoSolicitud">
+          <option value="">TODOS</option>
+            <option value="VACACIONES">VACACIONES</option>
+            <option value="PERMISO ACADEMICO">PERMISO ACADEMICO</option>
+            <option value="OTRAS SOLICITUDES">OTRAS SOLICITUDES</option>
+        </select>
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Fecha inicial:</label>
+        <input type="date" id="filtroFechaInicial">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Fecha final:</label>
+        <input type="date" id="filtroFechaFinal">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Estado de solicitud:</label>
+        <select name="" id="filtroEstadoSolicitud">
+          <option value="">todos</option>
+          <option value="pendiente" selected>pendiente</option>
+          <option value="aprobado">aprobado</option>
+          <option value="desaprobado">desaprobado</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+<table class="styled-table display" id="tablaDatos">
+    <thead>
+        <tr>
+          <th>id</th>
+            <th>Nombre solicitante</th>
+            <th>Código</th>
+            <th>Cargo</th>
+            <th>Tipo solicitud</th>
+            <th>Fecha ingreso solicitud</th>
+            <th>Fecha inicial</th>
+            <th>Fecha final</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody id="tablaBody">
+        <tr>
+        {% for s in solicitudesGt %}  
+            <td>{{s.id}}</td>
+            <td>{{s.nombre}}</td>
+            <td>{{s.codigo}}</td>
+            <td>{{s.cargo}}</td>
+            <td>{{s.tipo_solicitud}}</td>
+            <td>{{s.fecha_solicitud|date:"d/m/Y"}}</td>
+            <td><span style="border-radius: 8px; background-color: #f1da05; padding: 7px;">{{s.fecha_inicial|date:"d/m/Y"}}</span></td>
+            <td><span style="border-radius: 8px; background-color: #f1da05; padding: 7px;">{{s.fecha_final|date:"d/m/Y"}}</span></td>
+             <td>
+               <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')">🔍Detalles</button>
+             </td> 
+             <td><span>{{ s.estado }}</span></td>
+
+        </tr>
+        {% empty %}s
+        <tr>
+            <td colspan="12">No hay registros de solicitudes GT</td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+</table>
+
+<div id="modalDescripcion" class="modal fade modal-descripcion-profesional">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <h3 class="modal-header-custom-dos">Descripción de la Solicitud </h3>
+      <p><strong>Id solicitud</strong></p><p id="idSolicitud"></p>
+      <p><strong>Tipo solicitud</strong></p><p id="tipoSolicitud"></p>
+      <p><strong>Empleado </Strong></p><p id="nombreEmpleado" class="modal-texto"></p>
+      <p><strong>Código</strong></p><p id="codigoEmpleado" class="modal-texto"></p>
+      <p><strong>Estado</strong></p><p id="estadoSolicitud" class="modal-texto"></p>
+      <br>
+      <p><strong>Descripción</strong></p>
+      <p id="contenidoDescripcion" class="modal-texto"></p>
+      <button class="btn-fourth"  id="btnVerAdjunto">🖼️Ver adjunto</button>
+       <button class="btn-third" id="respuestaSolicitud">💌Respuesta </button>
+      <button class="btn-third" id="aprobarSolicitud">✔️Aprobar</button>
+      <button class="btn-secondary" id="desaprobarSolicitud">❌Desaprobar</button>
+      <div class="modal-content" id="campoRespuesta" style="display: none;">
+        <textarea name="" id="respuesta" cols="64" rows="5" ></textarea>
+        <button class="btn-third" id="guardarRespuesta">Guardar respuesta</button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VISOR (para PDF/imagen a tamaño grande) -->
+<div id="modalVisorArchivo" aria-modal="true" role="dialog">
+  <div class="visor-dialog">
+    <div class="visor-content">
+      <button type="button" class="visor-close" aria-label="Cerrar" onclick="cerrarModalVisor()">&times;</button>
+
+      <div class="visor-header">
+        <a id="visorLink" href="#" target="_blank" rel="noopener noreferrer"><span class="material-symbols-outlined">ads_click</span>Click aqui par abrir en pestaña nueva</a>
+      </div>
+
+      <div id="visorBody" class="visor-body">
+        <!-- aquí se inyecta iframe o img -->
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!--Script del DOM-->
+<script>
+  document.addEventListener("DOMContentLoaded",function(){
+    aplicarFiltros();
+
+    const cargaSolicitudes = "{{ mensaje|escapejs }}"
+
+    if(cargaSolicitudes != ""){
+        Swal.fire({
+            icon: "success",
+            title: "Se cargaron correctamente los resultados",
+            text: cargaSolicitudes
+        });
+    }else{
+      Swal.fire({
+            icon: "success",
+            title: "No encontraron resultados para la busqueda",
+            text: cargaSolicitudes
+        });
+    }
+  })
+
+</script>
+
+<!--Agregar estilos al span - estado de la tabla -->
+<script>
+  const estado = "pendiente";
+  const indiceColumna = 9;
+  const filas = document.querySelectorAll("#tablaDatos tr")
+
+  filas.forEach((fila, index )=>{
+      if(index === 0) return;
+
+      const celda = fila.cells[indiceColumna];
+
+      if (celda) {
+      const span = celda.querySelector("span"); 
+      if (span && span.textContent.trim() === "pendiente") {
+        
+        span.style.backgroundColor = "#f1da05";
+        span.style.color = "black";
+        span.style.padding = "7px"; 
+        span.style.borderRadius = "8px"; 
+      }
+    }
+      
+  })
+</script>
+<!--Script para el boton de aprobar y desaprobar la solicitud GT-->
+<script>
+
+  document.getElementById("aprobarSolicitud").addEventListener("click",function(){
+      const idSolicitud = document.getElementById("idSolicitud").textContent
+      const estado = "aprobado" 
+      gestionarSolicitud(idSolicitud, estado)
+  })
+
+  document.getElementById("desaprobarSolicitud").addEventListener("click",function(){
+    const idSolicitud = document.getElementById("idSolicitud").textContent
+    const estado = "desaprobado" 
+    gestionarSolicitud(idSolicitud, estado)
+  })
+
+  function gestionarSolicitud(idSolicitud, estado){
+       
+        fetch("{% url 'gestionarSolicitudeGt' %}",{
+          method: "POST",
+          headers:{"Content-Type": "application/json",
+                  "X-CSRFToken": getCookie("csrftoken")},
+          body: JSON.stringify({
+            "idSolicitud": idSolicitud,
+            "estadoSolicitud": estado
+          })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if(data.success){
+              const modal = document.getElementById("modalDescripcion");
+              modal.classList.remove("show");
+              Swal.fire({
+                    icon: "success",
+                    title: "Correcto",
+                    text: data.message,
+                      }).then(()=>{
+                        window.location.reload();
+                      })
+
+            }else{
+              Swal.fire({
+                    icon: "error",
+                    title: "OOps courrio un error al aprobar la solicitud",
+                    text: data.message,
+                      }).then(()=>{
+                        window.location.reload();
+                      })
+            }
+          })
+        }
+</script>
+
+<script>
+  document.getElementById("respuestaSolicitud").addEventListener("click",function(){
+    campoRespuesta = document.getElementById("campoRespuesta")
+    campoRespuesta.style.display = "block";
+  })
+</script>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const btn = document.getElementById('btnVerAdjunto');
+  btn?.addEventListener('click', abrirVisorDesdeSolicitud);
+  // Cerrar con click afuera
+  document.getElementById('modalVisorArchivo').addEventListener('click', (e) => {
+    if (e.target.id === 'modalVisorArchivo') cerrarModalVisor();
+  });
+  // Cerrar con ESC
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModalVisor(); });
+});
+
+async function abrirVisorDesdeSolicitud() {
+
+  const id = document.getElementById('idSolicitud')?.textContent.trim();
+  if (!id) { alert('No hay idSolicitud en el modal.'); return; }
+
+  
+  const base = "{% url 'get_archivosgt' %}";
+  const urlApi = `${base}?idSolicitud=${encodeURIComponent(id)}`;
+
+  try {
+    const res = await fetch(urlApi, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { success, url } = await res.json();
+    if (!success || !url) { 
+      const modal = document.getElementById("modalDescripcion");
+      modal.classList.remove("show"); 
+        Swal.fire({
+            icon: "error",
+            title: "No hay archivos cargados",
+        })
+    }
+
+    abrirModalVisor(url);
+  } catch (err) {
+    console.error(err);
+      Swal.fire({
+            icon: "error",
+            title: "No hay archivos cargados",
+        })
+  }
+}
+
+function abrirModalVisor(fileUrl) {
+
+  const visor = document.getElementById('modalVisorArchivo');
+  const link = document.getElementById('visorLink');
+  const body = document.getElementById('visorBody');
+
+  link.href = fileUrl;
+  body.innerHTML = ''; // limpia
+
+  // Intento de mostrar: si termina en .pdf, iframe; si es imagen, <img>;
+  // si no tiene extensión, probamos imagen y si falla, iframe.
+  const lower = fileUrl.toLowerCase();
+
+  if (lower.endsWith('.pdf')) {
+    body.innerHTML = `<iframe src="${fileUrl}" width="100%" height="600px" style="border:none;"></iframe>`;
+  } else if (/\.(png|jpe?g|gif|webp|bmp|svg)$/.test(lower)) {
+    body.innerHTML = `<img src="${fileUrl}" alt="archivo" style="max-width:100%; height:auto;">`;
+  } else {
+    body.innerHTML = `
+      <img src="https://www.entresistemas.com/wp-content/uploads/Microsoft-Word-Logo-2048x2048.png" alt="" width="300px">
+      <h1>➡️ Si es un archivo de Word (.docx) da click arriba para abrir en otra pestaña 😄</h1>
+    `;
+  }
+
+
+  visor.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalVisor() {
+  const visor = document.getElementById('modalVisorArchivo');
+  visor.classList.remove('show');
+  document.body.style.overflow = '';
+  // opcional: limpiar contenido para liberar memoria
+  document.getElementById('visorBody').innerHTML = '';
+}
+</script>
+
+<!--Script para el modal de descripcion de la solicitud-->
+ <script>
+  function abrirModal(descripcion, nombre, codigo, tipoSolicitud, id, estado) {
+    const modal = document.getElementById("modalDescripcion");
+    document.getElementById("nombreEmpleado").innerText = nombre;
+    document.getElementById("codigoEmpleado").innerText = codigo;
+    document.getElementById("tipoSolicitud").innerText = tipoSolicitud;
+    document.getElementById("idSolicitud").innerText = id;
+    document.getElementById("estadoSolicitud").innerText = estado;
+    document.getElementById("contenidoDescripcion").innerText = descripcion;
+    modal.classList.add("show");
+  }
+
+  function cerrarModal() {
+    document.getElementById("campoRespuesta").style.display  = "none";
+    const modal = document.getElementById("modalDescripcion");
+    modal.classList.remove("show");
+    // Esperar la transición antes de ocultar del DOM
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 300);
+  }
+
+  // Cierra si se hace clic fuera del contenido
+  window.addEventListener('click', function (e) {
+    const modal = document.getElementById("modalDescripcion");
+    const content = modal.querySelector('.modal-content');
+    if (e.target === modal) {
+      cerrarModal();
+    }
+  });
+
+  // Asegura display:block cuando se agrega clase show
+  const observer = new MutationObserver(() => {
+    const modal = document.getElementById("modalDescripcion");
+    if (modal.classList.contains("show")) {
+      modal.style.display = "block";
+    }
+  });
+  observer.observe(document.getElementById("modalDescripcion"), { attributes: true });
+</script>
+
+<!--Script filtros-->
+<script>
+  // Acordeón toggle
+    document.querySelectorAll('.accordion-header').forEach(hdr => {
+      hdr.addEventListener('click', () => {
+        hdr.classList.toggle('active');
+        const body = hdr.nextElementSibling;
+        body.classList.toggle('active');
+      });
+    });
+
+
+  // Elementos de filtro
+  const filtros = {
+    id: document.getElementById('filtroId'),
+    nombre: document.getElementById('filtroNombre'),
+    codigo: document.getElementById('filtroCodigo'),
+    cargo: document.getElementById('filtroCargo'),
+    tipoSolicitud : document.getElementById('filtroTipoSolicitud'),
+    fechaInicial: document.getElementById('filtroFechaInicial'),
+    fechaFinal: document.getElementById('filtroFechaFinal'),
+    estado: document.getElementById('filtroEstadoSolicitud'),
+  };
+
+  // Asignar eventos
+  Object.values(filtros).forEach(input => {
+    input.addEventListener('input', aplicarFiltros);
+    input.addEventListener('change', aplicarFiltros);
+  });
+function aplicarFiltros() {
+  const valorId = filtros.id.value.toLowerCase().trim();
+  const valorNombre = filtros.nombre.value.toLowerCase().trim();
+  const valorCodigo = filtros.codigo.value.toLowerCase().trim();
+  const valorCargo = filtros.cargo.value.toLowerCase().trim(); 
+  const valorTipoSolicitud = filtros.tipoSolicitud.value.toLowerCase().trim();
+  const valorFechaInicial = filtros.fechaInicial.value;
+  const valorFechaFinal = filtros.fechaFinal.value;
+  const valorEstado = filtros.estado.value;
+
+  document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
+    const tId = row.cells[0].textContent.toLowerCase().trim();
+    const tNombre = row.cells[1].textContent.toLowerCase().trim();
+    const tCodigo = row.cells[2].textContent.toLowerCase().trim();
+    const tCargo = row.cells[3].textContent.toLowerCase().trim(); 
+    const tTipoSolicitud = row.cells[4].textContent.toLowerCase().trim();
+    const tFechaInicial = row.cells[6].textContent.trim();
+    const tFechaFinal = row.cells[7].textContent.trim();
+    const tEstado = row.cells[9].textContent.toLowerCase().trim();
+
+    const coincideId = !valorId || tId === valorId;
+    const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
+    const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;
+    const coincideCargo = !valorCargo || tCargo === valorCargo;
+    const coincideSolicitud = !valorTipoSolicitud || tTipoSolicitud === valorTipoSolicitud;
+    
+
+    const fechaInicialFiltro = valorFechaInicial ? new Date(valorFechaInicial) : null;
+    const fechaFinalFiltro = valorFechaFinal ? new Date(valorFechaFinal) : null;
+    const fechaInicialDato = new Date(formatoFechaDMYaISO(tFechaInicial));
+    const fechaFinalDato = new Date(formatoFechaDMYaISO(tFechaFinal));
+
+    const coincideEstado = !valorEstado || tEstado === valorEstado;
+
+    const coincideRangoFechas = (!fechaInicialFiltro || fechaInicialDato >= fechaInicialFiltro) &&
+                                (!fechaFinalFiltro || fechaFinalDato <= fechaFinalFiltro);
+
+    row.style.display = (coincideNombre && coincideCodigo && coincideCargo && coincideSolicitud && coincideRangoFechas && coincideEstado && coincideId) ? '' : 'none';
+  });
+}
+
+function formatoFechaDMYaISO(fechaDMY) {
+  const [dia, mes, anio] = fechaDMY.split('/');
+  return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+}
+
+
+</script>
+
+<script>
+
+</script>
+{% endblock %}
