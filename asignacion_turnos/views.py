@@ -349,8 +349,6 @@ def cargar_Io(request):
         return Response({"success":False, "message":"No se cargo ningún archivo"})    
     
 
-
-
 #---------------------------- ENDPOINTS FRONT -------------------------------------------------]
 #Consulta: http://localhost:8000/account/api/mis-turnos/?codigo=
 #Trae los turnos del conductor usando como parametro el codigo, este endpoint es para el conductor logeado
