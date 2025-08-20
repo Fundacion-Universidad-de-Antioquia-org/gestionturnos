@@ -340,7 +340,8 @@ def cargar_Io(request):
         print(comunicado.id)
         nombreComunicado = f"{tipoComunicado}_{comunicado.id}"
         print(nombreComunicado)
-        urlArchivo = upload_to_azure_blob(request.FILES['archivoCargar'], nombreComunicado)
+
+        urlArchivo = upload_to_azure_blob(request.FILES['archivoCargar'], nombreComunicado, "comunicaciones")
         Archivos.objects.filter(id = comunicado.id).update(urlArchivo = urlArchivo)
 
         return Response({"success":True, "message": f"Se cargo correctamente el archivo con id: {nombreComunicado}"})

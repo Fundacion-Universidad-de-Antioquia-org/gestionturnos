@@ -730,6 +730,7 @@ function actualizarVistaCargos() {
           .then(response => response.json())
           .then(data => {
             if (data.success){
+
               Swal.fire({
                 title: "¡Carga exitosa!",
                 text: data.message,

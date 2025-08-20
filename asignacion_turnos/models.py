@@ -161,7 +161,7 @@ class Archivos(models.Model):
     tipoComunicado = models.CharField(max_length=30)
     fechaVigencia = models.DateField(null=True, blank=True)
     cargoVisualizacion = models.CharField(max_length=50)
-    urlArchivo = models.CharField(max_length=200)
+    urlArchivo = models.URLField(max_length=2000)
 
 
 class ConfirmacionLectura(models.Model):
