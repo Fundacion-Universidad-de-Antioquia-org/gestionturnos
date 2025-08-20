@@ -2,6 +2,7 @@ import requests
 from asignacion_turnos.models import Empleado_Oddo
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 
 load_dotenv()
@@ -42,21 +43,29 @@ def getOddo_datos_empleados():
             if isinstance(empleados, list):
                 for i, emp in enumerate(empleados):
                     try:
+                        try:
+                            cargo = str(emp['job_title']).strip()
+                        except KeyError:
+                            cargo = "INCONSISTENCIA"
+                        if not cargo:
+                            cargo = "INCONSISTENCIA"
+                    
                         Empleado_Oddo.objects.update_or_create(
                             cedula =  str(emp['cedula']).strip(), defaults={
                             "nombre" : str(emp['nombre']).strip(),
                             "codigo": str(emp['Codigo tripulante']).strip(),
                             "estado" :str(emp['estado']).strip(),
-                            "cargo": str(emp['job_title']).strip(),
+                            "cargo": cargo, 
                             "estado": str(emp['estado']).strip(),
-                            "municipio": str(emp['municipio']).strip(),
-                            "direccion":str(emp['direccion']).strip(),
-                            "barrio": str(emp['barrio']).strip(),
+                            #"municipio": str(emp['municipio']).strip(),
+                            #"direccion":str(emp['direccion']).strip(),
+                            #"barrio": str(emp['barrio']).strip(),
                             "formacion" : str(emp['formacion_conduccion']).strip()
                             })
-                        print(f"[{i+1}] Insertado: {emp['cedula']} - {emp['nombre']}")
+                        print(f"[{i+1}] Insertado: {emp['cedula']} - {emp['nombre']}, tiempo: {datetime.now().strftime("%H:%M:%S")}" )
                     except Exception as e:
                         print(f"Error en el registro {i+1}: {e}")
+
                         print(f"Datos: {emp}")
             else:
                 print(" ERROR: La respuesta no es una lista. Detalle:")

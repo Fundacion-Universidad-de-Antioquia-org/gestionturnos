@@ -16,7 +16,7 @@ class Sucesion(models.Model):
     estado_fin = models.CharField(max_length=50, blank=True, null=True)
     hora_inicio = models.TimeField(blank=True, null=True)
     hora_fin = models.TimeField(blank=True, null=True)
-    usuario_carga = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    usuario_carga = models.CharField(max_length=100, null=True)
     fecha_carga = models.DateField(auto_now_add=True)
     estado_sucesion = models.CharField(max_length=50, default="revision")
     # Claves foraneas
@@ -50,10 +50,9 @@ class Horario(models.Model):
     finbalcir = models.CharField("Circuito Final", max_length=100, null=True, blank=True)
     duracion = models.CharField("Duración Turno", max_length=50, null=True, blank=True)
     observaciones = models.TextField("Observaciones", null=True, blank=True)
-
-    usuario_carga = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    usuario_carga = models.CharField(max_length=100, null=True)
     fecha_carga = models.DateField(default= timezone.now, editable=True)
-
+    
     class Meta:
         verbose_name = "Horario de Turno"
         verbose_name_plural = "Horarios de Turno"
@@ -67,7 +66,7 @@ class Empleado_Oddo(models.Model):
     nombre = models.CharField(max_length=50)
     codigo = models.CharField(max_length=10)
     estado = models.CharField(max_length=15, null= True)
-    cargo = models.CharField(max_length=50)
+    cargo = models.CharField(max_length=50 , null=True, blank=True)
     #zona = models.CharField(max_length=50, null= True)
     #municipio = models.CharField(max_length=50, null=True)
     #direccion = models.CharField(max_length=100, null=True)

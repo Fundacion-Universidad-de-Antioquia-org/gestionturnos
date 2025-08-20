@@ -102,24 +102,24 @@ def vista_cargarSucesionTrenes(request,*, context):
                 else:
                     if file_cuadro:
                         if validarExcel(file_cuadro):   
-                            total_cuadroServicios,erroresSemana = procesar_cuadro_turnos(file_cuadro,request.user)
+                            total_cuadroServicios,erroresSemana = procesar_cuadro_turnos(file_cuadro,usuarioLogeado)
 
                     if file_cuadroServiciosSabado:
                         if validarExcel(file_cuadroServiciosSabado):
-                            total_cuadroServiciosSabado,erroresSabados = procesar_cuadro_turnos(file_cuadroServiciosSabado,request.user)
+                            total_cuadroServiciosSabado,erroresSabados = procesar_cuadro_turnos(file_cuadroServiciosSabado,usuarioLogeado)
 
                     if file_cuadroServiciosDomingo:
                         if validarExcel(file_cuadroServiciosDomingo):
-                            total_cuadroServiciosDomingo,erroresDomingos = procesar_cuadro_turnos(file_cuadroServiciosDomingo,request.user)
+                            total_cuadroServiciosDomingo,erroresDomingos = procesar_cuadro_turnos(file_cuadroServiciosDomingo,usuarioLogeado)
 
                     if file_cuadroServiciosEspecial: 
                         if validarExcel(file_cuadroServiciosEspecial):
-                            total_cuadroServiciosEspecial,erroresEspecial = procesar_cuadro_turnos(file_cuadroServiciosEspecial,request.user)
+                            total_cuadroServiciosEspecial,erroresEspecial = procesar_cuadro_turnos(file_cuadroServiciosEspecial,usuarioLogeado)
                             
                     if file_sucesion:
                         if validarExcel(file_sucesion):
                             
-                            total_sucesion, errores, turnoDuplicadoMismoDia = procesar_sucesion_multifila(file_sucesion, request.user)
+                            total_sucesion, errores, turnoDuplicadoMismoDia = procesar_sucesion_multifila(file_sucesion, usuarioLogeado)
                             resultadosCargarSucesion = f"Se cargaron correctamente {total_sucesion} registros."
                             sucesion_mas_particularidades = Sucesion.objects.select_related('horario').all()
 
