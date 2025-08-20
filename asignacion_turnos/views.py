@@ -321,6 +321,7 @@ def cargar_Io(request):
     print("FILES OBJ:", request.FILES)
 
     if request is not None :
+
         titulo = request.data['tituloComunicado']
         tipoComunicado = request.data['tipoComunicado']
         print(request.data['fechaVigenciaCargar'])
@@ -328,19 +329,14 @@ def cargar_Io(request):
         cargoVisualizacion = request.data['cargos']
         
 
-        Archivos.objects.create(titulo = titulo,  usuarioCarga = "SRM", fechaVigencia = fechaVigencia,
+        comunicado =  Archivos.objects.create(titulo = titulo,  usuarioCarga = "SRM", fechaVigencia = fechaVigencia,
                                 tipoComunicado = tipoComunicado, 
                                 cargoVisualizacion = cargoVisualizacion)
-        
-        comunicado = Archivos.objects.filter(titulo = titulo,  usuarioCarga = "SRM",fechaVigencia = fechaVigencia,
-                                tipoComunicado = tipoComunicado, 
-                                cargoVisualizacion = cargoVisualizacion).first()
-        
         comunicado.id
         print(comunicado.id)
         nombreComunicado = f"{tipoComunicado}_{comunicado.id}"
         print(nombreComunicado)
-
+        
         urlArchivo = upload_to_azure_blob(request.FILES['archivoCargar'], nombreComunicado, "comunicaciones")
         Archivos.objects.filter(id = comunicado.id).update(urlArchivo = urlArchivo)
 
