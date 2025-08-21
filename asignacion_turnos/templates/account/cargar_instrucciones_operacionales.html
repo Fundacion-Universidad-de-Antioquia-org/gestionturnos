@@ -402,6 +402,8 @@
 {% block scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+  const tipoArchivoSubido = "";
   
     const botonPipo = document.getElementById("cargarPipo");
     const selectTipo = document.getElementById("tipo");
@@ -456,19 +458,20 @@ function previewArchivo(event) {
     if (file.type.includes("pdf")) {
       visorPDF.src = url;
       visorPDF.style.display = "block";
+      tipoArchivoSubido = "pdf"
     } else if (file.type.startsWith("image")) {
       visorIMG.src = url;
       visorIMG.style.display = "block";
+      tipoArchivoSubido = "image"
     } else if (file.type.startsWith("video")) {
       visorVideo.src = url;
       visorVideo.style.display = "block";
+      tipoArchivoSubido = "video"
     } else {
       mensajeInicial.style.display = "block";
     }
   }
 }
-
-
 
   function mostrarCagarPipoFormulario(){
     document.getElementById("tipo").addEventListener("change", function(){
@@ -657,6 +660,7 @@ function actualizarVistaCargos() {
 <script>
   document.getElementById("cargarArchivos").addEventListener("click",function(){
 
+    
     const formData = new FormData()
     let usuarioLogeado = "{{ usuarioLogeado }}"
   
@@ -665,6 +669,7 @@ function actualizarVistaCargos() {
     fechaVigenciaCargar = document.getElementById("fechaVigencia").value
     tituloComunicado = document.getElementById("tituloComunicado").value.toUpperCase().trim();
     
+    alert(tipoArchivoSubido)
     
     const archivoCargar = document.getElementById("archivo").files[0];
 
@@ -680,6 +685,7 @@ function actualizarVistaCargos() {
           formData.append('fechaVigenciaCargar', fechaVigenciaCargar)
           formData.append('archivoCargar', archivoCargar)
           formData.append('usuarioLogeado', usuarioLogeado.toUpperCase())
+          formData.append('tipoArchivo' , tipoArchivoSubido)
 
         try{
           fetch("{% url 'cargarComunicados' %}",{
@@ -708,7 +714,6 @@ function actualizarVistaCargos() {
                 icon: "error"
               })
         }
-
         }else{
            Swal.fire({
             icon: "error",
@@ -725,6 +730,8 @@ function actualizarVistaCargos() {
         formData.append('fechaVigenciaCargar', fechaVigenciaCargar)
         formData.append('archivoCargar', archivoCargar)
         formData.append('usuarioLogeado', usuarioLogeado.toUpperCase())
+        formData.append('tipoArchivo' , tipoArchivoSubido)
+
 
          try{
 
@@ -742,7 +749,7 @@ function actualizarVistaCargos() {
                 text: data.message,
                 icon: "success"
               })
-              .then(()=>{
+              .then(()=>{  
                 location.reload()
               })
               

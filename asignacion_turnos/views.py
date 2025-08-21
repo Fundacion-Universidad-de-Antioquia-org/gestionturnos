@@ -335,6 +335,7 @@ def cargar_Io(request):
         fechaVigencia = request.data['fechaVigenciaCargar'] if request.data['fechaVigenciaCargar'] else None
         cargoVisualizacion = request.data['cargos']
         usuarioLogeado = request.data['usuarioLogeado']
+        tipoArchivo = request.data['tipoArchivo']
         
 
         comunicado =  Archivos.objects.create(titulo = titulo,  usuarioCarga = usuarioLogeado, fechaVigencia = fechaVigencia,
@@ -346,7 +347,7 @@ def cargar_Io(request):
         print(nombreComunicado)
         
         urlArchivo = upload_to_azure_blob(request.FILES['archivoCargar'], nombreComunicado, "comunicaciones")
-        Archivos.objects.filter(id = comunicado.id).update(urlArchivo = urlArchivo)
+        Archivos.objects.filter(id = comunicado.id).update(urlArchivo = urlArchivo, tipoArchivo = tipoArchivo)
 
         return Response({"success":True, "message": f"Se cargo correctamente el archivo con id: {nombreComunicado}, usuario que carga: {usuarioLogeado}"})
     
@@ -1120,14 +1121,15 @@ def get_comunicados(request):
     print(f"codigo: {codigo}, cargo: {cargo}")
     #fechaVigencia= request.data.get('fechaVigencia')
 
-    archivos = Archivos.objects.filter(fechaVigencia__gte = datetime.today())
+    archivos = Archivos.objects.filter( Q(fechaVigencia__gte = datetime.today()) | Q(fechaVigencia__isnull=True))
     listaArchivos = []
     print(f"Cantidad de comunicados en la BD: {archivos.count()}")
+    print(archivos)
 
     for filtro in archivos:
         if cargo in filtro.cargoVisualizacion:
             if not ConfirmacionLectura.objects.filter(codigo = codigo, archivos = filtro.id).exists():
-                listaArchivos.append(f"id: {filtro.id}, titulo: {filtro.titulo} url: {filtro.urlArchivo}")
+                listaArchivos.append(f"id: {filtro.id}, url: {filtro.urlArchivo}, tipo de archivo: {filtro.tipoArchivo}")
 
     return Response({"success":True , "datos": listaArchivos})
     

@@ -162,6 +162,7 @@ class Archivos(models.Model):
     fechaVigencia = models.DateField(null=True, blank=True)
     cargoVisualizacion = models.CharField(max_length=400)
     urlArchivo = models.URLField(max_length=2000)
+    tipoArchivo = models.CharField(max_length= 50, null=True)
 
 
 class ConfirmacionLectura(models.Model):
