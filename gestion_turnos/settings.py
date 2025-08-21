@@ -38,6 +38,16 @@ SECRET_KEY = 'django-insecure-ssu*fg*a4akxu3eo$sscpgy4=tlg8e6$c5!cs0%-&c*iv@8por
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+# MUY IMPORTANTE: incluir el esquema (https://)
+CSRF_TRUSTED_ORIGINS = [
+    "https://gtconduccion.fundacionudea.net",
+    # Opcional (si usas subdominios o Azure por detrás):
+    "https://*.fundacionudea.net",
+    "https://*.azurewebsites.net",
+]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 
 # Application definition
