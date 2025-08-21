@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import CargarDocumentosForm, CargarSucesionOperadoresForm
+from .forms import CargarDocumentosForm, CargarSucesionOperadoresForm,CargarDatosProno
 from django.contrib.auth import authenticate , login
 from django.http import HttpResponse
 from .resources.cargarSucesion import procesar_sucesion_multifila
@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from datetime import datetime
 from django.conf import settings
+
 
 
 from datetime import datetime, timedelta, date
@@ -25,6 +26,8 @@ from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
 from .resources.cargarArchivosBlob import upload_to_azure_blob
 from .resources.enviarCorreoGmail import enviarCorreoGmail, enviarCorreoGmailHTML
+from .resources.buscarErrores import leer_y_filtrar_excel
+
 
 
 
@@ -118,7 +121,6 @@ def vista_cargarSucesionTrenes(request,*, context):
                             
                     if file_sucesion:
                         if validarExcel(file_sucesion):
-                            
                             total_sucesion, errores, turnoDuplicadoMismoDia = procesar_sucesion_multifila(file_sucesion, usuarioLogeado)
                             resultadosCargarSucesion = f"Se cargaron correctamente {total_sucesion} registros."
                             sucesion_mas_particularidades = Sucesion.objects.select_related('horario').all()
@@ -262,10 +264,41 @@ def vista_notificaciones(request,*, context):
             "notificaciones": notificaciones
         })
 
-#@settings.AUTH.login_required
-#def vista_validarErroresSucesion(request, *,context):
+# views.py
+@settings.AUTH.login_required
+def vista_validarErroresSucesion(request, *, context):
 
-#    if request.method == "GET":
+    if request.method == "GET":
+        return render(request, "account/validarErrores.html", {
+            "form": CargarDatosProno(),
+            "dfresultado": None
+        })
+
+    form = CargarDatosProno(request.POST, request.FILES)
+    if not form.is_valid():
+        return render(request, "account/validarErrores.html", {
+            "form": form,
+            "dfresultado": None,
+            "error": "Formulario inválido"
+        })
+
+    f = form.cleaned_data["file_cargarDatosProno"]
+    if not validarExcel(f):
+        return render(request, "account/validarErrores.html", {
+            "form": form,
+            "dfresultado": None,
+            "error": "Excel no válido"
+        })
+
+    filas = leer_y_filtrar_excel(f)  # ← lista de dicts JSON-safe
+
+    return render(request, "account/validarErrores.html", {
+        "form": form,
+        "dfresultado": filas  # ← iteras esto en el template
+    })
+
+
+
 
 
 

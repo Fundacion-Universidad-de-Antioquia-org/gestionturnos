@@ -1,1 +1,109 @@
-{% extends 'base.html %}
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="usuario-bar position-relative">
+
+<!-- Izquierda: Foto + saludo -->
+<div class="d-flex align-items-center flex-shrink-0">
+  <img src="{% static 'images/admin_img.png' %}" 
+       alt="Foto de perfil" class="perfil-img">
+  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+</div>
+
+
+  <!-- Centro (posición absoluta centrada) -->
+  <div class="position-absolute top-50 start-50 translate-middle text-center">
+    <h4 class="titulo-template m-0">Solicitudes cambios de turnos</h4>
+  </div>
+
+  <!-- Derecha -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+  </form>
+</div>
+
+<!-- Acordeon carga de archivos-->
+<div class="accordion-container"  style="margin-top: 14px;">
+  <div class="accordion-header"> Carga de Archivos | Pre-carga</div>
+  <div class="accordion-body" id="acordeonCarga">
+   
+    <form action="{% url 'validarErrores' %}" method="POST" id="formCargaDatos" enctype="multipart/form-data">
+      {% csrf_token %}  
+      <div class="filtros-horizontal">
+        <div class="filtros-horizontal">
+  <div class="filtro-item filtro">
+    <label for="file_cargarDatosProno">Datos de revisión - PRONO</label>
+    <input type="file" name="file_cargarDatosProno" id="archivoRevision" class="input-archivo">
+  </div>
+  
+</div>
+      </div>
+      <div style="margin-top: 15px;">
+        <button type="submit" class="btn btn-primary" name="action" value="cargar" id="btnCargar">Cargar archivos</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<table class="styled-table display">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Cédula</th>
+      <th>Días sin descanso</th>
+      <th>Estado</th>
+      <th>Semana uno</th>
+      <th>Semana dos</th>
+    </tr>
+  </thead>
+  <tbody id="tablaBody" >
+    {% for r in dfresultado %}
+    <tr>
+      <td>{{ r.NOMBRE }}</td>
+      <td>{{ r.CEDULA }}</td>
+      <td>{{ r.DIAS_SIN_DESCANSO }}</td>
+      <td>{{ r.ESTADO }}</td>
+      <td>{{ r.DESCANSO_SEM1 }}</td>
+      <td>{{ r.DESCANSO_SEM2 }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="12">No hay registros para validar</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+
+<script>
+    document.addEventListener("DOMContentLoaded",function(){
+         Swal.fire({
+                title: "¡Bienvenido!",
+                text: "LOS DATOS DE PRONO DEBEN SER LA PRIMER HOJA DEL ARCHIVO DE EXCEL",
+                icon: "success"
+              })
+      
+    })
+</script>
+<script>
+      // Acordeón toggle
+    document.querySelectorAll('.accordion-header').forEach(hdr => {
+      hdr.addEventListener('click', () => {
+        hdr.classList.toggle('active');
+        const body = hdr.nextElementSibling;
+        body.classList.toggle('active');
+      });
+    });
+</script>
+
+
+{% endblock %}

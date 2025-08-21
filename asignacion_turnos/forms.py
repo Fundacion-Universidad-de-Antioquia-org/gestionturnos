@@ -40,9 +40,10 @@ class CargarSucesionOperadoresForm(forms.Form):
         widget=forms.ClearableFileInput(attrs={'class': 'input-archivo', 'id':'archivoSucesion'}))
     
 
-
-        
     
-
+class CargarDatosProno(forms.Form):
+    file_cargarDatosProno = forms.FileField(
+        label="Datos de revisión", required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'input-archivo', 'id':'archivoRevision', 'required': True}))
 
 

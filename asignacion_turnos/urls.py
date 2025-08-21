@@ -15,6 +15,7 @@ urlpatterns = [
     path('cargarInstruccionesOperacionales/',views.vista_cargarIo, name = 'cargarIo'),
     path('solicitudes_gestion_turnos/', views.vista_solicitudes_gestion_turnos, name = "solicitudesGt"),
     path('notificaciones/',views.vista_notificaciones, name="notificaciones"),
+    path('validarErrores/', views.vista_validarErroresSucesion, name="validarErrores"),
     # urls  - > API
     path("api/mis-turnos/", views.get_mis_turnos, name="get_mis_turnos"),
     path('api/sucesion/',views.get_sucesion_cargo,name="get_sucesion_cargo"),
