@@ -695,6 +695,9 @@ function actualizarVistaCargos() {
                 text: data.message,
                 icon: "success"
               })
+              .then(()=>{
+                location.reload()
+              })
             }
           })
 
