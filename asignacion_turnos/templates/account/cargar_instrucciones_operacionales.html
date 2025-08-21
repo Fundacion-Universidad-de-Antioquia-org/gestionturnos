@@ -660,7 +660,6 @@ function actualizarVistaCargos() {
 <script>
   document.getElementById("cargarArchivos").addEventListener("click",function(){
 
-    
     const formData = new FormData()
     let usuarioLogeado = "{{ usuarioLogeado }}"
   
@@ -668,8 +667,6 @@ function actualizarVistaCargos() {
     cargos = document.getElementById("inputCargosSeleccionados").value;
     fechaVigenciaCargar = document.getElementById("fechaVigencia").value
     tituloComunicado = document.getElementById("tituloComunicado").value.toUpperCase().trim();
-    
-    alert(tipoArchivoSubido)
     
     const archivoCargar = document.getElementById("archivo").files[0];
 
@@ -723,7 +720,7 @@ function actualizarVistaCargos() {
         };
       
       }else{
-          /*Comunicados, boletines, lecciones aprendidas*/
+          /*Comunicados, boletines, lecciones aprendidas -*/
         formData.append('tituloComunicado',tituloComunicado.toUpperCase())
         formData.append('tipoComunicado', tipoComunicado.toUpperCase())
         formData.append('cargos', cargos)
