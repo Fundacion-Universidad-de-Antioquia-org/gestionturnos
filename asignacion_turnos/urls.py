@@ -34,4 +34,5 @@ urlpatterns = [
     path('api/get_archivos_solicitudesgt/',views.get_archivos_solicitudesgt, name="get_archivosgt"),
     path('api/aprobarSolicitudesGt/',views.gestionarSolicitudeGt, name="gestionarSolicitudeGt"),
     path('api/insertar_estado/', views.insertar_estado, name= "insertar_estado"),
+    path('api/get_comunicados/',views.get_comunicados, name= "get_comunicados"),
 ]

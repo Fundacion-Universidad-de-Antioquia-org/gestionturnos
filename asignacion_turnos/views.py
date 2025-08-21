@@ -20,7 +20,7 @@ from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from asignacion_turnos.models import Sucesion
-from asignacion_turnos.models import Horario , Cambios_de_turnos, Estados_servicios,Empleado_Oddo, Parametros, Archivos, Solicitudes_Gt, Notificaciones
+from asignacion_turnos.models import Horario , Cambios_de_turnos, Estados_servicios,Empleado_Oddo, Parametros, Archivos, Solicitudes_Gt, Notificaciones, ConfirmacionLectura
 from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
 from .resources.cargarArchivosBlob import upload_to_azure_blob
@@ -199,8 +199,10 @@ def editar_horario(request,*, context):
 
 @settings.AUTH.login_required
 def vista_cargarIo(request,*, context):
+
     if request.method == "GET":
-        usuarioLogeado = str(request.user).upper()
+        user_claims = context["user"]               
+        usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
         return render(request,'account/cargar_instrucciones_operacionales.html',{
             "usuarioLogeado": usuarioLogeado
         })
@@ -259,6 +261,11 @@ def vista_notificaciones(request,*, context):
         return render(request,"account/notificaciones.html",{
             "notificaciones": notificaciones
         })
+
+#@settings.AUTH.login_required
+#def vista_validarErroresSucesion(request, *,context):
+
+#    if request.method == "GET":
 
 
 
@@ -327,9 +334,10 @@ def cargar_Io(request):
         print(request.data['fechaVigenciaCargar'])
         fechaVigencia = request.data['fechaVigenciaCargar'] if request.data['fechaVigenciaCargar'] else None
         cargoVisualizacion = request.data['cargos']
+        usuarioLogeado = request.data['usuarioLogeado']
         
 
-        comunicado =  Archivos.objects.create(titulo = titulo,  usuarioCarga = "SRM", fechaVigencia = fechaVigencia,
+        comunicado =  Archivos.objects.create(titulo = titulo,  usuarioCarga = usuarioLogeado, fechaVigencia = fechaVigencia,
                                 tipoComunicado = tipoComunicado, 
                                 cargoVisualizacion = cargoVisualizacion)
         comunicado.id
@@ -340,7 +348,7 @@ def cargar_Io(request):
         urlArchivo = upload_to_azure_blob(request.FILES['archivoCargar'], nombreComunicado, "comunicaciones")
         Archivos.objects.filter(id = comunicado.id).update(urlArchivo = urlArchivo)
 
-        return Response({"success":True, "message": f"Se cargo correctamente el archivo con id: {nombreComunicado}"})
+        return Response({"success":True, "message": f"Se cargo correctamente el archivo con id: {nombreComunicado}, usuario que carga: {usuarioLogeado}"})
     
     else:
         return Response({"success":False, "message":"No se cargo ningún archivo"})    
@@ -1102,6 +1110,28 @@ def insertar_estado(request):
             "success":False,
             "message":"Estado de servicio invalido, posiblemente esta llegando vacio"
         })
+
+@api_view(["GET"])
+def get_comunicados(request):
+
+    codigo = request.GET.get('codigo')
+    cargo = request.GET.get('cargo')
+
+    print(f"codigo: {codigo}, cargo: {cargo}")
+    #fechaVigencia= request.data.get('fechaVigencia')
+
+    archivos = Archivos.objects.filter(fechaVigencia__gte = datetime.today())
+    listaArchivos = []
+    print(f"Cantidad de comunicados en la BD: {archivos.count()}")
+
+    for filtro in archivos:
+        if cargo in filtro.cargoVisualizacion:
+            if not ConfirmacionLectura.objects.filter(codigo = codigo, archivos = filtro.id).exists():
+                listaArchivos.append(f"id: {filtro.id}, titulo: {filtro.titulo} url: {filtro.urlArchivo}")
+
+    return Response({"success":True , "datos": listaArchivos})
+    
+
 
 @api_view(["POST"])
 def reprogramar_turno(request):

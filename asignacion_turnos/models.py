@@ -167,5 +167,8 @@ class Archivos(models.Model):
 class ConfirmacionLectura(models.Model):
     fechaLectura = models.DateField
     confirmacionLectura = models.CharField(max_length=10, default="pendiente")
+    cedula = models.CharField(max_length=20, null=True)
+    nombre = models.CharField(max_length=50, null=True)
+    codigo = models.CharField(max_length=10, null=True)
     archivos = models.ForeignKey('Archivos', on_delete=models.SET_NULL, null=True, blank=True)
     empleado = models.ForeignKey('Empleado_Oddo',on_delete=models.SET_NULL,null=True,blank=True)

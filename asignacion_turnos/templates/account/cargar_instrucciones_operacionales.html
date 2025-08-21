@@ -658,7 +658,8 @@ function actualizarVistaCargos() {
   document.getElementById("cargarArchivos").addEventListener("click",function(){
 
     const formData = new FormData()
-
+    let usuarioLogeado = "{{ usuarioLogeado }}"
+  
     tipoComunicado = document.getElementById("tipo").value
     cargos = document.getElementById("inputCargosSeleccionados").value;
     fechaVigenciaCargar = document.getElementById("fechaVigencia").value
@@ -672,13 +673,13 @@ function actualizarVistaCargos() {
       if(tipoComunicado == "INSTRUCCION OPERACIONAL"){
 
         if(fechaVigenciaCargar !== ""){
-
-            alert(fechaVigenciaCargar)
-          formData.append('tituloComunicado',tituloComunicado)
-          formData.append('tipoComunicado', tipoComunicado)
+          /* Solo IO ->*/
+          formData.append('tituloComunicado',tituloComunicado.toUpperCase())
+          formData.append('tipoComunicado', tipoComunicado.toUpperCase())
           formData.append('cargos', cargos)
           formData.append('fechaVigenciaCargar', fechaVigenciaCargar)
           formData.append('archivoCargar', archivoCargar)
+          formData.append('usuarioLogeado', usuarioLogeado.toUpperCase())
 
         try{
           fetch("{% url 'cargarComunicados' %}",{
@@ -686,6 +687,7 @@ function actualizarVistaCargos() {
           headers:{'X-CSRFToken': getCSRFToken()},
           body: formData
           })
+          .then(response => response.json())
           .then(data => {
             if (data.success){
               Swal.fire({
@@ -714,11 +716,12 @@ function actualizarVistaCargos() {
       
       }else{
           /*Comunicados, boletines, lecciones aprendidas*/
-        formData.append('tituloComunicado',tituloComunicado)
-        formData.append('tipoComunicado', tipoComunicado)
+        formData.append('tituloComunicado',tituloComunicado.toUpperCase())
+        formData.append('tipoComunicado', tipoComunicado.toUpperCase())
         formData.append('cargos', cargos)
         formData.append('fechaVigenciaCargar', fechaVigenciaCargar)
         formData.append('archivoCargar', archivoCargar)
+        formData.append('usuarioLogeado', usuarioLogeado.toUpperCase())
 
          try{
 
