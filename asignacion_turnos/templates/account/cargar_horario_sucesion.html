@@ -199,8 +199,6 @@
             {% endfor %}
         </tbody>
     </table>
-  
-    {{ turnoDuplicadoMismoDia|json_script:"turnoDuplicadoMismoDia-json" }}
 
 <!-- Paginación -->
 <div id="paginacion" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
@@ -223,10 +221,11 @@
      <div class="filtro-item">
         <label>Cargo</label>
     <select name="" id="editCargo">
-        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
-        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
-        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">OPERADOR DE CONDUCCION</option>
-        <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">MANIOBRISTA</option>
+        <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+        <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+        <option value="OPERADOR(A) DE CONDUCCION">OPERADOR(A) DE CONDUCCION</option>
+        <option value="MANIOBRISTA TRENES">MANIOBRISTA TRENES</option>
+        <option value="MANIOBRISTA TRANVIA">MANIOBRISTA TRANVIA</option>
     </select>
     </div>
 
@@ -286,49 +285,12 @@
  <script>
     document.addEventListener("DOMContentLoaded", () => {
 
-    formulario = document.getElementById("formCargaDatos"); 
     ocultarBotonesCarga();
-    mostrarPagina(1);
+    // importante: primero habilitar tbody y aplicar filtros (aunque estén vacíos)
     aplicarFiltros();
+    // luego sí, pagina
+    mostrarPagina(1);
     mostrarBotonesCargaTrenes();
-    let contenedorTurnosDuplicados = ""; 
-    
-    const turnoDuplicadoMismoDia = JSON.parse(document.getElementById("turnoDuplicadoMismoDia-json").textContent);  
-
-    if(Array.isArray(turnoDuplicadoMismoDia) && turnoDuplicadoMismoDia.length === 0){
-      Swal.fire({
-                    icon: "success",
-                    title: "Se cargo exitosamente la Sucesión sin errores",
-                    text: contenedorTurnosDuplicados,
-                      })
-    }else{
-       
-
-      turnoDuplicadoMismoDia.forEach(turno =>{
-        contenedorTurnosDuplicados += "Fecha: "+ turno.fecha + "Codigo turno: "+ turno.codigoTurno +" - "
-      })
-       Swal.fire({
-                    icon: "warning",
-                    title: "Sucesión con turnos duplicados",
-                    text: contenedorTurnosDuplicados,
-                      })
-    }
-
-
-   
-
-   /* document.getElementById("formCargaDatos").addEventListener("submit",function(){
-        document.getElementById("loader").style.display = "block";
-        document.getElementById("tablaBody").style.display = "";
-        document.getElementById("loader").style.display = "none";
-
-    }) */
-
-   /* formulario.addEventListener("submit", function(e){
-      loaderCarga.style.display = "block";
-      document.querySelectorAll("button").forEach(btn => btn.disabled = true);
-    }); */
-
   });
 
   function mostrarBotonesCargaTrenes(){
@@ -519,25 +481,44 @@ function aplicarFiltros() {
   });
 }
 
+mostrarPagina(1);
 
 </script>
 
 <!--Script paginación-->
+<!--Script paginación (respeta los filtros)-->
 <script>
-  const filasOriginales = Array.from(document.querySelectorAll("#tablaBody tr"));
   const filasPorPagina = 10;
   let paginaActual = 1;
 
   function mostrarPagina(pagina) {
+    const tbody = document.getElementById("tablaBody");
+
+    // 1) Limpia paginación previa (sin tocar filtros permanentes)
+    const todas = Array.from(tbody.querySelectorAll("tr"));
+    todas.forEach(tr => tr.style.display = "");
+
+    // 2) Reaplica los filtros si existen (tu función actual)
+    if (typeof aplicarFiltros === "function") aplicarFiltros();
+
+    // 3) Toma solo las filas que quedaron visibles por el filtro
+    const visibles = Array.from(tbody.querySelectorAll("tr"))
+      .filter(tr => tr.style.display !== "none");
+
+    // 4) Cálculo y clamp de página
+    const totalPaginas = Math.max(1, Math.ceil(visibles.length / filasPorPagina));
+    pagina = Math.min(Math.max(1, pagina), totalPaginas);
+
     const inicio = (pagina - 1) * filasPorPagina;
     const fin = inicio + filasPorPagina;
 
-    document.querySelectorAll("#tablaBody tr").forEach((fila, i) => {
-      fila.style.display = (i >= inicio && i < fin) ? "" : "none";
+    // 5) Oculta por paginación solo fuera del slice (no revierte el filtro)
+    visibles.forEach((tr, i) => {
+      tr.style.display = (i >= inicio && i < fin) ? "" : "none";
     });
 
     paginaActual = pagina;
-    actualizarControlesPaginacion();
+    actualizarControlesPaginacion(totalPaginas);
   }
 
   function generarPaginacion(totalPaginas, paginaActual) {
@@ -551,28 +532,28 @@ function aplicarFiltros() {
       const fin = Math.min(totalPaginas - 1, paginaActual + rango);
 
       mostrarPaginas.push(1);
-
       if (inicio > 2) mostrarPaginas.push("...");
-
       for (let i = inicio; i <= fin; i++) mostrarPaginas.push(i);
-
       if (fin < totalPaginas - 1) mostrarPaginas.push("...");
-
       mostrarPaginas.push(totalPaginas);
     }
-
     return mostrarPaginas;
   }
 
-  function actualizarControlesPaginacion() {
-    const totalPaginas = Math.ceil(filasOriginales.length / filasPorPagina);
+  function actualizarControlesPaginacion(totalPaginas) {
     const paginacionDiv = document.getElementById("paginacion");
     paginacionDiv.innerHTML = "";
+
+    // Si no hay filas visibles, no mostramos controles
+    const visibles = Array.from(document.querySelectorAll("#tablaBody tr"))
+      .filter(tr => tr.style.display !== "none");
+    if (visibles.length === 0) return;
 
     const botones = generarPaginacion(totalPaginas, paginaActual);
 
     botones.forEach(num => {
       const btn = document.createElement("button");
+      btn.type = "button";
 
       if (num === "...") {
         btn.textContent = "...";
@@ -588,8 +569,11 @@ function aplicarFiltros() {
     });
   }
 
-
+  // Nota: si quieres que al cambiar los filtros se reinicie la paginación,
+  // puedes añadir UNA línea al final de tu función aplicarFiltros():
+  //    mostrarPagina(1);
 </script>
+
 
 <!--Script para modificar el required del fomulario de carga de archivos-->
 <script>
@@ -613,94 +597,49 @@ const camposTurno = [
 ];
 
 // Script boton editar de la tabla de datos, este boton abre el modal
-document.querySelectorAll(".btn-editar").forEach(boton => {
-  boton.addEventListener("click", function () {
-    filaSeleccionada = this.closest("tr");
-    const celdas = filaSeleccionada.querySelectorAll("td");
+document.getElementById("tablaBody").addEventListener("click", (e) => {
+  const boton = e.target.closest(".btn-editar");
+  if (!boton) return;
 
-    document.getElementById("editNombre").value = celdas[0].textContent;
-    document.getElementById("editCodigo").value = celdas[1].textContent;
-    document.getElementById("editCargo").value = celdas[3].textContent.trim();
-    document.getElementById("editTurno").value = celdas[2].textContent;
-    document.getElementById("editFecha").value = celdas[4].textContent;
-    document.getElementById("editEstacionIni").value = celdas[5].textContent.toUpperCase().trim();
-    document.getElementById("editEstacionFin").value = celdas[6].textContent.toUpperCase().trim();
-    document.getElementById("editHoraIni").value = celdas[7].textContent.trim();
-    document.getElementById("editHoraFin").value = celdas[8].textContent.trim();
-    document.getElementById("editParticularidades").value = celdas[9].textContent.trim();
+  const filaSeleccionada = boton.closest("tr");
+  const celdas = filaSeleccionada.querySelectorAll("td");
 
+  document.getElementById("editNombre").value = celdas[0].textContent;
+  document.getElementById("editCodigo").value = celdas[1].textContent;
+  document.getElementById("editCargo").value  = celdas[3].textContent.trim();
+  document.getElementById("editTurno").value  = celdas[2].textContent;
+  document.getElementById("editFecha").value  = celdas[4].textContent;
+  document.getElementById("editEstacionIni").value = celdas[5].textContent.toUpperCase().trim();
+  document.getElementById("editEstacionFin").value = celdas[6].textContent.toUpperCase().trim();
+  document.getElementById("editHoraIni").value    = celdas[7].textContent.trim();
+  document.getElementById("editHoraFin").value    = celdas[8].textContent.trim();
+  document.getElementById("editParticularidades").value = celdas[9].textContent.trim();
 
-    //Datos originales
-    const datosOriginales = {
-      nombre: celdas[0].textContent,
-      codigo: celdas[1].textContent,
-      cargo: celdas[3].textContent.trim(),
-      turno: celdas[2].textContent,
-      fecha: celdas[4].textContent,
-      estacionIni: celdas[5].textContent.trim(),
-      estacionFin: celdas[6].textContent.trim(),
-      horaIni: celdas[7].textContent,
-      horaFin: celdas[8].textContent,
-      particularidades: celdas[9].textContent.trim()
-    };
-    localStorage.setItem("datosOriginales", JSON.stringify(datosOriginales));
+  const datosOriginales = {
+    nombre: celdas[0].textContent,
+    codigo: celdas[1].textContent,
+    cargo:  celdas[3].textContent.trim(),
+    turno:  celdas[2].textContent,
+    fecha:  celdas[4].textContent,
+    estacionIni: celdas[5].textContent.trim(),
+    estacionFin: celdas[6].textContent.trim(),
+    horaIni: celdas[7].textContent,
+    horaFin: celdas[8].textContent,
+    particularidades: celdas[9].textContent.trim()
+  };
+  localStorage.setItem("datosOriginales", JSON.stringify(datosOriginales));
 
+  // Deshabilita campos de turno (igual que antes)
+  ["editEstacionIni","editEstacionFin","editHoraIni","editHoraFin","editParticularidades"]
+    .forEach(id => document.getElementById(id).disabled = true);
 
-    //Deshabilitar campos relacionados al turno
-    camposTurno.forEach(id => {
-      document.getElementById(id).disabled = true;
-    });
-
-    document.getElementById("modalEditar").style.display = "block";
-  });
+  document.getElementById("modalEditar").style.display = "block";
 });
 
 document.getElementById("cerrarModal").addEventListener("click", function () {
   document.getElementById("modalEditar").style.display = "none";
   
 });
-
-
-// Script boton buscar dentro del Modal, este busca en el modelo Horario la información referente al turno.
-/*document.getElementById("buscarTurno").addEventListener("click", function () {
-  const codigo = document.getElementById("editTurno").value.trim().toUpperCase();
-
-  if (!codigo) {
-    alert("Por favor ingrese un código de turno.");
-    return;
-  }
-
-  fetch(`/account/api/consultar_turno/?codigo=${codigo}`) // <<<------Recordar cambiar esta URL cuando el proeycto este ok.
-    .then(response => {
-      if (!response.ok) throw new Error("Turno no encontrado");
-      return response.json();
-    })
-    .then(data => {
-      if (data.length === 0) {
-        alert("No se encontró información del turno.");
-        return;
-      }
-
-      const turno = data[0];  
-
-      // Rellenar los campos con los datos obtenidos
-      document.getElementById("editEstacionIni").value = turno.inilugar || "";
-      document.getElementById("editEstacionFin").value = turno.finallugar || "";
-      document.getElementById("editHoraIni").value = turno.inihora || "";
-      document.getElementById("editHoraFin").value = turno.finalhora || "";
-      document.getElementById("editParticularidades").value = turno.observaciones || "";
-
-      // Habilitar los campos si estaban deshabilitados
-      ["editEstacionIni", "editEstacionFin", "editHoraIni", "editHoraFin", "editParticularidades"].forEach(id => {
-        document.getElementById(id).disabled = false;
-      });
-
-    })
-    .catch(error => {
-      console.error("Error al consultar el turno:", error);
-      alert("No se pudo consultar el turno.");
-    });
-}); */
 
 //Script del boton guardar cambios dentro del MOdal, este permite acentar los cambios en el modelo correspondiente, ya sea Empleados o Horario.
 document.getElementById("guardarCambios").addEventListener("click", function () {
@@ -744,7 +683,8 @@ document.getElementById("guardarCambios").addEventListener("click", function () 
                     finallugar: datosNuevos.estacionFin.toUpperCase(),
                     inihora: datosNuevos.horaIni,
                     finalhora: datosNuevos.horaFin,
-                    observaciones: datosNuevos.particularidades.toUpperCase()
+                    observaciones: datosNuevos.particularidades.toUpperCase(),
+                    peticion: "accesoRapido"
                   })
                 })
                 .then(response => response.json())
@@ -766,6 +706,7 @@ document.getElementById("guardarCambios").addEventListener("click", function () 
               }
             
           }
+
       }else{
          Swal.fire({
                     icon: "warning",

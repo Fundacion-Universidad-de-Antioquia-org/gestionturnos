@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import CargarDocumentosForm, CargarSucesionOperadoresForm,CargarDatosProno
 from django.contrib.auth import authenticate , login
 from django.http import HttpResponse
+from .resources import peticion_Oddo
 from .resources.cargarSucesion import procesar_sucesion_multifila
 from .resources.cargarCuadroTunos import procesar_cuadro_turnos
 from .resources.validarExtension import validarExcel
@@ -72,63 +73,69 @@ def vista_cargarSucesionOperador(request,*, context):
     })
 
 @settings.AUTH.login_required
-def vista_cargarSucesionTrenes(request,*, context):
+def vista_cargarSucesionTrenes(request, *, context):
 
-    user_claims = context["user"]               
+    user_claims = context["user"]
     usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
-    foto = context["user"].get("picture")
-    resultadosCargarCuadro= None
-    resultadosCargarSucesion= None
-    sucesion_mas_particularidades = Sucesion.objects.select_related('horario').all()
-    total_cuadroServicios = total_cuadroServiciosSabado = total_cuadroServiciosDomingo = total_cuadroServiciosEspecial = None
-    erroresSabados = None
-    erroresSemana =None
-    erroresDomingos = None
-    erroresEspecial = None
-    turnoDuplicadoMismoDia = []
-    errores =  []
+    foto = user_claims.get("picture")
 
+    base_qs = (
+        Sucesion.objects
+        .select_related('empleado', 'horario')
+        .only(
+            'nombre', 'codigo', 'codigo_horario', 'fecha',
+            'estado_sucesion', 'usuario_carga',
+            'empleado__cargo',
+            'horario__inilugar', 'horario__finallugar',
+            'horario__inihora', 'horario__finalhora', 'horario__observaciones',
+        )
+    )
+
+    # Por defecto mostramos sólo revisión
+    sucesion_mas_particularidades = base_qs.filter(estado_sucesion="revision")
+
+    # Inits
+    total_cuadroServicios = total_cuadroServiciosSabado = None
+    total_cuadroServiciosDomingo = total_cuadroServiciosEspecial = None
+    erroresSabados = erroresSemana = erroresDomingos = erroresEspecial = None
+    resultadosCargarSucesion = None
+    errores = []
 
     if request.method == 'POST':
         form = CargarDocumentosForm(request.POST, request.FILES)
         accion = request.POST.get('action')
-        if accion == "cargar": 
-            if form.is_valid():
-                #Leer los cuadros de turnos y sucesión:
-                file_cuadro = form.cleaned_data.get('file_cuadroServicios')
-                file_cuadroServiciosSabado = form.cleaned_data.get('file_cuadroServiciosSabado')
-                file_cuadroServiciosDomingo = form.cleaned_data.get('file_cuadroServiciosDomingo')
-                file_cuadroServiciosEspecial = form.cleaned_data.get('file_cuadroServiciosEspecial') 
-                file_sucesion = form.cleaned_data.get('file_sucesion')
-                
-                if not any((file_cuadro, file_cuadroServiciosSabado, file_cuadroServiciosDomingo, file_cuadroServiciosEspecial, file_sucesion)):
-                    form.add_error(None,"Debe cargar al menos un archivo para procesar.")
-                else:
-                    if file_cuadro:
-                        if validarExcel(file_cuadro):   
-                            total_cuadroServicios,erroresSemana = procesar_cuadro_turnos(file_cuadro,usuarioLogeado)
 
-                    if file_cuadroServiciosSabado:
-                        if validarExcel(file_cuadroServiciosSabado):
-                            total_cuadroServiciosSabado,erroresSabados = procesar_cuadro_turnos(file_cuadroServiciosSabado,usuarioLogeado)
+        if accion == "cargar" and form.is_valid():
+            file_cuadro = form.cleaned_data.get('file_cuadroServicios')
+            file_cuadroServiciosSabado = form.cleaned_data.get('file_cuadroServiciosSabado')
+            file_cuadroServiciosDomingo = form.cleaned_data.get('file_cuadroServiciosDomingo')
+            file_cuadroServiciosEspecial = form.cleaned_data.get('file_cuadroServiciosEspecial')
+            file_sucesion = form.cleaned_data.get('file_sucesion')
 
-                    if file_cuadroServiciosDomingo:
-                        if validarExcel(file_cuadroServiciosDomingo):
-                            total_cuadroServiciosDomingo,erroresDomingos = procesar_cuadro_turnos(file_cuadroServiciosDomingo,usuarioLogeado)
+            if not any((file_cuadro, file_cuadroServiciosSabado, file_cuadroServiciosDomingo, file_cuadroServiciosEspecial, file_sucesion)):
+                form.add_error(None, "Debe cargar al menos un archivo para procesar.")
+            else:
+                if file_cuadro and validarExcel(file_cuadro):
+                    total_cuadroServicios, erroresSemana = procesar_cuadro_turnos(file_cuadro, usuarioLogeado)
 
-                    if file_cuadroServiciosEspecial: 
-                        if validarExcel(file_cuadroServiciosEspecial):
-                            total_cuadroServiciosEspecial,erroresEspecial = procesar_cuadro_turnos(file_cuadroServiciosEspecial,usuarioLogeado)
-                            
-                    if file_sucesion:
-                        if validarExcel(file_sucesion):
-                            total_sucesion, errores, turnoDuplicadoMismoDia = procesar_sucesion_multifila(file_sucesion, usuarioLogeado)
-                            resultadosCargarSucesion = f"Se cargaron correctamente {total_sucesion} registros."
-                            sucesion_mas_particularidades = Sucesion.objects.select_related('horario').filter(estado = "revision")
+                if file_cuadroServiciosSabado and validarExcel(file_cuadroServiciosSabado):
+                    total_cuadroServiciosSabado, erroresSabados = procesar_cuadro_turnos(file_cuadroServiciosSabado, usuarioLogeado)
+
+                if file_cuadroServiciosDomingo and validarExcel(file_cuadroServiciosDomingo):
+                    total_cuadroServiciosDomingo, erroresDomingos = procesar_cuadro_turnos(file_cuadroServiciosDomingo, usuarioLogeado)
+
+                if file_cuadroServiciosEspecial and validarExcel(file_cuadroServiciosEspecial):
+                    total_cuadroServiciosEspecial, erroresEspecial = procesar_cuadro_turnos(file_cuadroServiciosEspecial, usuarioLogeado)
+
+                if file_sucesion and validarExcel(file_sucesion):
+                    total_sucesion, errores = procesar_sucesion_multifila(file_sucesion, usuarioLogeado)
+                    resultadosCargarSucesion = f"Se cargaron correctamente {total_sucesion} registros."
+
+                # Refresca el queryset con lo nuevo ya insertado
+                sucesion_mas_particularidades = base_qs.filter(estado_sucesion="revision")
 
         elif accion == "publicar":
-            Sucesion.objects.all().update(estado_sucesion = 'publicado') 
-            print("Se realizaron los cambios en sucesion")
+            Sucesion.objects.filter(estado_sucesion="revision").update(estado_sucesion='publicado')
             return redirect('vista_cargarSucesionTrenes')
     else:
         form = CargarDocumentosForm()
@@ -140,16 +147,9 @@ def vista_cargarSucesionTrenes(request,*, context):
         'resultadosCuadroSabados': total_cuadroServiciosSabado,
         'resultadosCuadroDomingo': total_cuadroServiciosDomingo,
         'resultadoCuadroEspecial': total_cuadroServiciosEspecial,
-        'resultadosSucesion':resultadosCargarSucesion,
-        'erroresSemana': erroresSemana,
-        'erroresSabados': erroresSabados,
-        "erroresDomingo": erroresDomingos,
-        "erroresEspecial":erroresEspecial,
+        'resultadosSucesion': resultadosCargarSucesion,
         'usuarioLogeado': usuarioLogeado,
-        'datos_sucesion':sucesion_mas_particularidades,
-        "turnoDuplicadoMismoDia": turnoDuplicadoMismoDia,
-        "foto":foto,
-    })
+        'datos_sucesion': sucesion_mas_particularidades })
 
 @settings.AUTH.login_required
 def vista_configuraciones(request,*, context):
@@ -454,29 +454,64 @@ def actualizar_turno(request):
 
     turno = request.data.get('turno','').strip()
     data = request.data
+    peticion = request.data.get('peticion')
 
     if not turno:
         return Response({"Success":False,
                          "message":f"No se encontro codigo"}, status=400)
     
-    horario = get_object_or_404(Horario, turno=turno)  
-    
-    horario.inilugar = data.get('inilugar')
-    horario.finallugar = data.get('finallugar')
-    horario.inihora = data.get('inihora')
-    horario.finalhora = data.get('finalhora')
-    horario.inicir = data.get('circulacionIni')
-    horario.finbalcir =  data.get('circulacionFin')
-    horario.duracion = data.get('duracion')
-    horario.observaciones = data.get('observaciones')
+    if peticion == "accesoRapido":
+        horario = get_object_or_404(Horario, turno=turno) 
+        sucesion = get_object_or_404(Sucesion, codigo_horario = turno)
 
-    horario.save()
+        horario.inilugar = data.get('inilugar') 
+        horario.finallugar = data.get('finallugar')
+        horario.inihora = data.get('inihora')
+        horario.finalhora = data.get('finalhora')
+        #horario.inicir = data.get('circulacionIni')
+        #horario.finbalcir =  data.get('circulacionFin')
+        #horario.duracion = data.get('duracion')
+        horario.observaciones = data.get('observaciones')
+        horario.save()
+        # actulizamos la suce tambien
+        sucesion.estado_inicio = data.get('inilugar')
+        sucesion.estado_fin = data.get('finallugar')
+        sucesion.hora_inicio = data.get('inihora') 
+        sucesion.hora_fin = data.get('finalhora')
+
+        return Response({
+            "success":True,
+            "message": f"Turno: {turno}, actualizado correctamente"
+        })
+    
+    elif peticion =="editarHorario":
+
+        horario = get_object_or_404(Horario, turno=turno)  
+        sucesion = get_object_or_404(Sucesion, codigo_horario = turno)
+
+        horario.inilugar = data.get('inilugar') 
+        horario.finallugar = data.get('finallugar')
+        horario.inihora = data.get('inihora')
+        horario.finalhora = data.get('finalhora')
+        horario.inicir = data.get('circulacionIni')
+        horario.finbalcir =  data.get('circulacionFin')
+        horario.duracion = data.get('duracion')
+        horario.observaciones = data.get('observaciones')
+
+        sucesion.estado_inicio = data.get('inilugar')
+        sucesion.estado_fin = data.get('finallugar')
+        sucesion.hora_inicio = data.get('inihora') 
+        sucesion.hora_fin = data.get('finalhora')
+
+        return Response({
+            "success":True,
+            "message": f"Turno: {turno}, actualizado correctamente"
+        })
 
     return Response({
-        "success":True,
-        "message": f"Turno: {turno}, actualizado correctamente"
-    })
-
+            "success":False,
+            "message": "No se reconoce la petición"
+        })
 #-------------------------------------------------------------------------------------------]
 
 #Esta vista permite agrupar los horarios y devolverlos en orden de fecha de carga, Modal editar

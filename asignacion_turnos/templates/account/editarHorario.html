@@ -560,7 +560,7 @@ document.getElementById("guardarCambiosModalEditar").addEventListener("click", f
 
         if(datosNuevos.estacionIni !== "" && datosNuevos.estacionFin !== "" && datosNuevos.horaIni !== "" && datosNuevos.horaFin !== "" && datosNuevos.particularidades !==  ""){
          
-            fetch("http://localhost:8000/account/api/actualizar_turno/",{
+            fetch("{% url 'actualizar_turno' %}",{
                   method:"POST",
                   headers:{"Content-Type": "application/json",
                           "X-CSRFToken": getCookie("csrftoken")},
@@ -573,7 +573,8 @@ document.getElementById("guardarCambiosModalEditar").addEventListener("click", f
                     circulacionIni : datosNuevos.circulacionIni,
                     circulacionFin : datosNuevos.circulacionFin,
                     duracion : datosNuevos.duracion,
-                    observaciones: datosNuevos.particularidades.toUpperCase()
+                    observaciones: datosNuevos.particularidades.toUpperCase(),
+                    peticion: "editarHorario"
                   })
                 })
                 .then(response => response.json())

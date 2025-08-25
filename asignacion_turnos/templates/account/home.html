@@ -80,3 +80,27 @@
     <p>Accede a todas las funcionalidades de forma rápida y eficiente.</p>
   </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded",function(){
+   
+    const proceso = "{{ proceso }}";
+    
+    if(proceso){
+     
+      const contadorProcesados = "{{contadorProcesados}}";
+      const contadorErrores = "{{contadorErrores}}";
+      const listaErrores = "{{listaErrores}}";
+
+         Swal.fire({
+                    icon: "success",
+                    title: "Correcto",
+                    text: "Sinconizacion correcta",
+                      })
+    }
+  
+  })
+</script>
+
+{% endblock %}
