@@ -13,7 +13,7 @@
 
   <!-- Centro (posición absoluta centrada) -->
   <div class="position-absolute top-50 start-50 translate-middle text-center">
-    <h4 class="titulo-template m-0">Solicitudes cambios de turnos</h4>
+    <h4 class="titulo-template m-0" style="justify-content: center;">Sistema de Pre - carga & validación de errores</h4>
   </div>
 
   <!-- Derecha -->
@@ -28,7 +28,7 @@
   <div class="accordion-header"> Carga de Archivos | Pre-carga</div>
   <div class="accordion-body" id="acordeonCarga">
    
-    <form action="{% url 'validarErrores' %}" method="POST" id="formCargaDatos" enctype="multipart/form-data">
+    <form action="{% url 'preCarga' %}" method="POST" id="formCargaDatos" enctype="multipart/form-data">
       {% csrf_token %}  
       <div class="filtros-horizontal">
         <div class="filtros-horizontal">
@@ -46,7 +46,10 @@
   </div>
 </div>
 
-<table class="styled-table display">
+<div id="panelControl">
+  <span class="material-symbols-outlined">shield_person</span><div class="titulo-template">Empleados que sobrepasan los 7 dias laborados</div> 
+</div>
+<table class="styled-table display" id="tablaDatos">
   <thead>
     <tr>
       <th>Nombre</th>
@@ -62,7 +65,7 @@
     <tr>
       <td>{{ r.NOMBRE }}</td>
       <td>{{ r.CEDULA }}</td>
-      <td>{{ r.DIAS_SIN_DESCANSO }}</td>
+      <td><span>{{ r.DIAS_SIN_DESCANSO }}</span></td>
       <td>{{ r.ESTADO }}</td>
       <td>{{ r.DESCANSO_SEM1 }}</td>
       <td>{{ r.DESCANSO_SEM2 }}</td>
@@ -74,8 +77,9 @@
     {% endfor %}
   </tbody>
 </table>
-
-
+<div id="panelControl">
+  <span class="material-symbols-outlined">error</span><div class="titulo-template">Servicios repetidos</div>
+</div>
 
 
 {% endblock %}
@@ -83,7 +87,7 @@
 
 {% block scripts %}
 
-
+<!--Script DOM-->
 <script>
     document.addEventListener("DOMContentLoaded",function(){
          Swal.fire({
@@ -103,6 +107,32 @@
         body.classList.toggle('active');
       });
     });
+</script>
+
+
+<script>
+  const indiceColumna = 2
+  const filas = document.querySelectorAll("#tablaDatos tr")
+  filas.forEach((fila,index)=>{
+       if(index === 0) return;
+
+       const celda = fila.cells[indiceColumna];
+       
+       if(celda){
+        const span = celda.querySelector("span");
+        dias = parseInt(span.textContent,10);
+        alert(dias)
+        if(dias >= 1){
+          span.style.backgroundColor = "#c51010";
+          span.style.color = "white";
+          span.style.padding = "7px"; 
+          span.style.borderRadius = "8px"; 
+        }
+        
+
+       }
+  })
+
 </script>
 
 

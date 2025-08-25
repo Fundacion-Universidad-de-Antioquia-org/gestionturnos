@@ -46,9 +46,9 @@
         <label for="filtroCargo">Cargo:</label>
         <select name="select" id="filtroCargo">
             <option value="">Todos</option>
-            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
-            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
-            <option value="OPERADOR DE CONDUCCION" >OPERADOR DE CONDUCCION</option>
+            <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+            <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+            <option value="OPERADOR(A) DE CONDUCCION" >OPERADOR(A) DE CONDUCCION</option>
             <option value="MANIOBRISTA TRENES" >MANIOBRISTA TRENES</option>
             <option value="MANIOBRISTA TRANVIA" >MANIOBRISTA TRANVIA</option>
             <option value="INCONSISTENCIA">INCONSISTENCIA</option>
@@ -196,6 +196,7 @@
 
 <!--Agregar estilos al span - estado de la tabla -->
 <script>
+
   const estado = "pendiente";
   const indiceColumna = 9;
   const filas = document.querySelectorAll("#tablaDatos tr")
@@ -319,7 +320,7 @@ async function abrirVisorDesdeSolicitud() {
   try {
     const res = await fetch(urlApi, { headers: { 'Accept': 'application/json' } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const { success, url } = await res.json();
+    const { success, url, tipoArchivo } = await res.json();
     if (!success || !url) { 
       const modal = document.getElementById("modalDescripcion");
       modal.classList.remove("show"); 
@@ -329,7 +330,7 @@ async function abrirVisorDesdeSolicitud() {
         })
     }
 
-    abrirModalVisor(url);
+    abrirModalVisor(url,tipoArchivo);
   } catch (err) {
     console.error(err);
       Swal.fire({
@@ -339,11 +340,12 @@ async function abrirVisorDesdeSolicitud() {
   }
 }
 
-function abrirModalVisor(fileUrl) {
-
+function abrirModalVisor(fileUrl, tipoArchivo) {
+  
   const visor = document.getElementById('modalVisorArchivo');
   const link = document.getElementById('visorLink');
   const body = document.getElementById('visorBody');
+  const IMG_EXT_RE = /^\.(?:avif|webp|png|gif|jpe?g|jfif|pjpeg|pjp|bmp|svg|ico|cur)$/i;
 
   link.href = fileUrl;
   body.innerHTML = ''; // limpia
@@ -352,9 +354,9 @@ function abrirModalVisor(fileUrl) {
   // si no tiene extensión, probamos imagen y si falla, iframe.
   const lower = fileUrl.toLowerCase();
 
-  if (lower.endsWith('.pdf')) {
+  if (tipoArchivo === ".pdf") {
     body.innerHTML = `<iframe src="${fileUrl}" width="100%" height="600px" style="border:none;"></iframe>`;
-  } else if (/\.(png|jpe?g|gif|webp|bmp|svg)$/.test(lower)) {
+  } else if (IMG_EXT_RE.test(tipoArchivo)) {
     body.innerHTML = `<img src="${fileUrl}" alt="archivo" style="max-width:100%; height:auto;">`;
   } else {
     body.innerHTML = `

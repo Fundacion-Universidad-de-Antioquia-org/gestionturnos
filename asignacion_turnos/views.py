@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from datetime import datetime
 from django.conf import settings
+from pathlib import Path
 
 
 
@@ -123,7 +124,7 @@ def vista_cargarSucesionTrenes(request,*, context):
                         if validarExcel(file_sucesion):
                             total_sucesion, errores, turnoDuplicadoMismoDia = procesar_sucesion_multifila(file_sucesion, usuarioLogeado)
                             resultadosCargarSucesion = f"Se cargaron correctamente {total_sucesion} registros."
-                            sucesion_mas_particularidades = Sucesion.objects.select_related('horario').all()
+                            sucesion_mas_particularidades = Sucesion.objects.select_related('horario').filter(estado = "revision")
 
         elif accion == "publicar":
             Sucesion.objects.all().update(estado_sucesion = 'publicado') 
@@ -266,35 +267,41 @@ def vista_notificaciones(request,*, context):
 
 # views.py
 @settings.AUTH.login_required
-def vista_validarErroresSucesion(request, *, context):
+def vista_precarga(request, *, context):
+    user_claims = context["user"]               
+    usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
 
     if request.method == "GET":
-        return render(request, "account/validarErrores.html", {
+        return render(request, "account/preCarga.html", {
             "form": CargarDatosProno(),
-            "dfresultado": None
+            "dfresultado": None,
+            "usuarioLogeado": usuarioLogeado
         })
 
     form = CargarDatosProno(request.POST, request.FILES)
     if not form.is_valid():
-        return render(request, "account/validarErrores.html", {
+        return render(request, "account/preCarga.html", {
             "form": form,
             "dfresultado": None,
-            "error": "Formulario inválido"
+            "error": "Formulario inválido",
+            "usuarioLogeado": usuarioLogeado
         })
 
     f = form.cleaned_data["file_cargarDatosProno"]
     if not validarExcel(f):
-        return render(request, "account/validarErrores.html", {
+        return render(request, "account/preCarga.html", {
             "form": form,
             "dfresultado": None,
-            "error": "Excel no válido"
+            "error": "Excel no válido",
+            "usuarioLogeado": usuarioLogeado
         })
 
     filas = leer_y_filtrar_excel(f)  # ← lista de dicts JSON-safe
 
-    return render(request, "account/validarErrores.html", {
+    return render(request, "account/preCarga.html", {
         "form": form,
-        "dfresultado": filas  # ← iteras esto en el template
+        "dfresultado": filas,
+        "usuarioLogeado": usuarioLogeado
     })
 
 
@@ -312,7 +319,7 @@ def get_archivos_solicitudesgt(request):
     idSolicitud = request.GET.get("idSolicitud")
     print(idSolicitud)
     solicitud = Solicitudes_Gt.objects.get(id =idSolicitud)
-    return Response({"success":True, "url":solicitud.urlArchivo})
+    return Response({"success":True, "url":solicitud.urlArchivo, "tipoArchivo": solicitud.tipoArchivo})
 
 #Devulve los datos del turno consultado, usa como parametro el codigo de turno para devolver los datos, este GET es para el modal editar en cargar sucesion
 @api_view(["GET"])
@@ -1066,10 +1073,14 @@ def solicitud_gt(request):
         
     
         if archivo:
+            nombreArchivo = archivo.name
+            ext = Path(nombreArchivo).suffix.lower()
             nombreArchivoSolicitud = f"{solicitud_gt.tipo_solicitud}_{solicitud_gt.id}"
             urlArchivo = upload_to_azure_blob(archivo,nombreArchivoSolicitud,"solicitud_gt")
             solicitud_gt.urlArchivo = urlArchivo
+            solicitud_gt.tipoArchivo = ext
             solicitud_gt.save()
+            
 
         mensajeGmail = f"Te queremos informar que la solicitud {tipo_solicitud} con fecha de registro: {fecha_solicitud}, quedo registrada de manera correcta en nuestro sistema, el area de Gestión de turnos evaluara la solicitud, muchas gracias"
         asunto = f"Solicitud de Gestión de turnos - solicitud: {tipo_solicitud}"

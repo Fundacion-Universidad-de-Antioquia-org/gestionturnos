@@ -43,20 +43,15 @@ def getOddo_datos_empleados():
             if isinstance(empleados, list):
                 for i, emp in enumerate(empleados):
                     try:
-                        try:
-                            cargo = str(emp['job_title']).strip()
-                        except KeyError:
-                            cargo = "INCONSISTENCIA"
-                        if not cargo:
-                            cargo = "INCONSISTENCIA"
-                    
+                        
                         Empleado_Oddo.objects.update_or_create(
                             cedula =  str(emp['cedula']).strip(), defaults={
                             "nombre" : str(emp['nombre']).strip(),
                             "codigo": str(emp['Codigo tripulante']).strip(),
                             "estado" :str(emp['estado']).strip(),
-                            "cargo": cargo, 
+                            "cargo": str(emp['job_title']).strip(),
                             "estado": str(emp['estado']).strip(),
+                            "correo": str(emp['Correo personal']).strip(),
                             #"municipio": str(emp['municipio']).strip(),
                             #"direccion":str(emp['direccion']).strip(),
                             #"barrio": str(emp['barrio']).strip(),

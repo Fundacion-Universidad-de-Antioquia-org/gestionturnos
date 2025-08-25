@@ -87,3 +87,4 @@ def leer_y_filtrar_excel(file):
 
     # 7) Devolver lista de dicts (JSON-ready)
     return resultados
+

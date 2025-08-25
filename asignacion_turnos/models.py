@@ -11,7 +11,7 @@ class Sucesion(models.Model):
     fecha = models.DateField()
     cedula = models.CharField(max_length= 20, null=True, blank=True)
     codigo_horario = models.CharField(max_length=20)
-    cargo = models.CharField(max_length=50,blank=True, null=True)
+    cargo = models.CharField(max_length=100,blank=True, null=True)
     estado_inicio = models.CharField(max_length=50, blank=True, null=True)
     estado_fin = models.CharField(max_length=50, blank=True, null=True)
     hora_inicio = models.TimeField(blank=True, null=True)
@@ -63,10 +63,11 @@ class Horario(models.Model):
 
 class Empleado_Oddo(models.Model):
     cedula = models.CharField(max_length=20)
-    nombre = models.CharField(max_length=50)
+    nombre = models.CharField(max_length=100)
     codigo = models.CharField(max_length=10)
     estado = models.CharField(max_length=15, null= True)
-    cargo = models.CharField(max_length=50 , null=True, blank=True)
+    cargo = models.CharField(max_length=100 , null=True, blank=True)
+    correo = models.CharField(max_length=100, null=True)
     #zona = models.CharField(max_length=50, null= True)
     #municipio = models.CharField(max_length=50, null=True)
     #direccion = models.CharField(max_length=100, null=True)
@@ -82,12 +83,12 @@ class Empleado_Oddo(models.Model):
 class Solicitud_cambios_de_turnos(models.Model):
     codigo_solicitante = models.CharField(max_length=10)
     nombre_solicitante = models.CharField(max_length=100)
-    cargo_solicitante = models.CharField(max_length= 50, null=True)
+    cargo_solicitante = models.CharField(max_length= 100, null=True)
     turno_solicitante_original = models.CharField(max_length=10,  null=True)
     turno_solicitante_nuevo = models.CharField(max_length=10, null=True)
     codigo_receptor = models.CharField(max_length=10)
     nombre_receptor = models.CharField(max_length=100)
-    cargo_receptor= models.CharField(max_length= 50, null=True)
+    cargo_receptor= models.CharField(max_length= 100, null=True)
     turno_receptor_original = models.CharField(max_length=10, null=True)
     turno_receptor_nuevo = models.CharField(max_length=10, null=True)
     fecha_solicitud_cambio = models.DateField(default=timezone.localdate, editable=True)
@@ -103,7 +104,7 @@ class Cambios_de_turnos(models.Model):
     turno_solicitante_nuevo = models.CharField(max_length=10, null=True)
     codigo_receptor = models.CharField(max_length=10)
     nombre_receptor = models.CharField(max_length=100)
-    cargo_receptor= models.CharField(max_length= 50, null=True)
+    cargo_receptor= models.CharField(max_length= 100, null=True)
     formacion_receptor = models.CharField(max_length=50, null=True)
     turno_receptor_original = models.CharField(max_length=10, null=True)
     turno_receptor_nuevo = models.CharField(max_length=10, null=True)
@@ -115,7 +116,7 @@ class Cambios_de_turnos(models.Model):
 class Solicitudes_Gt(models.Model):
     nombre = models.CharField(max_length=50)
     codigo = models.CharField(max_length=10)
-    cargo = models.CharField(max_length=50)
+    cargo = models.CharField(max_length=100)
     tipo_solicitud = models.CharField(max_length=50)
     fecha_solicitud = models.DateField(auto_now_add=True)
     fecha_inicial = models.DateField()
@@ -123,6 +124,7 @@ class Solicitudes_Gt(models.Model):
     estado = models.CharField(max_length=20, default="pendiente")
     descripcion = models.TextField()
     urlArchivo = models.CharField(max_length=500, null=True )
+    tipoArchivo = models.CharField(max_length= 20, null=True)
     empleado = models.ForeignKey('Empleado_Oddo', on_delete=models.SET_NULL,null=True,blank=True)
 
 
@@ -145,7 +147,7 @@ class Estados_servicios(models.Model):
 class Notificaciones(models.Model):
     nombre = models.CharField(max_length=50)
     codigo = models.CharField(max_length=50)
-    cargo = models.CharField(max_length=50)
+    cargo = models.CharField(max_length=100)
     tipo_solicitud = models.CharField(max_length=50, null=True)
     fecha_solicitud = models.DateField(null=True)
     fecha_notificacion = models.DateTimeField()
@@ -160,7 +162,7 @@ class Archivos(models.Model):
     usuarioCarga = models.CharField(max_length=50)
     tipoComunicado = models.CharField(max_length=30)
     fechaVigencia = models.DateField(null=True, blank=True)
-    cargoVisualizacion = models.CharField(max_length=400)
+    cargoVisualizacion = models.CharField(max_length=500)
     urlArchivo = models.URLField(max_length=2000)
     tipoArchivo = models.CharField(max_length= 50, null=True)
 
