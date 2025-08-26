@@ -29,15 +29,23 @@ from .resources.registrarLog import send_log
 from .resources.cargarArchivosBlob import upload_to_azure_blob
 from .resources.enviarCorreoGmail import enviarCorreoGmail, enviarCorreoGmailHTML
 from .resources.buscarErrores import leer_y_filtrar_excel
-from .resources.peticion_Oddo import getOddo_datos_empleados
+from .resources.peticion_Oddo import sincronizarDbEmpleados
 
 
 
 
 @settings.AUTH.login_required
 def vista_home(request,*, context):
-    getOddo_datos_empleados()
-    return render(request,'account/home.html')
+    data = sincronizarDbEmpleados()
+    return render(request,'account/home.html',{
+        "success": data.get('success'),
+        "recibidos": data.get('recibidos'),
+        "validos": data.get('validos'),
+        "sin_cedula": data.get('sin_cedula'),
+        "creados": data.get('creados'),
+        "actualizados": data.get('creados'),
+        "tiempo_s": data.get('tiempo')
+    })
 
 
 @settings.AUTH.login_required

@@ -3,6 +3,8 @@ from asignacion_turnos.models import Empleado_Oddo
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from django.conf import settings
+from django.db import transaction
 
 
 load_dotenv()
@@ -22,57 +24,85 @@ def autenticacionJwt():
     return tokens["access"]
 
 load_dotenv()
-def getOddo_datos_empleados():
-    
-    urlErp = os.getenv("URLERP")
-    print(f"URL ERP:  {urlErp}")
+def _s(v):  # str seguro
+    return "" if v is None else str(v).strip()
+
+def sincronizarDbEmpleados():
+    """
+    Sincroniza la tabla Empleado_Oddo contra el ERP:
+    - Crea nuevos
+    - Actualiza existentes (por cedula)
+    Requiere: Django>=5 y PostgreSQL (ON CONFLICT).
+    """
+    url_erp = os.getenv("URLERP")
+    if not url_erp:
+        return {"ok": False, "error": "Falta URLERP"}
+
     token = autenticacionJwt()
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
-
-    response = requests.get(urlErp, headers=headers)
-    response.raise_for_status()
-
+    resp = requests.get(url_erp, headers={"Authorization": f"Bearer {token}"}, timeout=60)
     try:
-        if response.status_code == 200:
-            datos = response.json()
-            empleados = datos['empleados']
-
-            #Insertar datos al modelo:
-            if isinstance(empleados, list):
-                for i, emp in enumerate(empleados):
-                    try:
-                        
-                        Empleado_Oddo.objects.update_or_create(
-                            cedula =  str(emp['cedula']).strip(), defaults={
-                            "nombre" : str(emp['nombre']).strip(),
-                            "codigo": str(emp['Codigo tripulante']).strip(),
-                            "estado" :str(emp['estado']).strip(),
-                            "cargo": str(emp['job_title']).strip(),
-                            "estado": str(emp['estado']).strip(),
-                            "correo": str(emp['Correo personal']).strip(),
-                            #"municipio": str(emp['municipio']).strip(),
-                            #"direccion":str(emp['direccion']).strip(),
-                            #"barrio": str(emp['barrio']).strip(),
-                            "formacion" : str(emp['formacion_conduccion']).strip()
-                            })
-                        print(f"[{i+1}] Insertado: {emp['cedula']} - {emp['nombre']}, tiempo: {datetime.now().strftime("%H:%M:%S")}")
-                        
-                    except Exception as e:
-                        
-                        print(f"Error en el registro {i+1}: {e}")
-            else:
-                print(" ERROR: La respuesta no es una lista. Detalle:")
-                
-        else:
-            print(f"Error en la petición: {response.status_code}")
-            print(response.text)
+        resp.raise_for_status()
     except requests.RequestException as e:
-        print("Error al hacer la petición HTTP:", e)
+        return {"ok": False, "error": f"HTTP {resp.status_code if resp else ''}: {e}"}
 
+    data = resp.json() if resp.status_code == 200 else {}
+    empleados = data.get("empleados", [])
+    if not isinstance(empleados, list):
+        return {"ok": False, "error": "La clave 'empleados' no es lista."}
 
+    # Preparar objetos
+    campos_upd = ["nombre", "codigo", "estado", "cargo", "correo", "formacion"]
+    objs = []
+    sin_cedula = 0
+    for e in empleados:
+        ced = _s(e.get("cedula"))
+        if not ced:
+            sin_cedula += 1
+            continue
+        objs.append(Empleado_Oddo(
+            cedula=ced,
+            nombre=_s(e.get("nombre")),
+            codigo=_s(e.get("Codigo tripulante")),
+            estado=_s(e.get("estado")),
+            cargo=_s(e.get("job_title")),
+            correo=_s(e.get("Correo personal")),
+            formacion=_s(e.get("formacion_conduccion")),
+        ))
 
+    if not objs:
+        return {"ok": True, "recibidos": len(empleados), "validos": 0, "sin_cedula": sin_cedula,
+                "creados": 0, "actualizados": 0, "tiempo_s": 0.0}
+
+    # Leer existentes una sola vez (conteo exacto)
+    existentes_set = set(Empleado_Oddo.objects.values_list("cedula", flat=True))
+    ya_existian = sum(1 for o in objs if o.cedula in existentes_set)
+    creados_previstos = len(objs) - ya_existian  # exacto salvo concurrencia simultánea
+
+    t0 = datetime.now()
+    batch = 2000
+
+    with transaction.atomic():
+        for i in range(0, len(objs), batch):
+            Empleado_Oddo.objects.bulk_create(
+                objs[i:i+batch],
+                update_conflicts=True,          # UPSERT
+                unique_fields=["cedula"],       # campo único para conflicto
+                update_fields=campos_upd,       # qué actualizar si existe
+            )
+            # log discreto (opcional)
+            # print(f"[UPSERT] {min(i+batch, len(objs))}/{len(objs)}")
+
+    dt = (datetime.now() - t0).total_seconds()
+    return {
+        "success": True,
+        "recibidos": len(empleados),
+        "validos": len(objs),
+        "sin_cedula": sin_cedula,
+        "creados": max(0, creados_previstos),
+        "actualizados": max(0, ya_existian),
+        "tiempo_s": round(dt, 2),
+        "via": "upsert_nativo_pg_django5"
+    }
 
 def get_Cargo_Estado(codigo_empleado):
     try:
