@@ -68,10 +68,10 @@ class Empleado_Oddo(models.Model):
     estado = models.CharField(max_length=15, null= True)
     cargo = models.CharField(max_length=100 , null=True, blank=True)
     correo = models.CharField(max_length=100, null=True)
-    #zona = models.CharField(max_length=50, null= True)
-    #municipio = models.CharField(max_length=50, null=True)
-    #direccion = models.CharField(max_length=100, null=True)
-    #barrio = models.CharField(max_length=50, null= True)
+    zona = models.CharField(max_length=50, null= True)
+    municipio = models.CharField(max_length=50, null=True)
+    direccion = models.CharField(max_length=100, null=True)
+    barrio = models.CharField(max_length=50, null= True)
     formacion =models.CharField(max_length= 100, null=True)
 
     

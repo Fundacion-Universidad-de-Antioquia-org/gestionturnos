@@ -344,13 +344,14 @@
  <script>
     document.addEventListener("DOMContentLoaded", () => {
 
-  showLoader();  
-  setTimeout(mostrarDatosProcesados, 3000);
+  showLoader(); 
+  mostrarDatosProcesados(); 
+  setTimeout(mostrarDatosProcesados, 3000); 
 
 
   document.getElementById("btnCargar").addEventListener("click", function(){
   showLoader();
-  setTimeout(mostrarDatosProcesados, 3000);
+  setTimeout(mostrarDatosProcesados, 5000);
 
   })
 
@@ -368,12 +369,8 @@
    function hideLoader() {
       document.getElementById("loader-overlay").classList.add("hidden");
     }
-
-    
     ocultarBotonesCarga();
-    // importante: primero habilitar tbody y aplicar filtros (aunque estén vacíos)
     aplicarFiltros();
-    // luego sí, pagina
     mostrarPagina(1);
     mostrarBotonesCargaTrenes();
   });

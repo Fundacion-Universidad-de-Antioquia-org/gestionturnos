@@ -41,7 +41,7 @@
     <aside class="sidebar collapsed " id="sidebar">
         <!-- Sidebar Header -->
         <header class="sidebar-header">
-            <a href="{% url 'home'%}" class="header-logo">
+            <a href="{% url 'home'%}" class="header-logo" >
                 <img src="https://cdnfuadesarrollo.blob.core.windows.net/gestionturnos/logo2.png" alt="logoFundacion">
                 <span class="logo-text">Gestión de Turnos</span>
             </a>
@@ -51,31 +51,31 @@
             <!-- Primary nav -->
             <ul class="nav-list primary-nav">
                 <li class="nav-item">
-                    <a href="{% url 'preCarga' %}" class="nav-link">
+                    <a href="{% url 'preCarga' %}" title="Pre-carga" class="nav-link">
                         <span class="material-symbols-outlined">security</span>
                         <span class="nav-label">Pre-carga</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'vista_cargarSucesionTrenes' %}" class="nav-link">
+                    <a href="{% url 'vista_cargarSucesionTrenes' %}" title="Sucesión" class="nav-link">
                         <span class="material-symbols-rounded">upload</span>
                         <span class="nav-label">Cargar horarios</span>
                     </a>
                 </li>
                   <li class="nav-item">
-                    <a href="{% url 'cambios_turnos' %}" class="nav-link">
+                    <a href="{% url 'cambios_turnos' %}" title="Cambios de turno" class="nav-link">
                         <span class="material-symbols-rounded">autorenew</span>
                         <span class="nav-label">Autorizar cambios</span>
                     </a>
                 </li>
                  <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="abrirModalFechasGT()">
+                    <a href="#" class="nav-link"  title="solicitudes GT" onclick="abrirModalFechasGT()">
                         <span class="material-symbols-outlined">assignment_add</span>
                         <span class="nav-label">Solicitudes GT</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'cargarIo' %}" class="nav-link">
+                    <a href="{% url 'cargarIo' %}" title="Comunicados" class="nav-link">
                         <span class="material-symbols-rounded">art_track</span>
                         <span class="nav-label">Cargar IO</span>
                     </a>
@@ -94,13 +94,13 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'notificaciones' %}" class="nav-link">
+                    <a href="{% url 'notificaciones' %}" title="Notificaciones" class="nav-link">
                         <span class="material-symbols-outlined">notifications_active</span>
                         <span class="nav-label">Notificaciones GT</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{%url 'configuraciones' %}" class="nav-link">
+                    <a href="{%url 'configuraciones' %}" title="Configuraciones" class="nav-link">
                         <span class="material-symbols-outlined">settings</span>
                         <span class="nav-label">Configuraciones</span>
                     </a>
@@ -110,7 +110,7 @@
             <!-- Secondary nav -->
             <ul class="nav-list secondary-nav">
                 <li class="nav-item">
-                    <a href="{% url 'identity.logout' %}" class="nav-link">
+                    <a href="{% url 'identity.logout' %}" title="Cerrar sesión" class="nav-link">
                         <span class="material-symbols-rounded">logout</span>
                         <span class="nav-label">Cerrar sesión</span>
                     </a>
