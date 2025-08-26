@@ -62,7 +62,7 @@ class Horario(models.Model):
     
 
 class Empleado_Oddo(models.Model):
-    cedula = models.CharField(max_length=20)
+    cedula = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
     codigo = models.CharField(max_length=10)
     estado = models.CharField(max_length=15, null= True)

@@ -8,7 +8,7 @@ def leer_y_filtrar_excel(file):
         except Exception:
             pass
 
-    # 2) Leer hoja 7 (índice 6)
+    
     df = pd.read_excel(file, sheet_name=0)
 
     # 3) Normalizar cabeceras y helper case-insensitive
@@ -26,7 +26,9 @@ def leer_y_filtrar_excel(file):
     FECHA    = col("FECHA")
     CUBIERTO = col("CUBIERTO")
     CODPER   = col("CODPER")
-    NOMBRE   = col("NOMBRE", required=False)  # opcional
+    NOMBRE   = col("NOMBRE", required=False)
+    CODIGO = col("NMNIdentificadorDosNomina")
+
 
     # 4) Tipos y filtro
     df[FECHA] = pd.to_datetime(df[FECHA], errors="coerce")
@@ -43,6 +45,8 @@ def leer_y_filtrar_excel(file):
 
     # 6) Empleados únicos
     empleados = df[CODPER].dropna().unique()
+
+    print(empleados)
 
     resultados = []
     procesados = set()
@@ -63,24 +67,34 @@ def leer_y_filtrar_excel(file):
             if dias > 7:
                 # Nombre tolerante
                 nombre_val = ""
+                codigo_val = ""
+
                 if NOMBRE:
                     s = df.loc[df[CODPER] == empleado, NOMBRE]
                     if not s.empty:
                         nombre_val = str(s.iloc[0])
-
+                
+                if CODIGO:
+                    c = df.loc[df[CODPER] == empleado, CODIGO]
+                    if not c.empty:
+                        codigo_val = str(c.iloc[0])
                 # CEDULA como int/str JSON-safe
                 try:
                     cedula_val = int(empleado)
                 except Exception:
                     cedula_val = str(empleado)
-
+                
+                
+                print(codigo_val)
                 resultados.append({
                     "NOMBRE": nombre_val,
+                    "CODIGO": codigo_val,
                     "CEDULA": cedula_val,
                     "DIAS_SIN_DESCANSO": int(dias),
                     "ESTADO": "Sobrepaso",
                     "DESCANSO_SEM1": str(d1.date()),
                     "DESCANSO_SEM2": str(d2.date()),
+
                 })
 
         procesados.add(empleado)

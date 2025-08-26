@@ -34,10 +34,6 @@ def getOddo_datos_empleados():
     response = requests.get(urlErp, headers=headers)
     response.raise_for_status()
 
-    contadorErrores = 0
-    contadorProcesados= 0
-    listaErrores = []
-
     try:
         if response.status_code == 200:
             datos = response.json()
@@ -62,11 +58,10 @@ def getOddo_datos_empleados():
                             "formacion" : str(emp['formacion_conduccion']).strip()
                             })
                         print(f"[{i+1}] Insertado: {emp['cedula']} - {emp['nombre']}, tiempo: {datetime.now().strftime("%H:%M:%S")}")
-                        contadorProcesados += 1
+                        
                     except Exception as e:
-                        contadorErrores += 1
+                        
                         print(f"Error en el registro {i+1}: {e}")
-                        listaErrores.append(f"Error en el registro {i+1}: {e}")
             else:
                 print(" ERROR: La respuesta no es una lista. Detalle:")
                 
@@ -76,7 +71,6 @@ def getOddo_datos_empleados():
     except requests.RequestException as e:
         print("Error al hacer la petición HTTP:", e)
 
-    return contadorProcesados, contadorErrores, listaErrores
 
 
 

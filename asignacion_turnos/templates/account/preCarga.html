@@ -53,6 +53,7 @@
   <thead>
     <tr>
       <th>Nombre</th>
+      <th>Codigo</th>
       <th>Cédula</th>
       <th>Días sin descanso</th>
       <th>Estado</th>
@@ -64,6 +65,7 @@
     {% for r in dfresultado %}
     <tr>
       <td>{{ r.NOMBRE }}</td>
+      <td>{{ r.CODIGO }}</td>
       <td>{{ r.CEDULA }}</td>
       <td><span>{{ r.DIAS_SIN_DESCANSO }}</span></td>
       <td>{{ r.ESTADO }}</td>
@@ -111,7 +113,7 @@
 
 
 <script>
-  const indiceColumna = 2
+  const indiceColumna = 3
   const filas = document.querySelectorAll("#tablaDatos tr")
   filas.forEach((fila,index)=>{
        if(index === 0) return;

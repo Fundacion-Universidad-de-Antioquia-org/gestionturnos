@@ -29,12 +29,14 @@ from .resources.registrarLog import send_log
 from .resources.cargarArchivosBlob import upload_to_azure_blob
 from .resources.enviarCorreoGmail import enviarCorreoGmail, enviarCorreoGmailHTML
 from .resources.buscarErrores import leer_y_filtrar_excel
+from .resources.peticion_Oddo import getOddo_datos_empleados
 
 
 
 
 @settings.AUTH.login_required
 def vista_home(request,*, context):
+    getOddo_datos_empleados()
     return render(request,'account/home.html')
 
 
@@ -296,7 +298,7 @@ def vista_precarga(request, *, context):
             "usuarioLogeado": usuarioLogeado
         })
 
-    filas = leer_y_filtrar_excel(f)  # ← lista de dicts JSON-safe
+    filas = leer_y_filtrar_excel(f)  
 
     return render(request, "account/preCarga.html", {
         "form": form,
@@ -461,9 +463,9 @@ def actualizar_turno(request):
                          "message":f"No se encontro codigo"}, status=400)
     
     if peticion == "accesoRapido":
-        horario = get_object_or_404(Horario, turno=turno) 
-        sucesion = get_object_or_404(Sucesion, codigo_horario = turno)
+        print(peticion)
 
+        horario = get_object_or_404(Horario, turno=turno) 
         horario.inilugar = data.get('inilugar') 
         horario.finallugar = data.get('finallugar')
         horario.inihora = data.get('inihora')
@@ -473,22 +475,19 @@ def actualizar_turno(request):
         #horario.duracion = data.get('duracion')
         horario.observaciones = data.get('observaciones')
         horario.save()
-        # actulizamos la suce tambien
-        sucesion.estado_inicio = data.get('inilugar')
-        sucesion.estado_fin = data.get('finallugar')
-        sucesion.hora_inicio = data.get('inihora') 
-        sucesion.hora_fin = data.get('finalhora')
 
+        # actulizamos la suce tambien
+        Sucesion.objects.filter(codigo_horario = turno).update(estado_inicio = data.get('inilugar'), estado_fin = data.get('finallugar'), hora_inicio = data.get('inihora'), hora_fin = data.get('finalhora'))
+        
         return Response({
             "success":True,
             "message": f"Turno: {turno}, actualizado correctamente"
         })
     
     elif peticion =="editarHorario":
-
+        print(peticion)
         horario = get_object_or_404(Horario, turno=turno)  
-        sucesion = get_object_or_404(Sucesion, codigo_horario = turno)
-
+        
         horario.inilugar = data.get('inilugar') 
         horario.finallugar = data.get('finallugar')
         horario.inihora = data.get('inihora')
@@ -497,11 +496,9 @@ def actualizar_turno(request):
         horario.finbalcir =  data.get('circulacionFin')
         horario.duracion = data.get('duracion')
         horario.observaciones = data.get('observaciones')
+        horario.save()
 
-        sucesion.estado_inicio = data.get('inilugar')
-        sucesion.estado_fin = data.get('finallugar')
-        sucesion.hora_inicio = data.get('inihora') 
-        sucesion.hora_fin = data.get('finalhora')
+        Sucesion.objects.filter(codigo_horario = turno).update(estado_inicio = data.get('inilugar'), estado_fin = data.get('finallugar'), hora_inicio = data.get('inihora'), hora_fin = data.get('finalhora'))
 
         return Response({
             "success":True,
