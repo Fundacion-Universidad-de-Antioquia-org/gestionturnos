@@ -141,7 +141,6 @@ def vista_cargarSucesionTrenes(request, *, context):
                     total_sucesion, errores = procesar_sucesion_multifila(file_sucesion, usuarioLogeado)
                     resultadosCargarSucesion = f"Se cargaron correctamente {total_sucesion} registros."
 
-                # Refresca el queryset con lo nuevo ya insertado
                 sucesion_mas_particularidades = base_qs.filter(estado_sucesion="revision")
 
         elif accion == "publicar":
@@ -159,7 +158,8 @@ def vista_cargarSucesionTrenes(request, *, context):
         'resultadoCuadroEspecial': total_cuadroServiciosEspecial,
         'resultadosSucesion': resultadosCargarSucesion,
         'usuarioLogeado': usuarioLogeado,
-        'datos_sucesion': sucesion_mas_particularidades })
+        'datos_sucesion': sucesion_mas_particularidades,
+        'success':True })
 
 @settings.AUTH.login_required
 def vista_configuraciones(request,*, context):
@@ -253,13 +253,13 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                 })
             else: # Si no ingresa un rango de fechas donde existan solicitudes, se devuelven todas las solicitudes pendientes
                 print("No existen solicitudes entre estas fechas")
-                solicitudesGt = Solicitudes_Gt.objects.all()
+                solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente")
                 return render(request, "account/solicitudes_gestion_turnos.html",{
                     "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
                     "solicitudesGt": solicitudesGt
                 })
         else:
-            solicitudesGt = Solicitudes_Gt.objects.all()
+            solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente")
             return render(request,"account/solicitudes_gestion_turnos.html",{
                 "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
                 "solicitudesGt":solicitudesGt
