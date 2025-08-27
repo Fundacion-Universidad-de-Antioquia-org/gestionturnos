@@ -1143,8 +1143,6 @@ def solicitud_gt(request):
         return Response({"success":False, "message":"Parametros de solicitud vacios"})
     
 
-
-
 @api_view(["POST"])
 def actualizar_parametros(request):
 
@@ -1216,8 +1214,40 @@ def get_comunicados(request):
                 listaArchivos.append(f"id: {filtro.id}, url: {filtro.urlArchivo}, tipo de archivo: {filtro.tipoArchivo}")
 
     return Response({"success":True , "datos": listaArchivos})
-    
 
+@api_view(["POST"])
+def get_datos_filtro_sucesion(request):
+
+    codigo = request.data.get('codigo')
+    estado = request.data.get('estado')
+    fechaInicial = request.data.get('fechaInicial')
+    fechaFinal = request.data.get('fechaFinal')
+
+    print(f"codigo:{codigo}, estado: {estado}, fechainicial: {fechaInicial}, fechafinal: {fechaFinal}")
+
+    if codigo and estado and fechaInicial and fechaFinal:
+        sucesionFiltrada = Sucesion.objects.filter(Q(fecha__gte=fechaInicial, fecha__lte=fechaFinal),codigo=codigo,estado_sucesion=estado).select_related("horario").values(
+            "nombre", "codigo", "codigo_horario", "cargo","fecha","estado_inicio","estado_fin","hora_inicio","hora_fin","horario__observaciones","estado_sucesion","usuario_carga"
+        )
+
+        #sucesionFiltrada =  Sucesion.objects.filter(Q(fecha__gte = fechaInicial, fecha__lte = fechaFinal ),codigo = codigo, estado_sucesion = estado).values(
+         #   "nombre", "codigo", "codigo_horario", "cargo","fecha","estado_inicio","estado_fin","hora_inicio","hora_fin","horario__observaciones","estado_sucesion","usuario_carga"
+        #)
+
+        data = []
+        for s in sucesionFiltrada:
+            s["particularidades"] = s.pop("horario__observaciones", "")
+            data.append(s)
+
+        #data = list(sucesionFiltrada.values())
+        return Response({"success": True, 
+                         "message": f"Se cargaron correctamente: {sucesionFiltrada.count()}, resultados", 
+                         "data":data})
+    else:
+        return Response({"success":False, 
+                         "message": f"Alguno de los parametros llegaron sin datos, codigo: {codigo}, estado: {estado}, fecha incial: {fechaInicial}, fecha final: {fechaFinal}"})
+
+    
 
 @api_view(["POST"])
 def reprogramar_turno(request):
@@ -1239,7 +1269,9 @@ def reprogramar_turno(request):
         return Response (f"Este turno: {codigoTurno}, para la fecha: {fechaTurno}, ya lo tiene asignado:{TurnoAsignado_enConflicto.nombre}")
     else: 
         return Response (f"Turno disponible")
+    
 
+    
 #Cambio de turnos
 #@api_view(["POST"])
 #def cambio_turno(request):

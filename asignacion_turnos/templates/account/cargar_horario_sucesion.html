@@ -183,6 +183,19 @@
         <label for="filtroFecha">Fecha:</label>
         <input type="datetime" id="filtroFecha">
       </div>
+      <div class="filtro-item">
+        <label for="filtroFechaInicial">Fecha inicial:</label>
+        <input type="datetime" id="filtroFechaInicial">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFechaFinal">Fecha final:</label>
+        <input type="datetime" id="filtroFechaFinal">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">  </label>
+        <button class="btn-third"  id="buscarDatosFiltro">Buscar datos</button>
+      </div>
+      
     </div>
   </div>
 </div>
@@ -207,7 +220,7 @@
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody id="tablaBody" style="display: none;">
+        <tbody id="tablaBody">
                 {% for s in datos_sucesion %}
             <tr>
                 <td>{{ s.nombre }}</td>
@@ -475,6 +488,76 @@
 
 
   }
+ </script>
+<!--Buscar datos*filtro-->
+ <script>
+  document.getElementById("buscarDatosFiltro").addEventListener("click",function(){
+    const codigo = document.getElementById("filtroCodigo").value
+    const estado = document.getElementById("filtroEstado").value
+    const fechaInicial = document.getElementById("filtroFechaInicial").value
+    const fechaFinal = document.getElementById("filtroFechaFinal").value
+
+    let bodyTabla = document.getElementById("tablaBody");
+
+    fetch("{% url 'datos_filtro_sucesion' %}",{
+      method : "POST",
+      headers:{"Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")},
+      body: JSON.stringify({
+        "codigo":codigo,
+        "estado": estado,
+        "fechaInicial": fechaInicial,
+        "fechaFinal": fechaFinal
+      })
+    })
+    .then(response => response.json())
+    .then((data)=>{
+      
+      if(data.success){
+
+        console.log(typeof data); // object
+        console.log(Object.keys(data)); // te muestra las llaves del objeto
+        console.log(data); // inspecciona su contenido real
+     
+        bodyTabla.innerHTML = "";
+      
+       const rows = data.data.map(emp => `
+          <tr>
+            <td>${emp.nombre ?? ""}</td>
+            <td>${emp.codigo ?? ""}</td>
+            <td>${emp.codigo_horario ?? ""}</td>
+            <td>${emp.cargo ?? ""}</td>
+            <td>${emp.fecha ?? ""}</td>
+            <td>${emp.estado_inicio ?? ""}</td>
+            <td>${emp.estado_fin ?? ""}</td>
+            <td>${emp.hora_inicio ?? ""}</td>
+            <td>${emp.hora_fin ?? ""}</td>
+            <td>${emp.particularidades ?? ""}</td>
+            <td>${emp.estado_sucesion ?? ""}</td>
+            <td>${emp.usuario_carga ?? ""}</td>
+            <td>${"prueba"}</td>
+          </tr>
+        `).join("");
+
+        bodyTabla.innerHTML = rows;
+        bodyTabla.style.display = "table-row-group";
+      }else{
+          Swal.fire({
+                    icon: "error",
+                    title: "Error con la captura de los datos",
+                    text: data.message
+
+                      })
+      }
+    })
+    .catch(error =>Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: error
+
+                      }))
+   
+  })
  </script>
 
 <!--Script filtros-->
@@ -993,4 +1076,20 @@ document.getElementById("editTurno").addEventListener("input", function () {
   }
 </script>
 
+<script>
+     function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 {% endblock %}
