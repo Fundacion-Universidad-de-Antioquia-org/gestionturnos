@@ -144,8 +144,8 @@
 
     <!-- Acordeón de filtros -->
 <div class="accordion-container">
-  <div class="accordion-header">Filtros de Búsqueda</div>
-  <div class="accordion-body">
+  <div class="accordion-header" id="acordionHeader">Filtros de Búsqueda</div>
+  <div class="accordion-body cargar-horario" id="acordionBody">
     <div class="filtros-horizontal">
       <div class="filtro-item">
         <label for="filtroNombre">Nombre:</label>
@@ -191,7 +191,7 @@
         <label for="filtroFechaFinal">Fecha final:</label>
         <input type="datetime" id="filtroFechaFinal">
       </div>
-      <div class="filtro-item">
+      <div class="filtro-item f-btn">
         <label for="filtroFecha">  </label>
         <button class="btn-third"  id="buscarDatosFiltro">Buscar datos</button>
       </div>
@@ -492,6 +492,9 @@
 <!--Buscar datos*filtro-->
  <script>
   document.getElementById("buscarDatosFiltro").addEventListener("click",function(){
+    const acordionHeader = document.getElementById("acordionHeader");
+    const acordionBody = document.getElementById("acordionBody");
+
     const codigo = document.getElementById("filtroCodigo").value
     const estado = document.getElementById("filtroEstado").value
     const fechaInicial = document.getElementById("filtroFechaInicial").value
@@ -499,7 +502,9 @@
 
     let bodyTabla = document.getElementById("tablaBody");
 
-    fetch("{% url 'datos_filtro_sucesion' %}",{
+
+    if(codigo !== "" && estado !== "" && fechaInicial !== "" && fechaFinal !== ""){
+           fetch("{% url 'datos_filtro_sucesion' %}",{
       method : "POST",
       headers:{"Content-Type": "application/json",
       "X-CSRFToken": getCookie("csrftoken")},
@@ -515,9 +520,9 @@
       
       if(data.success){
 
-        console.log(typeof data); // object
-        console.log(Object.keys(data)); // te muestra las llaves del objeto
-        console.log(data); // inspecciona su contenido real
+        console.log(typeof data); 
+        console.log(Object.keys(data)); 
+        console.log(data); 
      
         bodyTabla.innerHTML = "";
       
@@ -535,12 +540,19 @@
             <td>${emp.particularidades ?? ""}</td>
             <td>${emp.estado_sucesion ?? ""}</td>
             <td>${emp.usuario_carga ?? ""}</td>
-            <td>${"prueba"}</td>
+            <td>${"Consulta"}</td>
           </tr>
         `).join("");
 
         bodyTabla.innerHTML = rows;
         bodyTabla.style.display = "table-row-group";
+
+        acordionHeader.classList.remove("active");
+        acordionBody.classList.remove("active");
+
+          
+
+
       }else{
           Swal.fire({
                     icon: "error",
@@ -556,6 +568,16 @@
                     text: error
 
                       }))
+    }else{
+
+          Swal.fire({
+                    icon: "error",  
+                    title: "Se detectaron campos vacios",
+                    text: "Por favor valida el campo  codigo, fecha inicial o final"
+                      })
+
+    }
+    
    
   })
  </script>
