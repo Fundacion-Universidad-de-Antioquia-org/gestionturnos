@@ -28,7 +28,7 @@ from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
 from .resources.cargarArchivosBlob import upload_to_azure_blob
 from .resources.enviarCorreoGmail import enviarCorreoGmail, enviarCorreoGmailHTML
-from .resources.buscarErrores import leer_y_filtrar_excel
+from .resources.buscarErrores import leer_y_filtrar_excel, encontrarServiciosRepetidos
 from .resources.peticion_Oddo import sincronizarDbEmpleados
 
 
@@ -224,6 +224,17 @@ def vista_cargarIo(request,*, context):
 @settings.AUTH.login_required
 def vista_solicitudes_gestion_turnos(request,*, context):
     
+   
+
+    user_claims = context["user"]
+    usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
+
+    hoy = date.today()
+    inicio = date(hoy.year, 1, 1) #Primer dia del año
+    solicitudAnual = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy)).count()
+    solicitudAnualAprobadas = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy), estado = "aprobado").count()
+    solicitudAnualDesaprobadas = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy), estado = "desaprobado").count()
+    
     if request.method == "GET":
 
         print("GET completo:", request.GET)
@@ -234,7 +245,6 @@ def vista_solicitudes_gestion_turnos(request,*, context):
         fechaInicial = None
         fechaFinal = None
     
-
         if fechaInicial_peticion and fechaFinal_peticion:
 
             #Formateamos las fechas para que evitar error de formato ---> Datetime
@@ -249,20 +259,33 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                 print("Si existen solicitudes entre estas fechas")
                 return render(request,"account/solicitudes_gestion_turnos.html",{
                     "mensaje":f"Se cargaron {solicitudesGt.count()} solicitudes entre este rango de fechas: {fechaInicial}, {fechaFinal}",
-                    "solicitudesGt":solicitudesGt
+                    "solicitudesGt":solicitudesGt,
+                    "usuarioLogeado":usuarioLogeado,
+                    "solicitudAnual": solicitudAnual,
+                    "solicitudAnualAprobadas":solicitudAnualAprobadas,
+                    "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
                 })
             else: # Si no ingresa un rango de fechas donde existan solicitudes, se devuelven todas las solicitudes pendientes
                 print("No existen solicitudes entre estas fechas")
                 solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente")
                 return render(request, "account/solicitudes_gestion_turnos.html",{
                     "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
-                    "solicitudesGt": solicitudesGt
+                    "solicitudesGt": solicitudesGt,
+                     "usuarioLogeado":usuarioLogeado,
+                     "solicitudAnual": solicitudAnual,
+                     "solicitudAnualAprobadas": solicitudAnualAprobadas,
+                     "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
+
                 })
         else:
             solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente")
             return render(request,"account/solicitudes_gestion_turnos.html",{
                 "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
-                "solicitudesGt":solicitudesGt
+                "solicitudesGt":solicitudesGt,
+                 "usuarioLogeado":usuarioLogeado,
+                 "solicitudAnual": solicitudAnual,
+                 "solicitudAnualAprobadas":solicitudAnualAprobadas,
+                 "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
             })
     else:
         return Response("error de peticion") # Corregir esto
@@ -289,6 +312,7 @@ def vista_precarga(request, *, context):
         })
 
     form = CargarDatosProno(request.POST, request.FILES)
+
     if not form.is_valid():
         return render(request, "account/preCarga.html", {
             "form": form,
@@ -306,7 +330,8 @@ def vista_precarga(request, *, context):
             "usuarioLogeado": usuarioLogeado
         })
 
-    filas = leer_y_filtrar_excel(f)  
+    filas = leer_y_filtrar_excel(f) 
+    encontrarServiciosRepetidos(f) 
 
     return render(request, "account/preCarga.html", {
         "form": form,

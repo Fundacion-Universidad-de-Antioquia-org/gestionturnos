@@ -48,7 +48,6 @@ def sincronizarDbEmpleados():
     data = resp.json() if resp.status_code == 200 else {}
     empleados = data.get("empleados", [])
 
-
     if not isinstance(empleados, list):
         return {"ok": False, "error": "La clave 'empleados' no es lista."}
 
@@ -72,6 +71,7 @@ def sincronizarDbEmpleados():
             formacion=_s(e.get("formacion_conduccion")),
             direccion = _s(e.get("address_home_id")),
             barrio = _s(e.get("Barrio")),
+            municipio = _s(e.get("Municipio"))
         ))
 
     if not objs:

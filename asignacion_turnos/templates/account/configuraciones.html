@@ -9,22 +9,26 @@
 {% endblock %}
 
 {% block content %}
-<div class="usuario-bar">
-  <!-- Foto y saludo -->
-  <div style="display: flex; align-items: center;">
+<div class="usuario-bar d-flex align-items-center justify-content-between px-3">
+
+  <!-- Sección Izquierda: Foto + Usuario -->
+  <div class="seccion px-4 py-2 d-flex align-items-center">
     <img src="{% static 'images/admin_img.png' %}" 
-         alt="Foto de perfil" class="perfil-img" />
-    <span class="saludo">Bienvenido, {{ usuarioLogeado }}</span>
+         alt="Foto de perfil" class="perfil-img me-2">
+    <span class="saludo" style="color: white;">Bienvenido, {{ usuarioLogeado }}</span>
   </div>
 
-  <!-- Título -->
-  <div class="titulo-template">Configuraciones y parametros de consulta</div>
-  <!-- Logout -->
-  <form action="{% url 'logout' %}" method="post">
+  <!-- Sección Centro: Título -->
+ <div class="position-absolute top-50 start-50 translate-middle text-center titulo">
+    <span class="material-symbols-outlined">settings</span><h4 class="titulo-template m-0">Configuraciones</h4>
+  </div>
+
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
-    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+    <button class="btn-cerrarSesion" type="submit">Cerrar sesión</button>
   </form>
 </div>
+
 <div id="panelControl">
     <span class="material-symbols-outlined">settings_cinematic_blur</span><div class="titulo-template">Parametros para el cambio de turnos y solicitudes GT</div> 
     <button class="btn-third">➕ Nuevo parametro</button>

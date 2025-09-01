@@ -26,7 +26,7 @@ body {
 .content {
     width: 100%;
     margin-left: 250px;
-    padding: 20px;
+    padding: 25px 20px;
 }
 
 
@@ -348,49 +348,22 @@ body {
 /* Botón cerrar sesión dentro de la barra de usuario */
 
 /* Barra de usuario: saludo a la izquierda y botón a la derecha */
-.usuario-bar {
+.usuario-bar  {
+  background: white; /* Fondo claro */
+  padding: 0;
+} 
 
+.seccion {
+  background: rgb(40, 36, 36);
+  border-radius: 20px;  /* Bordes redondeados */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+  padding-right: 8px;
+}
+
+.titulo{
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 24px;
-    border-radius: 12px;
-    background-color: #e7f2ec; /* Sin fondo blanco */
-    animation: fadeSlideDown 0.6s ease-in-out;
-    transition: box-shadow 0.3s ease;
-    max-width: 100%;
-}
-
-.usuario-bar .saludo {
-    font-size: 1.05rem;
-    color: #2c3e50;
-    font-weight: 500;
-}
-
-.usuario-bar form {
-    margin: 0;
-}
-
-.perfil-img {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid #3498db;
-  display: inline-block; /* CAMBIO: antes estaba en block */
-  vertical-align: middle;
-}
-
-
-.saludo {
-  font-size: 1rem;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-
-.perfil-img:hover {
-    transform: scale(1.05);
+    gap: 0.5rem;
 }
 
 .titulo-template {
@@ -401,32 +374,36 @@ body {
     text-align: center; 
 }
 
-.usuario-bar button.btn-danger {
-    margin-left: 10px;
-    font-size: 0.9rem;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background-color: #e74c3c;
-    border: none;
-    color: #fff;
+.perfil-img {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%; /* Redondear la foto */
+  object-fit: cover;
+}
+
+.btn-cerrarSesion {
+     background-color: #e93c11  ;
+    border-color: #e93c11 ;
+    font-weight: 500;
+    padding: 8px 16px;  
+    border-radius: 6px;
+    color: #EEF2FF;
+    cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.usuario-bar button.btn-danger:hover {
-    background-color: #c0392b;
-    transform: translateY(-1px);
+.btn-cerrarSesion:hover {
+    background-color: #fffffe;
+    border-color: #fffffe;
+    color: #e93c11;
+    transform: scale(1.05); /* Animación suave */
 }
 
-@keyframes fadeSlideDown {
-    0% {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.btn-cerrarSesion:active {
+    transform: scale(0.98); /* Pequeño efecto al hacer click */
 }
 
 

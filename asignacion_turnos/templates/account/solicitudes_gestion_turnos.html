@@ -1,29 +1,100 @@
 {% extends 'base.html' %}
 {% load static %}
+
+{% block styles %}
+<style>
+ .indicadores {
+  display: flex;              /* 🔹 alineación horizontal */
+  align-items: center;
+  gap: 15px;                  /* 🔹 espacio entre indicadores */
+  margin-right: 15px;         /* opcional, para separarlos del botón logout */
+}
+
+.indicador-card.small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: white;
+  background: rgb(40, 36, 36);
+  border-radius: 10px;
+  padding: 5px 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
+  white-space: nowrap;        /* evita que el texto se parta en varias líneas */
+}
+
+.indicador-card.small:hover {
+  transform: scale(1.05);
+}
+
+/* Spinner reducido */
+.indicador-card.small .spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid #1d5031;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Colores temáticos */
+.aprobado .spinner {
+  border-top-color: #28a745;
+}
+.desaprobado .spinner {
+  border-top-color: #dc3545;
+}
+
+
+</style>
+{% endblock%}
 {% block content %}
+<div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 
-<div class="usuario-bar position-relative">
+  <!-- Sección Izquierda: Foto + Usuario -->
+  <div class="seccion px-4 py-2 d-flex align-items-center">
+    <img src="{% static 'images/admin_img.png' %}" 
+         alt="Foto de perfil" class="perfil-img me-2">
+    <span class="saludo" style="color: white;">Bienvenido, {{ usuarioLogeado }}</span>
+  </div>
 
-<!-- Izquierda: Foto + saludo -->
-<div class="d-flex align-items-center flex-shrink-0">
-  <img src="{% static 'images/admin_img.png' %}" 
-       alt="Foto de perfil" class="perfil-img">
-  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+  <!-- Sección Centro: Título -->
+  <div class="position-absolute top-50 start-50 translate-middle text-center titulo">
+    <span class="material-symbols-outlined">assignment_add</span>
+    <h4 class="titulo-template m-0">Solicitudes GT</h4>
+  </div>
+
+  <!-- 🔹 Indicadores -->
+ <div class="indicadores d-flex align-items-center">
+  <div class="indicador-card small">
+    <div class="spinner"></div>
+    <span class="texto-indicador">Anuales: <b id="solicitudesAnuales">0</b></span>
+  </div>
+
+  <div class="indicador-card small aprobado">
+    <div class="spinner"></div>
+    <span class="texto-indicador">Aprobadas: <b id="solicitudesAprobadas">0</b></span>
+  </div>
+
+  <div class="indicador-card small desaprobado">
+    <div class="spinner"></div>
+    <span class="texto-indicador">Rechazadas: <b id="solicitudesDesaprobadas">0</b></span>
+  </div>
 </div>
 
 
-
-  <!-- Centro (posición absoluta centrada) -->
-  <div class="position-absolute top-50 start-50 translate-middle text-center">
-    <h4 class="titulo-template m-0">Solicitudes Gestión Turnos</h4>
-  </div>
-
-  <!-- Derecha -->
-  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+  <!-- Botón Logout -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0 ms-3">
     {% csrf_token %}
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
+
 
  <!-- Acordeón de filtros -->
 <div class="accordion-container" style="margin-top: 14px;">
@@ -170,9 +241,44 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+function animateValue(id, start, end, duration = 1200) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    // Si la animación no aplica, asigna directo
+    if (start === end || duration <= 0) {
+      el.textContent = end;
+      return;
+    }
+
+    const range = end - start;
+    const startTime = performance.now();
+
+    function tick(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const value = Math.floor(start + range * progress);
+      el.textContent = value.toLocaleString('es-CO');
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+  }
+</script>
+
 <!--Script del DOM-->
 <script>
   document.addEventListener("DOMContentLoaded",function(){
+    // Ejemplo con valores desde backend
+
+
+    const solicitudAnual = "{{ solicitudAnual }}"
+    const solicitudAnualAprobadas = "{{ solicitudAnualAprobadas }}"
+    const solicitudAnualDesaprobadas = "{{ solicitudAnualDesaprobadas }}"
+    
+    animateValue("solicitudesAnuales", 0, solicitudAnual, 1500);
+    animateValue("solicitudesAprobadas", 0, solicitudAnualAprobadas, 1500);
+    animateValue("solicitudesDesaprobadas", 0, solicitudAnualDesaprobadas, 1500);
     aplicarFiltros();
 
     const cargaSolicitudes = "{{ mensaje|escapejs }}"
@@ -190,6 +296,15 @@
             text: cargaSolicitudes
         });
     }
+  
+    /*variables de los indicadores*/
+    
+
+   
+
+    
+
+  
   })
 
 </script>
@@ -496,10 +611,8 @@ function formatoFechaDMYaISO(fechaDMY) {
   return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
 }
 
-
 </script>
 
-<script>
+<!--Funcion de las animaciones-->
 
-</script>
 {% endblock %}

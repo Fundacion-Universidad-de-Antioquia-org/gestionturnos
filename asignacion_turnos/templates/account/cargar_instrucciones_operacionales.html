@@ -288,22 +288,25 @@
 {% endblock %}
 
 {% block content %}
+<div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 
-<div class="usuario-bar">
-  <div style="display: flex; align-items: center;">
-    <img src="{% static 'images/admin_img.png' %}" alt="Foto de perfil" class="perfil-img">
-    <span class="saludo">Bienvenido, {{ usuarioLogeado }}</span>
+  <!-- Sección Izquierda: Foto + Usuario -->
+  <div class="seccion px-4 py-2 d-flex align-items-center">
+    <img src="{% static 'images/admin_img.png' %}" 
+         alt="Foto de perfil" class="perfil-img me-2">
+    <span class="saludo" style="color: white;">Bienvenido, {{ usuarioLogeado }}</span>
   </div>
 
-  <div>
-    <h4 class="titulo-template">Cargar IO - Comunicaciones</h4>
+  <!-- Sección Centro: Título -->
+ <div class="position-absolute top-50 start-50 translate-middle text-center titulo">
+    <span class="material-symbols-rounded">art_track</span><h4 class="titulo-template m-0">Cargar Comunicados | IO</h4>
   </div>
 
-  <form action="{% url 'logout' %}" method="post">
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
-    <button class="btn-danger">Cerrar sesión</button>
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
-</div>  
+</div>
 
 <div class="main-container">
   <!-- Columna izquierda: Formulario -->

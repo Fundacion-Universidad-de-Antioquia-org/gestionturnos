@@ -7,29 +7,26 @@
 {% endblock%}
 
 {% block content%}
+<div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 
-<!-- Banner contenedor -->
-<div class="usuario-bar position-relative">
-
-<!-- Izquierda: Foto + saludo -->
-<div class="d-flex align-items-center flex-shrink-0">
-  <img src="{% static 'images/admin_img.png' %}" 
-       alt="Foto de perfil" class="perfil-img">
-  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
-</div>
-
-  <!-- Centro (posición absoluta centrada) -->
-  <div class="position-absolute top-50 start-50 translate-middle text-center">
-    <h4 class="titulo-template m-0">Editar Horarios</h4>
+  <!-- Sección Izquierda: Foto + Usuario -->
+  <div class="seccion px-4 py-2 d-flex align-items-center">
+    <img src="{% static 'images/admin_img.png' %}" 
+         alt="Foto de perfil" class="perfil-img me-2">
+    <span class="saludo" style="color: white;">Bienvenido, {{ usuarioLogeado }}</span>
   </div>
 
-  <!-- Derecha -->
+  <!-- Sección Centro: Título -->
+ <div class="position-absolute top-50 start-50 translate-middle text-center titulo">
+    <span class="material-symbols-outlined">security</span> <h4 class="titulo-template m-0">Pre-carga y captura de errores</h4>
+  </div>
+
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
-    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+    <button class="btn-cerrarSesion" type="submit">Cerrar sesión</button>
   </form>
-
 </div>
+
 <!--Modal insertar turnos -->
 <div  class="modal-custom" id="modalInsertarTurnos">
   <div class="modal-content-custom">
