@@ -353,7 +353,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 24px;
+    padding: 0 7px ;
     border-radius: 12px;
     background-color: #e7f2ec; /* Sin fondo blanco */
     animation: fadeSlideDown 0.6s ease-in-out;
@@ -372,8 +372,8 @@ body {
 }
 
 .perfil-img {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   object-fit: cover;
   border-radius: 50%;
   border: 2px solid #3498db;
@@ -1760,10 +1760,6 @@ label {
   resize: vertical;
   min-height: 100px;
 }
-
-
-
-
 
 
 
