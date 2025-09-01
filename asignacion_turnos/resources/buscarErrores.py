@@ -318,7 +318,7 @@ def diagnostico_servicios(
     solo_asignados = asig.merge(
         esperados[["DIA_NOMBRE", SERV]],
         on=["DIA_NOMBRE", SERV],
-        how="left",
+        how="left", 
         indicator=True
     )
     asignados_no_definidos = solo_asignados[solo_asignados["_merge"] == "left_only"].copy()

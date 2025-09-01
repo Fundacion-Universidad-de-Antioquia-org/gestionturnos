@@ -54,22 +54,21 @@
 </style>
 {% endblock%}
 {% block content %}
-<div class="usuario-bar d-flex align-items-center justify-content-between px-3">
+<div class="usuario-bar position-relative">
 
-  <!-- Sección Izquierda: Foto + Usuario -->
-  <div class="seccion px-4 py-2 d-flex align-items-center">
-    <img src="{% static 'images/admin_img.png' %}" 
-         alt="Foto de perfil" class="perfil-img me-2">
-    <span class="saludo" style="color: white;">Bienvenido, {{ usuarioLogeado }}</span>
+<!-- Izquierda: Foto + saludo -->
+<div class="d-flex align-items-center flex-shrink-0">
+  <img src="{% static 'images/admin_img.png' %}" 
+       alt="Foto de perfil" class="perfil-img">
+  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+</div>
+
+  <!-- Centro (posición absoluta centrada) -->
+  <div class="position-absolute top-50 start-50 translate-middle text-center"> 
+   <h4 class="titulo-template encabezado-icono"><span class="material-symbols-outlined">assignment_add</span>Solicitudes Cambios de Turnos</h4>
   </div>
 
-  <!-- Sección Centro: Título -->
-  <div class="position-absolute top-50 start-50 translate-middle text-center titulo">
-    <span class="material-symbols-outlined">assignment_add</span>
-    <h4 class="titulo-template m-0">Solicitudes GT</h4>
-  </div>
-
-  <!-- 🔹 Indicadores -->
+   <!-- 🔹 Indicadores -->
  <div class="indicadores d-flex align-items-center">
   <div class="indicador-card small">
     <div class="spinner"></div>
@@ -87,14 +86,12 @@
   </div>
 </div>
 
-
-  <!-- Botón Logout -->
-  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0 ms-3">
+  <!-- Derecha -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
-
 
  <!-- Acordeón de filtros -->
 <div class="accordion-container" style="margin-top: 14px;">
@@ -155,7 +152,7 @@
   </div>
 </div>
 <table class="styled-table display" id="tablaDatos">
-    <thead>
+  <thead>
         <tr>
           <th>id</th>
             <th>Nombre solicitante</th>

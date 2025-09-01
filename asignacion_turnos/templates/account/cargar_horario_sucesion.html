@@ -71,17 +71,17 @@
   <div class="seccion px-4 py-2 d-flex align-items-center">
     <img src="{% static 'images/admin_img.png' %}" 
          alt="Foto de perfil" class="perfil-img me-2">
-    <span class="saludo" style="color: white;">Bienvenido, {{ usuarioLogeado }}</span>
+    <span class="saludo" >Bienvenido, {{ usuarioLogeado }}</span>
   </div>
 
   <!-- Sección Centro: Título -->
- <div class="position-absolute top-50 start-50 translate-middle text-center titulo">
-    <span class="material-symbols-rounded">upload</span> <h4 class="titulo-template m-0">Cargar Horario & Suceciones</h4>
+ <div class="position-absolute top-50 start-50 translate-middle text-center"> 
+   <h4 class="titulo-template encabezado-icono"><span class="material-symbols-rounded">upload</span>Cargar Horarios & Sucesiones</h4>
   </div>
 
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
-    <button class="btn-cerrarSesion" type="submit">Cerrar sesión</button>
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
 
