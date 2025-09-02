@@ -663,17 +663,29 @@ def buscar_cambio_turno(request):
         })
 
     fechaAnterior =  fechaCambio - timedelta(days=1)
+    fechaPosterior = fechaCambio + timedelta(days=1)
+    print(f"FECHA POSTERIROR AL CAMBIO: {fechaPosterior}")
 
     empleado = Empleado_Oddo.objects.filter(codigo=codigoSolicitante , estado = "Activo").first()
 
-    
-    cargos10HorasDescanso = ["CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO","CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA"]
-    cargos8HorasDescanso = ["OPERADOR DE CONDUCCION","MANIOBRISTA TRENES","MANIOBRISTA TRANVIA"]
+    #crear en configuraciones
+    cargos10HorasDescanso = ["CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO","CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA"]
+    cargos8HorasDescanso = ["OPERADOR(A) DE CONDUCCION","MANIOBRISTA TRENES","MANIOBRISTA TRANVIA"]
 
     estadosServicios = Estados_servicios.objects.all()
     turnosInvalidados =  []
 
     sucesionSolicitanteDiaCambio =  get_object_or_404(Sucesion, codigo = codigoSolicitante , fecha = fechaCambio)
+    sucesionSolicitanteDiaPosterior = get_object_or_404(Sucesion, codigo = codigoSolicitante, fecha = fechaPosterior)
+    horaInicioDiaPosteriorCambio = None
+
+    if sucesionSolicitanteDiaPosterior.hora_inicio is not None:
+        horaInicioDiaPosteriorCambio = datetime.combine(fechaPosterior,sucesionSolicitanteDiaPosterior.hora_inicio)
+        print(f"DIA POSTERIOR : {horaInicioDiaPosteriorCambio}")
+        horaInicioDiaPosteriorCambio = horaInicioDiaPosteriorCambio - timedelta(hours=10)    
+        print(f" DIA POSTERIOR - 10 horas: {horaInicioDiaPosteriorCambio.time()}")
+
+
 
      # Turnos que no se pueden cambiar:
     for e in estadosServicios:
@@ -770,25 +782,44 @@ def buscar_cambio_turno(request):
         else:
             return Response({"success": False, "message": "Cargo no valido"})
     else: 
-        print("el dia de ayer tiene un turno con horas none")
-        sucesionDiaCambio = Sucesion.objects.filter(~Q(codigo_horario__in = turnosInvalidados) & ~Q(codigo = codigoSolicitante ), fecha= fechaCambio, empleado__cargo = empleado.cargo)
-        sucesionFiltrada = []
-        for s in sucesionDiaCambio:
-            sucesionFiltrada.append({
-                    "nombre":s.nombre,
-                    "codigo":s.codigo,
-                    "cargo":s.empleado.cargo,
-                    "fecha":s.fecha,
-                    "turno":s.codigo_horario,
-                    "estacion_ini":s.estado_inicio if s.estado_inicio  else  'Sin estación',
-                    "estacion_fin":s.estado_fin if s.estado_fin else 'Sin estación',
-                    "hora_ini":s.hora_inicio if s.hora_inicio else  'Sin hora',
-                    "hora_fin":s.hora_fin if s.hora_fin else  'Sin hora',
-                    "particularidades": s.horario.observaciones if s.horario and s.horario.observaciones else "Sin observaciones",
-                    "duracion":s.horario.duracion if s.horario and s.horario.duracion else "Sin duración" 
-                    })
-        
-        return Response(sucesionFiltrada)
+        print("El dia de ayer, tiene un turno sin horas definidas, puede ser un DISPO,FUNDA o SUSPEN")  
+        if horaInicioDiaPosteriorCambio is not None:
+            sucesionDiaCambio = Sucesion.objects.filter(~Q(codigo_horario__in = turnosInvalidados) & ~Q(codigo = codigoSolicitante ) & Q(hora_fin__lte = horaInicioDiaPosteriorCambio.time()) | Q(codigo_horario = "DISPO"), fecha= fechaCambio, empleado__cargo = empleado.cargo)
+            sucesionFiltrada = []
+            for s in sucesionDiaCambio:
+                sucesionFiltrada.append({
+                        "nombre":s.nombre,
+                        "codigo":s.codigo,
+                        "cargo":s.empleado.cargo,
+                        "fecha":s.fecha,
+                        "turno":s.codigo_horario,
+                        "estacion_ini":s.estado_inicio if s.estado_inicio  else  'Sin estación',
+                        "estacion_fin":s.estado_fin if s.estado_fin else 'Sin estación',
+                        "hora_ini":s.hora_inicio if s.hora_inicio else  'Sin hora',
+                        "hora_fin":s.hora_fin if s.hora_fin else  'Sin hora',
+                        "particularidades": s.horario.observaciones if s.horario and s.horario.observaciones else "Sin observaciones",
+                        "duracion":s.horario.duracion if s.horario and s.horario.duracion else "Sin duración" 
+                        })
+            return Response(sucesionFiltrada)
+        else:
+            sucesionDiaCambio = Sucesion.objects.filter(~Q(codigo_horario__in = turnosInvalidados) & ~Q(codigo = codigoSolicitante ), fecha= fechaCambio, empleado__cargo = empleado.cargo)
+            sucesionFiltrada = []
+            for s in sucesionDiaCambio:
+                sucesionFiltrada.append({
+                        "nombre":s.nombre,
+                        "codigo":s.codigo,
+                        "cargo":s.empleado.cargo,
+                        "fecha":s.fecha,
+                        "turno":s.codigo_horario,
+                        "estacion_ini":s.estado_inicio if s.estado_inicio  else  'Sin estación',
+                        "estacion_fin":s.estado_fin if s.estado_fin else 'Sin estación',
+                        "hora_ini":s.hora_inicio if s.hora_inicio else  'Sin hora',
+                        "hora_fin":s.hora_fin if s.hora_fin else  'Sin hora',
+                        "particularidades": s.horario.observaciones if s.horario and s.horario.observaciones else "Sin observaciones",
+                        "duracion":s.horario.duracion if s.horario and s.horario.duracion else "Sin duración" 
+                        })
+            return Response(sucesionFiltrada)
+
             
         
 
