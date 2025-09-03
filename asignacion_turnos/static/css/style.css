@@ -354,16 +354,17 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 7px ;
-    border-radius: 12px;
-    background-color: #e7f2ec; /* Sin fondo blanco */
+    /*border-radius: 12px;*/
+    background-color: #0a0a0a; /* Sin fondo blanco */
     animation: fadeSlideDown 0.6s ease-in-out;
     transition: box-shadow 0.3s ease;
     max-width: 100%;
+    height: 48px;
 }
 
 .usuario-bar .saludo {
     font-size: 1.05rem;
-    color: #2c3e50;
+    color: #fafcfd;
     font-weight: 500;
 }
 
@@ -383,9 +384,9 @@ body {
 
 
 .saludo {
-  font-size: 1rem;
-  color: #2c3e50;
-  font-weight: 500;
+  font-size: 1.2rem;
+  color: #fafdff;
+  font-weight: 600;
 }
 
 
@@ -394,8 +395,8 @@ body {
 }
 
 .titulo-template {
-    font-weight: 600;
-    color: #1D5031;
+   
+    color: #276647;
     white-space: nowrap;
     font-size: 1.2rem;
     text-align: center; 

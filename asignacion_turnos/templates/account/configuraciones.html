@@ -143,9 +143,10 @@
  <div id="panelControl">
     <span class="material-symbols-outlined">settings_cinematic_blur</span><div class="titulo-template">Servicios invalidos para el cambio de turnos</div>
     <button type="button" class="btn-third"  id="AgregarServicioInvalido" >➕ Nuevo parametro</button>
-</div>
+    <button type="button" class="btn-third"  id="ocultarTablaServicioInvalidos" >➕ Mostrar | Ocultar servicios</button>
+</div>  
  
-  <table class="styled-table display">
+  <table class="styled-table display" id="tablaServiciosInvalidos" style="display: none;">
     <thead>
       <tr>
         <th>Estados</th>
@@ -257,6 +258,7 @@
 });
 
 </script>
+<!--Token para el formulario-->
 <script>
    function getCookie(name) {
         let cookieValue = null;
@@ -273,7 +275,7 @@
         return cookieValue;
     }
 </script>
-
+<!--Sccript para el boton Nuevo parametro-->
 <script>
   document.getElementById("AgregarServicioInvalido").addEventListener("click", function(){
     modalEstados = document.getElementById("modalEstados")
@@ -399,5 +401,17 @@ document.getElementById("guardarCambiosEstados").addEventListener("click", funct
       })
     })
     
+</script>
+
+<script>
+ document.getElementById("ocultarTablaServicioInvalidos").addEventListener("click", function() {
+    const tablaServiciosInvalidos = document.getElementById("tablaServiciosInvalidos");
+    
+    if (tablaServiciosInvalidos.style.display === "none" || tablaServiciosInvalidos.style.display === "") {
+      tablaServiciosInvalidos.style.display = "table";  // o "block"
+    } else {
+      tablaServiciosInvalidos.style.display = "none";
+    }
+  });
 </script>
 {% endblock %}

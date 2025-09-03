@@ -149,7 +149,7 @@ def encontrarServiciosRepetidos(file):
 def diagnostico_servicios(
     file,
     hoja_asign: int = 1,
-    hoja_catalogo: int = 2,
+    hoja_catalogo: int = 2, # Hoja de servicios
     cols_df: dict | None = None,
     cols_cat: dict | None = None,
     turnos_invalidos: list | None = None,
@@ -304,7 +304,7 @@ def diagnostico_servicios(
 
     esperados = pd.concat([esp_sab, esp_dom, esp_lv], ignore_index=True)
 
-    # -------- 4) Comparar esperados vs asignadas --------
+    # Comparar esperados vs asignadas
     base = esperados.merge(asig, how="left", on=["DIA_NOMBRE", SERV])
     base["asignadas"] = base["asignadas"].fillna(0).astype(int)
 
@@ -314,7 +314,7 @@ def diagnostico_servicios(
     faltantes = base[base["faltan"] > 0].sort_values(["DIA_NOMBRE", "faltan"], ascending=[True, False]).copy()
     sobrantes = base[base["sobran"] > 0].sort_values(["DIA_NOMBRE", "sobran"], ascending=[True, False]).copy()
 
-    # -------- 5) Asignados que no existen en catálogo del día --------
+    # Asignados que no existen en catálogo del día 
     solo_asignados = asig.merge(
         esperados[["DIA_NOMBRE", SERV]],
         on=["DIA_NOMBRE", SERV],

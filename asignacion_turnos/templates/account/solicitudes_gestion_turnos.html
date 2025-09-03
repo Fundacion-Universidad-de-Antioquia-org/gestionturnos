@@ -2,12 +2,13 @@
 {% load static %}
 
 {% block styles %}
+<!--Estilos indicadores-->
 <style>
- .indicadores {
-  display: flex;              /* 🔹 alineación horizontal */
+.indicadores {
+  display: flex;
   align-items: center;
-  gap: 15px;                  /* 🔹 espacio entre indicadores */
-  margin-right: 15px;         /* opcional, para separarlos del botón logout */
+  gap: 15px;
+  margin-right: 15px;
 }
 
 .indicador-card.small {
@@ -21,14 +22,14 @@
   padding: 5px 10px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   transition: transform 0.3s ease;
-  white-space: nowrap;        /* evita que el texto se parta en varias líneas */
+  white-space: nowrap;
 }
 
 .indicador-card.small:hover {
   transform: scale(1.05);
 }
 
-/* Spinner reducido */
+/* Spinner inicial */
 .indicador-card.small .spinner {
   width: 18px;
   height: 18px;
@@ -42,15 +43,28 @@
   to { transform: rotate(360deg); }
 }
 
-/* Colores temáticos */
-.aprobado .spinner {
-  border-top-color: #28a745;
-}
-.desaprobado .spinner {
-  border-top-color: #dc3545;
+/* Estado final (sin animación, relleno sólido) */
+.indicador-card.small .spinner.done {
+  animation: none;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
 }
 
-
+/* Colores */
+.total .spinner.done {
+  background-color: #007bff;   /* azul */
+}
+.pendiente .spinner.done {
+  background-color: #ffc107;   /* amarillo */
+}
+.aprobado .spinner.done {
+  background-color: #28a745;   /* verde */
+}
+.desaprobado .spinner.done {
+  background-color: #dc3545;   /* rojo */
+}
 </style>
 {% endblock%}
 {% block content %}
@@ -58,33 +72,37 @@
 
 <!-- Izquierda: Foto + saludo -->
 <div class="d-flex align-items-center flex-shrink-0">
-  <img src="{% static 'images/admin_img.png' %}" 
-       alt="Foto de perfil" class="perfil-img">
-  <span class="saludo ms-2 d-inline-block">Bienvenido, {{ usuarioLogeado }}</span>
+  <span class="material-symbols-outlined" style="color: white;"> account_circle</span> <span class="saludo ms-2 d-inline-block"> {{ usuarioLogeado }}</span>
 </div>
 
   <!-- Centro (posición absoluta centrada) -->
   <div class="position-absolute top-50 start-50 translate-middle text-center"> 
-   <h4 class="titulo-template encabezado-icono"><span class="material-symbols-outlined">assignment_add</span>Solicitudes Cambios de Turnos</h4>
+    <span class="saludo ms-2 d-inline-block">Cambios de turnos</span>
+   <!--<h4 class="titulo-template encabezado-icono"><span class="material-symbols-outlined">assignment_add</span>Solicitudes Cambios de Turnos</h4>-->
   </div>
 
-   <!-- 🔹 Indicadores -->
- <div class="indicadores d-flex align-items-center">
-  <div class="indicador-card small">
+  <div class="indicadores">
+  <div class="indicador-card small total">
     <div class="spinner"></div>
-    <span class="texto-indicador">Anuales: <b id="solicitudesAnuales">0</b></span>
+    <span id="txt-total">Cargando...</span>
+  </div>
+
+  <div class="indicador-card small pendiente">
+    <div class="spinner"></div>
+    <span id="txt-pendiente">Cargando...</span>
   </div>
 
   <div class="indicador-card small aprobado">
     <div class="spinner"></div>
-    <span class="texto-indicador">Aprobadas: <b id="solicitudesAprobadas">0</b></span>
+    <span id="txt-aprobadas">Cargando...</span>
   </div>
 
   <div class="indicador-card small desaprobado">
     <div class="spinner"></div>
-    <span class="texto-indicador">Rechazadas: <b id="solicitudesDesaprobadas">0</b></span>
+    <span id="txt-rechazadas">Cargando...</span>
   </div>
 </div>
+
 
   <!-- Derecha -->
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
@@ -239,28 +257,21 @@
 
 {% block scripts %}
 <script>
-function animateValue(id, start, end, duration = 1200) {
-    const el = document.getElementById(id);
-    if (!el) return;
+// Función para actualizar un indicador
+function actualizarIndicador(clase, idTexto, valor, etiqueta) {
+  const spinner = document.querySelector(`.${clase} .spinner`);
+  spinner.classList.add("done"); // 🔹 detiene animación y aplica color
+  document.getElementById(idTexto).textContent = `${valor} ${etiqueta}`;
+}
 
-    // Si la animación no aplica, asigna directo
-    if (start === end || duration <= 0) {
-      el.textContent = end;
-      return;
-    }
+// Al obtener datos (ejemplo simulado con setTimeout)
+setTimeout(() => {
+  /*actualizarIndicador("total", "txt-total", indicadores.total, "Solicitudes");*/
+  actualizarIndicador("pendiente", "txt-pendiente", indicadores.pendiente, "Pendientes");
+  actualizarIndicador("aprobado", "txt-aprobadas", indicadores.aprobadas, "Aprobadas");
+  actualizarIndicador("desaprobado", "txt-rechazadas", indicadores.rechazadas, "Rechazadas");
+}, 2000); // simula carga en 2s
 
-    const range = end - start;
-    const startTime = performance.now();
-
-    function tick(now) {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const value = Math.floor(start + range * progress);
-      el.textContent = value.toLocaleString('es-CO');
-      if (progress < 1) requestAnimationFrame(tick);
-    }
-
-    requestAnimationFrame(tick);
-  }
 </script>
 
 <!--Script del DOM-->
@@ -268,14 +279,21 @@ function animateValue(id, start, end, duration = 1200) {
   document.addEventListener("DOMContentLoaded",function(){
     // Ejemplo con valores desde backend
 
-
     const solicitudAnual = "{{ solicitudAnual }}"
     const solicitudAnualAprobadas = "{{ solicitudAnualAprobadas }}"
     const solicitudAnualDesaprobadas = "{{ solicitudAnualDesaprobadas }}"
+
+    setTimeout(()=>{
+      actualizarIndicador("total", "txt-total", solicitudAnual, "Solicitudes");
+      actualizarIndicador("aprobado", "txt-aprobadas", solicitudAnualAprobadas, "Aprobadas");
+      actualizarIndicador("desaprobado", "txt-rechazadas", solicitudAnualDesaprobadas, "Rechazadas");
+    }, 2000);
     
-    animateValue("solicitudesAnuales", 0, solicitudAnual, 1500);
+    
+    /*animateValue("solicitudesAnuales", 0, solicitudAnual, 1500);
     animateValue("solicitudesAprobadas", 0, solicitudAnualAprobadas, 1500);
-    animateValue("solicitudesDesaprobadas", 0, solicitudAnualDesaprobadas, 1500);
+    animateValue("solicitudesDesaprobadas", 0, solicitudAnualDesaprobadas, 1500);*/
+
     aplicarFiltros();
 
     const cargaSolicitudes = "{{ mensaje|escapejs }}"
@@ -293,14 +311,6 @@ function animateValue(id, start, end, duration = 1200) {
             text: cargaSolicitudes
         });
     }
-  
-    /*variables de los indicadores*/
-    
-
-   
-
-    
-
   
   })
 

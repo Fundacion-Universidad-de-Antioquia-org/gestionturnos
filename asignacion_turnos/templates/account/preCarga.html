@@ -3,18 +3,12 @@
 {% block content %}
 <div class="usuario-bar position-relative">
 
-<!-- Izquierda: Foto + saludo -->
+<!-- Izquierda: Foto + saludo --> 
 <div class="d-flex align-items-center flex-shrink-0">
   <img src="{% static 'images/admin_img.png' %}" 
        alt="Foto de perfil" class="perfil-img">
-  <span class="saludo ms-2 d-inline-block" style="color: white;">Bienvenido, {{ usuarioLogeado }}</span>
+  <span class="saludo ms-2 d-inline-block" style="color: white;"> {{ usuarioLogeado }}</span>
 </div>
-
-  <!-- Centro (posición absoluta centrada) -->
-  <div class="position-absolute top-50 start-50 translate-middle text-center">
-    <span class="saludo ms-2 d-inline-block" style="color: white;"></span>
-   <h2 class="titulo-template encabezado-icono" style="font-size: 1.2rem;" style="color: white;"><span class="material-symbols-outlined">security</span>Pre-carga - Validación de Errores</h2>
-  </div>
 
   <!-- Derecha -->
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
