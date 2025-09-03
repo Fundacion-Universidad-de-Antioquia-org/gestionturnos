@@ -10,7 +10,7 @@ class Sucesion(models.Model):
     codigo = models.CharField(max_length=20) # Codigo del conductor
     fecha = models.DateField()
     cedula = models.CharField(max_length= 20, null=True, blank=True)
-    codigo_horario = models.CharField(max_length=20)
+    codigo_horario = models.CharField(max_length=20) #Codigo turno
     cargo = models.CharField(max_length=100,blank=True, null=True)
     estado_inicio = models.CharField(max_length=50, blank=True, null=True)
     estado_fin = models.CharField(max_length=50, blank=True, null=True)

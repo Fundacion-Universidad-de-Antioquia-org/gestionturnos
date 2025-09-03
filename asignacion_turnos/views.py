@@ -14,8 +14,8 @@ from datetime import datetime
 from django.conf import settings
 from pathlib import Path
 from zoneinfo import ZoneInfo
-from django.db.models import F, ExpressionWrapper, DateTimeField
-from django.db.models.functions import Cast
+from django.db.models import F, Value, ExpressionWrapper, DateTimeField, DateField, DurationField
+from django.db.models.functions import Cast, TruncWeek
 
 
 
@@ -1395,6 +1395,44 @@ def reprogramar_turno(request):
         return Response (f"Este turno: {codigoTurno}, para la fecha: {fechaTurno}, ya lo tiene asignado:{TurnoAsignado_enConflicto.nombre}")
     else: 
         return Response (f"Turno disponible")
+
+
+@api_view(["GET"])
+def cabeceras_turnos(request):
+    codigo = request.GET.get("codigo")
+    if not codigo:
+        return Response({"success": False, "detail": "Parámetro 'codigo' es requerido."}, status=400)
+
+    # fecha (DateField) → DateTime para poder sumar/restar en DB
+    fecha_dt = Cast(F("fecha"), DateTimeField())
+
+    # Duraciones tipadas
+    plus_2d = Value(timedelta(days=2), output_field=DurationField())
+    plus_6d = Value(timedelta(days=6), output_field=DurationField())
+
+    
+    base_trunc   = TruncWeek(ExpressionWrapper(fecha_dt + plus_2d, output_field=DateTimeField()))
+    wk_start_dt  = ExpressionWrapper(base_trunc - plus_2d, output_field=DateTimeField())
+    wk_start     = Cast(wk_start_dt, DateField())
+    wk_end       = Cast(ExpressionWrapper(wk_start_dt + plus_6d, output_field=DateTimeField()), DateField())
+
+    qs = (Sucesion.objects
+          .filter(codigo=codigo)
+          .annotate(week_start=wk_start, week_end=wk_end)
+          .values("week_start", "week_end")
+          .distinct()
+          .order_by("week_start"))
+
+    encabezados = [{
+        "titulo": f"Semana del {e['week_start']:%d/%m/%Y} al {e['week_end']:%d/%m/%Y}",
+        "inicio": e["week_start"].isoformat(),
+        "fin": e["week_end"].isoformat(),
+    } for e in qs]
+
+    return Response({"success": True, "encabezados": encabezados})
+
+
+    
     
 
     
