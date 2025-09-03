@@ -2,13 +2,21 @@
 {% load static %}
 {% block content %}
 <div class="usuario-bar position-relative">
+  <div class="usuario-bar-logo-nombre">
+      <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
+      <div class="d-flex flex-column align-items-center flex-shrink-0">
+  
+    <!-- Nombre del usuario -->
+    <div class="saludo" style="color: white; font-weight: 500;">
+      {{ usuarioLogeado }}
+    </div>
 
-<!-- Izquierda: Foto + saludo --> 
-<div class="d-flex align-items-center flex-shrink-0">
-  <img src="{% static 'images/admin_img.png' %}" 
-       alt="Foto de perfil" class="perfil-img">
-  <span class="saludo ms-2 d-inline-block" style="color: white;"> {{ usuarioLogeado }}</span>
+    <!-- Título de la página -->
+    <div class="saludo" style="color: #ccc; font-size: 11px;">
+      Pre-carga 
+    </div>
 </div>
+  </div>
 
   <!-- Derecha -->
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">

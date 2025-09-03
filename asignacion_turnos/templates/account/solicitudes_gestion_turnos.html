@@ -71,16 +71,23 @@
 <div class="usuario-bar position-relative">
 
 <!-- Izquierda: Foto + saludo -->
-<div class="d-flex align-items-center flex-shrink-0">
-  <span class="material-symbols-outlined" style="color: white;"> account_circle</span> <span class="saludo ms-2 d-inline-block"> {{ usuarioLogeado }}</span>
+ <!-- Icono de usuario -->
+  <div class="usuario-bar-logo-nombre">
+      <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
+      <div class="d-flex flex-column align-items-center flex-shrink-0">
+  
+    <!-- Nombre del usuario -->
+    <div class="saludo" style="color: white; font-weight: 500;">
+      {{ usuarioLogeado }}
+    </div>
+
+    <!-- Título de la página -->
+    <div class="saludo" style="color: #ccc; font-size: 11px;">
+      Solicitudes GT
+    </div>
 </div>
-
-  <!-- Centro (posición absoluta centrada) -->
-  <div class="position-absolute top-50 start-50 translate-middle text-center"> 
-    <span class="saludo ms-2 d-inline-block">Cambios de turnos</span>
-   <!--<h4 class="titulo-template encabezado-icono"><span class="material-symbols-outlined">assignment_add</span>Solicitudes Cambios de Turnos</h4>-->
   </div>
-
+  
   <div class="indicadores">
   <div class="indicador-card small total">
     <div class="spinner"></div>

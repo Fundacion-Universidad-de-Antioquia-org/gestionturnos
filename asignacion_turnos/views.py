@@ -295,10 +295,14 @@ def vista_solicitudes_gestion_turnos(request,*, context):
     
 @settings.AUTH.login_required
 def vista_notificaciones(request,*, context):
+
     if request.method == "GET":
+        user_claims = context["user"]               
+        usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
         notificaciones = Notificaciones.objects.all()
         return render(request,"account/notificaciones.html",{
-            "notificaciones": notificaciones
+            "notificaciones": notificaciones,
+            "usuarioLogeado": usuarioLogeado
         })
 
 # views.py

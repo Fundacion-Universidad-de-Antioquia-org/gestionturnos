@@ -360,6 +360,7 @@ body {
     transition: box-shadow 0.3s ease;
     max-width: 100%;
     height: 48px;
+    
 }
 
 .usuario-bar .saludo {
@@ -380,6 +381,12 @@ body {
   border: 2px solid #3498db;
   display: inline-block; /* CAMBIO: antes estaba en block */
   vertical-align: middle;
+}
+
+.usuario-bar-logo-nombre{
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 
@@ -1393,15 +1400,15 @@ label {
   align-items: center;
   margin: 20px 0;
   flex-wrap: wrap;
-}
+} 
 
 #panelControl button {
- background-color: #5a9138  ;
-    border-color: #5a9138 ;
+ background-color: #fafdf8  ;
+    border-color: #5ed316 ;
     font-weight: 500;
     padding: 8px 16px;
     border-radius: 6px;
-    color: #EEF2FF;
+    color: #0d0d0e;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
     display: inline-flex;
