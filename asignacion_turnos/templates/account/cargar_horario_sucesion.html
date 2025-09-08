@@ -493,9 +493,10 @@
   document.getElementById("buscarDatosFiltro").addEventListener("click",function(){
     const acordionHeader = document.getElementById("acordionHeader");
     const acordionBody = document.getElementById("acordionBody");
-
+    const estado = document.getElementById("filtroEstado").value;
     const codigo = document.getElementById("filtroCodigo").value
-    const estado = document.getElementById("filtroEstado").value
+    
+    
     const fechaInicial = document.getElementById("filtroFechaInicial").value
     const fechaFinal = document.getElementById("filtroFechaFinal").value
 
@@ -503,6 +504,18 @@
 
 
     if(codigo !== "" && estado !== "" && fechaInicial !== "" && fechaFinal !== ""){
+      
+      if(estado !== "publicado"){
+        Swal.fire({
+                    icon: "warning",
+                    title: "Revisa el valor del campo: Estado",
+                    text: `Para realizar esta consulta debes seleccionar publicada en el campo: Estado, valor actual: ${estado}`
+
+                      })
+
+      return;
+                    }
+          
            fetch("{% url 'datos_filtro_sucesion' %}",{
       method : "POST",
       headers:{"Content-Type": "application/json",
@@ -517,12 +530,13 @@
     .then(response => response.json())
     .then((data)=>{
       
+      
       if(data.success){
 
         console.log(typeof data); 
         console.log(Object.keys(data)); 
         console.log(data); 
-     
+        
         bodyTabla.innerHTML = "";
       
        const rows = data.data.map(emp => `
@@ -548,10 +562,8 @@
 
         acordionHeader.classList.remove("active");
         acordionBody.classList.remove("active");
-
-          
-
-
+        
+        
       }else{
           Swal.fire({
                     icon: "error",

@@ -980,6 +980,7 @@ def solicitar_cambio_turno(request):
 
     solicitante_siguiente = None
     receptor_siguiente = None
+    comentarios = ""
 
     solicitante_anterior = get_object_or_404(Sucesion, codigo=codigoSolicitante, fecha=fechaAnterior)
     solicitante_dia = get_object_or_404(Sucesion, codigo=codigoSolicitante, fecha=fechaCambio)
@@ -1045,6 +1046,26 @@ def solicitar_cambio_turno(request):
             "success": False,
             "message": "No se garantiza el descanso mínimo requerido entre turnos ambos empleados."
         })
+    
+    comentarios = "Cumplen con el descanso minimo de 10hs antes y despues del dia de cambio"
+
+    transportable = None
+    madrugadaLinea = ["ORIENTE","OCCIDENTE"]
+    madrugadaPatio = ["PBE"]
+    
+
+    if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
+        comentarios = f"{comentarios}\nAmbos son transportables, zona: Madrugada Linea"
+        transportable = True
+    elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
+         comentarios = f"{comentarios}\nAmbos son transportables, zona: Madrugada PBE"
+         transportable = True
+    elif solicitante.zona is None and receptor.zona is None:
+        comentarios = f"{comentarios}\nAmbos cumplen, zona: No definida"
+        transportable = True
+    else:
+        comentarios = f"{comentarios}\nNo cumplen, validar si asumen su transporte"
+        transportable = False
 
     # Crear solicitud de cambio
     Cambios_de_turnos.objects.create(
@@ -1062,7 +1083,10 @@ def solicitar_cambio_turno(request):
         cargo_receptor=receptor_dia.empleado.cargo,
         formacion_receptor = receptor.formacion, 
         fecha_solicitud_cambio=fechaCambio,
-        estado_cambio_emp="pendiente"
+        estado_cambio_emp="pendiente",
+        estado_cambio_admin = "aprobado",
+        comentarios = comentarios,
+        transportable = transportable
     )
 
     

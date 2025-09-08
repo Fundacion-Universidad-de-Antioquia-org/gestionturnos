@@ -108,9 +108,14 @@ class Cambios_de_turnos(models.Model):
     formacion_receptor = models.CharField(max_length=50, null=True)
     turno_receptor_original = models.CharField(max_length=10, null=True)
     turno_receptor_nuevo = models.CharField(max_length=10, null=True)
-    estado_cambio_emp = models.CharField(max_length=30, default='disponible', editable=True)
+    estado_cambio_emp = models.CharField(max_length=30, default='pendiente', editable=True)
     estado_cambio_admin = models.CharField(max_length=30, default='pendiente')
     fecha_solicitud_cambio = models.DateField(default=timezone.localdate, editable=True)
+    comentarios = models.CharField(max_length=100, null=True)
+    transportable = models.CharField(max_length=20, null=True)
+    terminos = models.BooleanField(default=False)
+    
+
     
 
 class Solicitudes_Gt(models.Model):
