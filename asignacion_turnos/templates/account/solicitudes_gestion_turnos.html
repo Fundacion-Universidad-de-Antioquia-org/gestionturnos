@@ -203,7 +203,7 @@
             <td><span style="border-radius: 8px; background-color: #f1da05; padding: 7px;">{{s.fecha_inicial|date:"d/m/Y"}}</span></td>
             <td><span style="border-radius: 8px; background-color: #f1da05; padding: 7px;">{{s.fecha_final|date:"d/m/Y"}}</span></td>
              <td>
-               <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')">🔍Detalles</button>
+               <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #f1da05; padding: 7px;">🔍Detalles</button>
              </td> 
              <td><span>{{ s.estado }}</span></td>
 

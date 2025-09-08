@@ -1047,25 +1047,29 @@ def solicitar_cambio_turno(request):
             "message": "No se garantiza el descanso mínimo requerido entre turnos ambos empleados."
         })
     
-    comentarios = "Cumplen con el descanso minimo de 10hs antes y despues del dia de cambio"
+    comentarios = "Cumplen con el descanso minimo de 10 ó 8hrs antes y despues del dia de cambio | "
 
     transportable = None
+    estadoCambio = ""
     madrugadaLinea = ["ORIENTE","OCCIDENTE"]
     madrugadaPatio = ["PBE"]
     
-
     if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
         comentarios = f"{comentarios}\nAmbos son transportables, zona: Madrugada Linea"
         transportable = True
+        estadoCambio = "aprobado"
     elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
          comentarios = f"{comentarios}\nAmbos son transportables, zona: Madrugada PBE"
          transportable = True
+         estadoCambio = "aprobado"
     elif solicitante.zona is None and receptor.zona is None:
-        comentarios = f"{comentarios}\nAmbos cumplen, zona: No definida"
+        comentarios = f"{comentarios}\nAmbos cumplen, zona: No son transportables"
         transportable = True
+        estadoCambio = "aprobado"
     else:
-        comentarios = f"{comentarios}\nNo cumplen, validar si asumen su transporte"
+        comentarios = f"{comentarios}\nNo se garantiza el servicio de transporte para uno ó ambos, comunicarse con el area Gestión de Turnos"
         transportable = False
+        estadoCambio = "desaprobado"
 
     # Crear solicitud de cambio
     Cambios_de_turnos.objects.create(
@@ -1084,7 +1088,7 @@ def solicitar_cambio_turno(request):
         formacion_receptor = receptor.formacion, 
         fecha_solicitud_cambio=fechaCambio,
         estado_cambio_emp="pendiente",
-        estado_cambio_admin = "aprobado",
+        estado_cambio_admin = estadoCambio,
         comentarios = comentarios,
         transportable = transportable
     )

@@ -1,5 +1,5 @@
-from datetime import datetime , timedelta
-from asignacion_turnos.models import Horario
+from datetime import datetime , timedelta 
+from asignacion_turnos.models import Horario, Estados_servicios
 from django.http import HttpResponse
 from django.http import JsonResponse 
 
@@ -12,12 +12,16 @@ def validar_descanso(anterior, cambio, posterior, cargo, fechaCambio):
     fechaAnterior = fechaCambio - timedelta(days=1)
     fechaPosterior = fechaCambio + timedelta(days=1)
 
-    cargos10HorasDescanso = ["CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO","CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA"]
-    cargos8HorasDescanso = ["OPERADOR DE CONDUCCION","MANIOBRISTA TRENES","MANIOBRISTA TRANVIA"]
+    cargos10HorasDescanso = ["CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO","CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA"]
+    cargos8HorasDescanso = ["OPERADOR(A) DE CONDUCCION","MANIOBRISTA TRENES","MANIOBRISTA TRANVIA"]
 
     minimoDescanso10Horas = timedelta(hours=10)
     minimoDescanso8Horas = timedelta(hours=8)
-    turnosSinValidacion = ["LIBRE","COMPE","CP","DISPO"]
+    
+    turnosSinValidacion = ["DISPO"]
+    serviciosInvalidos = Estados_servicios.objects.all()
+    for s in serviciosInvalidos:
+        turnosSinValidacion.append(s.estado)  
 
     anteriorCumple = False
     posteriorCumple =False
@@ -35,7 +39,7 @@ def validar_descanso(anterior, cambio, posterior, cargo, fechaCambio):
         anteriorCumple = True
         posteriorCumple = True
 
-    elif anterior not in turnosSinValidacion and posterior is None: # Aca solo calculamos el dia anteriro ya que el posterior es None y no tiene hora ini u hora final
+    elif anterior not in turnosSinValidacion and posterior is None: 
 
         turnoAnterior = Horario.objects.filter(turno = anterior).first()
         turnoCambio = Horario.objects.filter(turno = cambio).first()
@@ -60,12 +64,10 @@ def validar_descanso(anterior, cambio, posterior, cargo, fechaCambio):
                 anteriorCumple = False
                 posteriorCumple = False
         else:
-            return JsonResponse({
-                "success":False,
-                "message": "No se encontro cargo o cargo invalido"
-            })
+            return anteriorCumple, posteriorCumple
+        
         #Si no hay turno siguiente, posterior = None, entonces permitimos el valor para permitir el cambio ya que ho hay sucesion
-    elif anterior not in turnosSinValidacion and posterior not in turnosSinValidacion and posterior != None:
+    elif anterior not in turnosSinValidacion and posterior not in turnosSinValidacion:
 
         #diferencia de tiempo entre el anteriror y el de cambio:
 
@@ -101,9 +103,36 @@ def validar_descanso(anterior, cambio, posterior, cargo, fechaCambio):
                     anteriorCumple = False
                     posteriorCumple = False
         else:
-            return False, False
+            return anteriorCumple, posteriorCumple
+    elif anterior in turnosSinValidacion and (posterior is not None and posterior not in turnosSinValidacion): #Anterior es DISPO, etc -> Posterior turno XXDF-457 - Solo calculamos posteriror
+        
+        turnoCambio = Horario.objects.filter(turno = cambio).first()
+        turnoPosterior = Horario.objects.filter(turno = posterior).first()
+
+        dt1 = datetime.combine(fechaCambio, turnoCambio.finalhora)
+        dt2 = datetime.combine(fechaPosterior, turnoPosterior.inihora)
+
+        diferenciaCambioPosteriror = dt2 - dt1
+
+        if cargo in cargos10HorasDescanso:
+            if diferenciaCambioPosteriror >= minimoDescanso10Horas:
+                anteriorCumple = True
+                posteriorCumple = True
+            else:
+                anteriorCumple = False
+                posteriorCumple = False
+        elif cargo in cargos8HorasDescanso:
+            if diferenciaCambioPosteriror >= minimoDescanso8Horas:
+                anteriorCumple = True
+                posteriorCumple = True
+            else:
+                anteriorCumple = False
+                posteriorCumple = False
+        else: 
+            anteriorCumple = False
+            posteriorCumple = False
     else:
-         return False , False
+         return anteriorCumple , posteriorCumple
 
     print("Descanso dia anterior cumple:", anteriorCumple)
     print("Descanso dia Posterior cumple:", posteriorCumple)

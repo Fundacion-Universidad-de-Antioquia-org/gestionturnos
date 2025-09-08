@@ -1,6 +1,29 @@
 {% extends 'base.html'%}
 {% load static %}
 
+
+{% block styles %}
+<style>
+  /* restablece el layout de tabla y controla visibilidad por clase */
+#tablaDatos tr { display: table-row !important; }
+#tablaDatos tbody tr.is-hidden { display: none !important; }
+
+</style>
+
+<style>
+  .btn-icon {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.btn-icon .material-symbols-outlined { font-size: 20px; color: #1D5031; }
+.btn-icon:hover .material-symbols-outlined { opacity: .8; }
+
+</style>
+
+{% endblock %}
+
 {% block content %}
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 
@@ -70,7 +93,7 @@
 </div>
 <!--Tabla de datos-->
 
-<table class="styled-table display" id="tablaDatos">
+<table class="styled-table" id="tablaDatos">
   <thead>
     <tr>
       <th>Solicitante</th>
@@ -88,6 +111,7 @@
       <th>Turno Deseado</th>
       <th>Aprobado EMP</th>
       <th>Aprobado ADM</th>
+      <th>Comentarios</th>
       <th class="checkbox-cell">
         <button type="button" id="seleccionarTodos">Seleccionar todos</button>
       </th>
@@ -100,19 +124,33 @@
       <td>{{ data.nombre_solicitante }}</td>
       <td class="codigoSolicitante">{{ data.codigo_solicitante }}</td>
       <td>{{ data.cargo_solicitante }}</td>
-      <td><span style="border-radius: 8px; background-color: #efad21; padding: 7px;">{{ data.formacion_solicitante }}</span></td>
+      <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_solicitante }}</span></td>
       <td>{{ data.turno_solicitante_original }}</td>
       <td class="turnoSolicitanteDiaDeseado">{{ data.turno_solicitante_nuevo}}</td>
       <td class="fechaCambio">{{ data.fecha_solicitud_cambio|date:"d/m/Y" }}</td>
       <td>{{ data.nombre_receptor }}</td>
       <td class="codigoReceptor">{{ data.codigo_receptor }}</td>
       <td>{{ data.cargo_receptor }}</td>
-      <td><span style="border-radius: 8px; background-color: #efad21; padding: 7px;">{{ data.formacion_receptor}}</span></td>
+      <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor}}</span></td>
       <td>{{ data.turno_receptor_original }}</td>
       <td class="turnoReceptorDiaDeseado">{{ data.turno_receptor_nuevo }}</td>
       <td>{{ data.estado_cambio_emp }}</td>
       <td class="aprobadoAdm">{{ data.estado_cambio_admin }}</td>
+      <td>{% if data.comentarios %}
+        <button type="button"
+            class="btn-icon ver-msg"
+            data-title="Comentarios"
+            data-msg="{{ data.comentarios|escapejs }}"
+            aria-label="Ver comentarios">
+          <span class="material-symbols-outlined" style="color: #2d6fe9; font-size: 35px;">info</span>
+        </button>
+        {% else %} 
+          -
+        {% endif %}
+
+      </td>
       <td class="checkbox-cell"><input type="checkbox" class="checkbox-item"></td>
+      
     </tr>
     {% empty %}
     <tr>
@@ -136,7 +174,7 @@ document.getElementById("seleccionarTodos").addEventListener('click', function (
     const filas = Array.from(checkboxes).map(cb => cb.closest('tr'));
     
     const soloPendientes = filas.filter(fila => 
-        fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase() === "pendiente"
+        fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase() === "desaprobado"
     );
 
     const allChecked = soloPendientes.every(fila => fila.querySelector('.checkbox-item').checked);
@@ -439,9 +477,44 @@ document.getElementById("aprobarCambios").addEventListener("click", function () 
     const coincideFecha = !valorFecha || tFecha === valorFecha;
     const coincideEstado = !valorEstado || tEstado === valorEstado;
 
-    row.style.display = (coincideNombre && coincideCodigo  && coincideCargo && coincideFecha && coincideEstado) ? '' : 'none';
+    row.style.display = (coincideNombre && coincideCodigo && coincideCargo && coincideFecha && coincideEstado) ? 'table-row' : 'none';
+
   });
 }
 
 </script>
+
+<script>
+(function(){
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+
+  // Convierte "\u000A" y "\n" literales en saltos reales
+  function decodeNewlines(s){
+    if (!s) return '';
+    return s.replace(/\\u000A/gi, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
+  }
+
+  document.getElementById('tablaBody').addEventListener('click', e=>{
+    const btn = e.target.closest('.ver-msg');
+    if(!btn) return;
+
+    const title = btn.dataset.title || 'Mensaje';
+    const decoded = decodeNewlines(btn.dataset.msg || '');
+
+    Swal.fire({
+      title: title,
+      html: `<div style="text-align:left; white-space:pre-wrap; max-height:60vh; overflow:auto;">${escapeHtml(decoded)}</div>`,
+      width: 700,
+      confirmButtonText: 'Cerrar'
+    });
+  });
+})();
+
+</script>
+
 {% endblock %}
