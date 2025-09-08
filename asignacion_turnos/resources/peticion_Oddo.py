@@ -52,7 +52,7 @@ def sincronizarDbEmpleados():
         return {"ok": False, "error": "La clave 'empleados' no es lista."}
 
     # Preparar objetos
-    campos_upd = ["nombre", "codigo", "estado", "cargo", "correo", "formacion","direccion","barrio","zona" ] # Estos son los campos que compara con la base de datos,
+    campos_upd = ["nombre", "codigo", "estado", "cargo", "correo", "formacion","direccion","barrio","zona"]
     objs = []
     sin_cedula = 0
     for e in empleados:
@@ -83,7 +83,7 @@ def sincronizarDbEmpleados():
     # Leer existentes una sola vez (conteo exacto)
     existentes_set = set(Empleado_Oddo.objects.values_list("cedula", flat=True))
     ya_existian = sum(1 for o in objs if o.cedula in existentes_set)
-    creadso_previstos = len(objs) - ya_existian  # exacto salvo concurrencia simultánea
+    creados_previstos = len(objs) - ya_existian  # exacto salvo concurrencia simultánea
 
     t0 = datetime.now()
     batch = 2000
