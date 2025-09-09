@@ -1,5 +1,5 @@
 from datetime import datetime , timedelta 
-from asignacion_turnos.models import Horario, Estados_servicios
+from asignacion_turnos.models import Horario, Estados_servicios, Sucesion
 from django.http import HttpResponse
 from django.http import JsonResponse 
 
@@ -41,11 +41,38 @@ def validar_descanso(anterior, cambio, posterior, cargo, fechaCambio):
 
     elif anterior not in turnosSinValidacion and posterior is None: 
 
-        turnoAnterior = Horario.objects.filter(turno = anterior).first()
-        turnoCambio = Horario.objects.filter(turno = cambio).first()
+        turnoAnterior = Sucesion.objects.filter(codigo_horario = anterior).first()
+        turnoCambio = Sucesion.objects.filter(codigo_horario = cambio).first()
 
-        dt1 = datetime.combine(fechaAnterior,turnoAnterior.finalhora)
-        dt2 = datetime.combine(fechaCambio,turnoCambio.inihora)
+        dt1 = datetime.combine(fechaAnterior,turnoAnterior.hora_fin)
+        dt2 = datetime.combine(fechaCambio,turnoCambio.hora_inicio)
+
+        diferenciaAnteriorCambio = dt2 - dt1
+        
+        if cargo in cargos10HorasDescanso:
+            if diferenciaAnteriorCambio >= minimoDescanso10Horas:
+                anteriorCumple =True
+                posteriorCumple = True
+            else:
+                anteriorCumple = False
+                posteriorCumple = False
+        elif cargo in cargos8HorasDescanso:
+            if diferenciaAnteriorCambio >= minimoDescanso8Horas:
+                    anteriorCumple =True
+                    posteriorCumple = True
+            else:
+                anteriorCumple = False
+                posteriorCumple = False
+        else:
+            return anteriorCumple, posteriorCumple
+    
+    elif anterior not in turnosSinValidacion and posterior in turnosSinValidacion: 
+
+        turnoAnterior = Sucesion.objects.filter(codigo_horario = anterior).first()
+        turnoCambio = Sucesion.objects.filter(codigo_horario = cambio).first()
+
+        dt1 = datetime.combine(fechaAnterior,turnoAnterior.hora_fin)
+        dt2 = datetime.combine(fechaCambio,turnoCambio.hora_inicio)
 
         diferenciaAnteriorCambio = dt2 - dt1
         
@@ -66,23 +93,22 @@ def validar_descanso(anterior, cambio, posterior, cargo, fechaCambio):
         else:
             return anteriorCumple, posteriorCumple
         
-        #Si no hay turno siguiente, posterior = None, entonces permitimos el valor para permitir el cambio ya que ho hay sucesion
     elif anterior not in turnosSinValidacion and posterior not in turnosSinValidacion:
 
         #diferencia de tiempo entre el anteriror y el de cambio:
 
-        turnoAnterior = Horario.objects.filter(turno = anterior).first()
-        turnoCambio = Horario.objects.filter(turno = cambio).first()
-        turnoPosterior = Horario.objects.filter(turno = posterior).first()
+        turnoAnterior = Sucesion.objects.filter(codigo_horario = anterior).first()
+        turnoCambio = Sucesion.objects.filter(codigo_horario = cambio).first()
+        turnoPosterior = Sucesion.objects.filter(codigo_horario = posterior).first()
 
-        dt1 = datetime.combine(fechaAnterior,turnoAnterior.finalhora)
-        dt2 = datetime.combine(fechaCambio,turnoCambio.inihora)
+        dt1 = datetime.combine(fechaAnterior,turnoAnterior.hora_fin)
+        dt2 = datetime.combine(fechaCambio,turnoCambio.hora_inicio)
         diferenciaAnteriorCambio = dt2 - dt1
 
         #diferencia de tiempo entre el cambio y el posteriror.
 
-        dt3 = datetime.combine(fechaCambio,turnoCambio.finalhora)
-        dt4 = datetime.combine(fechaPosterior, turnoPosterior.inihora)
+        dt3 = datetime.combine(fechaCambio,turnoCambio.hora_fin)
+        dt4 = datetime.combine(fechaPosterior, turnoPosterior.hora_inicio)
         diferenciaCambioPosteriror = dt4 - dt3
         
         if cargo in cargos10HorasDescanso:
@@ -106,11 +132,11 @@ def validar_descanso(anterior, cambio, posterior, cargo, fechaCambio):
             return anteriorCumple, posteriorCumple
     elif anterior in turnosSinValidacion and (posterior is not None and posterior not in turnosSinValidacion): #Anterior es DISPO, etc -> Posterior turno XXDF-457 - Solo calculamos posteriror
         
-        turnoCambio = Horario.objects.filter(turno = cambio).first()
-        turnoPosterior = Horario.objects.filter(turno = posterior).first()
+        turnoCambio = Sucesion.objects.filter(codigo_horario = cambio).first()
+        turnoPosterior = Sucesion.objects.filter(codigo_horario = posterior).first()
 
-        dt1 = datetime.combine(fechaCambio, turnoCambio.finalhora)
-        dt2 = datetime.combine(fechaPosterior, turnoPosterior.inihora)
+        dt1 = datetime.combine(fechaCambio, turnoCambio.hora_fin)
+        dt2 = datetime.combine(fechaPosterior, turnoPosterior.hora_inicio)
 
         diferenciaCambioPosteriror = dt2 - dt1
 
