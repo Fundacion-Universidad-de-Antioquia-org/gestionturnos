@@ -3,12 +3,6 @@
 
 
 {% block styles %}
-<style>
-  /* restablece el layout de tabla y controla visibilidad por clase */
-#tablaDatos tr { display: table-row !important; }
-#tablaDatos tbody tr.is-hidden { display: none !important; }
-
-</style>
 
 <style>
   .btn-icon {
@@ -134,7 +128,7 @@
       <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor}}</span></td>
       <td>{{ data.turno_receptor_original }}</td>
       <td class="turnoReceptorDiaDeseado">{{ data.turno_receptor_nuevo }}</td>
-      <td>{{ data.estado_cambio_emp }}</td>
+      <td class="aprobadoEmp">{{ data.estado_cambio_emp }}</td>
       <td class="aprobadoAdm">{{ data.estado_cambio_admin }}</td>
       <td>{% if data.comentarios %}
         <button type="button"
@@ -199,15 +193,15 @@ document.addEventListener("DOMContentLoaded",function(){
 <!--Script boton aprobar cambios de turnos-->
 <script>
 document.getElementById("aprobarCambios").addEventListener("click", function () {
-    const datos = [];
-
+  
+  const datos = [];
     const checkboxesSeleccionados = document.querySelectorAll('.checkbox-item:checked');
 
     if (checkboxesSeleccionados.length === 0) {
         Swal.fire({
             icon: "warning",
             title: "Ningún cambio seleccionado",
-            text: "Por favor, selecciona al menos un cambio de turno para aprobar.",
+            text: "Por favor, selecciona al menos un cambio de turno para aprobar o desaprobar.",
         });
         return;
     }
@@ -216,8 +210,9 @@ document.getElementById("aprobarCambios").addEventListener("click", function () 
     const fila = checkbox.closest('tr');
 
     const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
+    const estadoEmp = fila.querySelector('.aproboEmp')?.textContent.trim().toLocaleLowerCase();
     
-    if (estadoAdmin === "pendiente") {
+    if (estadoAdmin === "pendiente" && estadoEmp === "aprobado") {
         const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
         const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
 
@@ -286,27 +281,12 @@ document.getElementById("aprobarCambios").addEventListener("click", function () 
     }else{
       Swal.fire({
                     icon: "error",
-                    title: "Solo se pueden aprobar solicitudes de cambios de turnos en estado pendiente",
+                    title: "Solo se pueden aprobar solicitudes de cambios de turnos cuando estadoAdm: pendiente y estadoEmp: aprobado",
                     
                 });
 
     }
 });
-
- function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + "=")) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
    
 });
 
@@ -484,6 +464,7 @@ document.getElementById("aprobarCambios").addEventListener("click", function () 
 
 </script>
 
+<!--Script para escapear el comentario que llega del back-->
 <script>
 (function(){
   function escapeHtml(str){
@@ -515,6 +496,23 @@ document.getElementById("aprobarCambios").addEventListener("click", function () 
   });
 })();
 
+</script>
+<!-- CSRF TOKEN -->>
+<script>
+   function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 </script>
 
 {% endblock %}

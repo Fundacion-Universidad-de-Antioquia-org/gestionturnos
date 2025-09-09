@@ -186,8 +186,10 @@ def vista_configuraciones(request,*, context):
 def get_solicitudes_cambios_turnos(request,*, context):
     user_claims = context["user"]               
     usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
-    if request.method == "GET":                                       #fecha_solicitud_cambio // datetime.date.today()
-       cargarDatosSolicitudes =  Cambios_de_turnos.objects.all()
+    if request.method == "GET":   
+        cargarDatosSolicitudes =  Cambios_de_turnos.objects.all()
+        #fechaSolicitudes = timezone.localdate(timezone=ZoneInfo("America/Bogota")) + timedelta(days=1)
+        # cargarDatosSolicitudes =  Cambios_de_turnos.objects.filter(fecha_solicitud_cambio= fechaSolicitudes)
     return render(request,'account/cambios_turnos.html',{
         'resultadosCambiosTurnos':cargarDatosSolicitudes,
         'usuarioLogeado':usuarioLogeado
@@ -227,8 +229,6 @@ def vista_cargarIo(request,*, context):
 @settings.AUTH.login_required
 def vista_solicitudes_gestion_turnos(request,*, context):
     
-   
-
     user_claims = context["user"]
     usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
 
@@ -1069,7 +1069,7 @@ def solicitar_cambio_turno(request):
     else:
         comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos, comunicarse con el area Gestión de Turnos"
         transportable = False
-        estadoCambio = "desaprobado"
+        estadoCambio = "pendiente"
 
     # Crear solicitud de cambio
     Cambios_de_turnos.objects.create(
@@ -1464,26 +1464,66 @@ def cabeceras_turnos(request):
     return Response({"success": True, "encabezados": encabezados})
 
 
-    
-    
 
-    
-#Cambio de turnos
-#@api_view(["POST"])
-#def cambio_turno(request):
+@api_view(["GET"])
+def mis_solicitudes_cambios_turnos(request):
+    codigoSolicitante = request.GET.get('codigoSolicitante')
+    estado = request.GET.get("estado")
+    print(codigoSolicitante)
+    print(estado)
 
-    #codigoSolicitante = request.POST.get('codigoSolicante')
-    #codigoReceptor = request.POST.get('codigoReceptor')
-    #codigoTurnoSolicante = request.POST.get('codigoTurnoSolicitante')
-    #codigoTurnoReceptor = request.POST.get('codigoTurnoReceptor')
-    #fechaCambio = request.POST.get('fechaCambio')
+    if not codigoSolicitante and not estado : 
+        solicitudesCambiosTurnos = Cambios_de_turnos.objects.filter((Q(codigo_solicitante= codigoSolicitante) | Q(codigo_receptor = codigoSolicitante )), estado_cambio_admin = estado ).only('codigo_solicitante', 'nombre_solicitante', 'cargo_solicitante',
+            'turno_solicitante_original','turno_solicitante_nuevo','fecha_solicitud_cambio',
+            'codigo_receptor','nombre_receptor','cargo_receptor','turno_receptor_original','turno_receptor_nuevo','estado_cambio_admin')
+        data = []
+        for s in solicitudesCambiosTurnos:
+            data.append({
+                'codigo_solicitante': s.codigo_solicitante,
+                'nombre_solicitante': s.nombre_solicitante,
+                'cargo_solicitante': s.cargo_solicitante,
+                'turno_solicitante_original': s.turno_solicitante_original,
+                'turno_solicitante_nuevo': s.turno_solicitante_nuevo,
+                'fecha_solicitud_cambio': s.fecha_solicitud_cambio,
+                'codigo_receptor': s.codigo_receptor,
+                'nombre_receptor': s.nombre_receptor,
+                'cargo_receptor': s.cargo_receptor,
+                'turno_receptor_original': s.turno_receptor_original,
+                'turno_receptor_nuevo': s.turno_receptor_nuevo,
+                'estado_cambio_admin': s.estado_cambio_admin
+            })
 
-    #Cambiar turno solicitante x receptor
-    #Sucesion.objects.filter(codigo=codigoSolicitante).filter(fecha=fechaCambio).update(codigo_horario = codigoTurnoReceptor)
-    #Cambiar turno receptor x solicitante
-    #Sucesion.objects.filter(codigo=codigoReceptor).filter(fecha=fechaCambio).update(codigo_horario = codigoTurnoSolicante)
-
-    
+        return Response({
+            "data":data
+        })
+    elif codigoSolicitante is not None and estado is None:
+        solicitudesCambiosTurnos = Cambios_de_turnos.objects.filter((Q(codigo_solicitante= codigoSolicitante) | Q(codigo_receptor = codigoSolicitante ))).only('codigo_solicitante', 'nombre_solicitante', 'cargo_solicitante',
+            'turno_solicitante_original','turno_solicitante_nuevo','fecha_solicitud_cambio',
+            'codigo_receptor','nombre_receptor','cargo_receptor','turno_receptor_original','turno_receptor_nuevo','estado_cambio_admin')
+        data = []
+        for s in solicitudesCambiosTurnos:
+            data.append({
+                'codigo_solicitante': s.codigo_solicitante,
+                'nombre_solicitante': s.nombre_solicitante,
+                'cargo_solicitante': s.cargo_solicitante,
+                'turno_solicitante_original': s.turno_solicitante_original,
+                'turno_solicitante_nuevo': s.turno_solicitante_nuevo,
+                'fecha_solicitud_cambio': s.fecha_solicitud_cambio,
+                'codigo_receptor': s.codigo_receptor,
+                'nombre_receptor': s.nombre_receptor,
+                'cargo_receptor': s.cargo_receptor,
+                'turno_receptor_original': s.turno_receptor_original,
+                'turno_receptor_nuevo': s.turno_receptor_nuevo,
+                'estado_cambio_admin': s.estado_cambio_admin
+            })
+        
+        return Response({
+            "data":data})
+    else:
+        return Response({
+            "success":False,
+            "message": f"Error de parametros, codigoSolicitante: {codigoSolicitante} - estado: {estado}"
+        })
 
 
 
