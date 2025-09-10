@@ -78,7 +78,7 @@
     </div>
 
     <!-- Título de la página -->
-    <div class="saludo" style="color: #ccc; font-size: 11px;">Horarios & Sucesiones</div>
+    <div class="saludo" style="color: #5a9138; font-size: 11px;">Horarios & Sucesiones</div>
 </div>
   </div>
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
@@ -352,142 +352,7 @@
 
 {% block scripts %}
 
-<!-- DOM Contend loaded-->
- <script>
-    document.addEventListener("DOMContentLoaded", () => {
 
-  showLoader(); 
-  mostrarDatosProcesados(); 
-  setTimeout(mostrarDatosProcesados, 3000); 
-
-
-  document.getElementById("btnCargar").addEventListener("click", function(){
-  showLoader();
-  setTimeout(mostrarDatosProcesados, 5000);
-
-  })
-
-  function mostrarDatosProcesados(){
-    const procesado = "{{ success }}";
-    if(procesado){
-      hideLoader();
-    }
-  }
-
-    function showLoader() {
-      document.getElementById("loader-overlay").classList.remove("hidden");
-  }
-
-   function hideLoader() {
-      document.getElementById("loader-overlay").classList.add("hidden");
-    }
-    ocultarBotonesCarga();
-    aplicarFiltros();
-    mostrarPagina(1);
-    mostrarBotonesCargaTrenes();
-  });
-
-  function mostrarBotonesCargaTrenes(){
-      
-   document.getElementById("trenes").addEventListener("click", function () {
-    const form = document.getElementById("formCargaDatos");
-    const filtros = document.querySelectorAll('.filtro');
-
-    // Toggle manual con display
-    const isVisible = form.style.display === "block";
-
-    form.style.display = isVisible ? "none" : "block";
-
-    filtros.forEach((elemento) => {
-      elemento.style.display = isVisible ? "none" : "block";
-    });
-});
-
-
- document.getElementById("tranvia").addEventListener("click", function () {
-    const form = document.getElementById("formCargaDatos");
-    const filtros = document.querySelectorAll('.filtro');
-
-    // Toggle manual con display
-    const isVisible = form.style.display === "block";
-
-    form.style.display = isVisible ? "none" : "block";
-
-    filtros.forEach((elemento) => {
-      elemento.style.display = isVisible ? "none" : "block";
-    });
-});
-
-
-  document.getElementById("maniobras").addEventListener("click", function () {
-  const form = document.getElementById("formCargaDatos");
-  const lunesViernes = document.getElementById('lunesViernes');
-  const sabados = document.getElementById('sabados');
-  const domingos = document.getElementById('domingos');
-  const sucesion = document.getElementById('sucesion');
-  const especial = document.getElementById('especial');
-
-  const isVisible = form.style.display === "block";
-
-  // Toggle
-  form.style.display = isVisible ? "none" : "block";
-  lunesViernes.style.display = isVisible ? "none" : "block";
-  sabados.style.display = "none";
-  domingos.style.display = "none";
-  sucesion.style.display = isVisible ? "none" : "block";
-  especial.style.display = "none";
-});
-
-
- document.getElementById("operadores").addEventListener("click", function () {
-  const form = document.getElementById("formCargaDatos");
-  const lunesViernes = document.getElementById('lunesViernes');
-  const sabados = document.getElementById('sabados');
-  const domingos = document.getElementById('domingos');
-  const sucesion = document.getElementById('sucesion');
-  const especial = document.getElementById('especial');
-
-  const isVisible = form.style.display === "block";
-
-  // Toggle
-  form.style.display = isVisible ? "none" : "block";
-  lunesViernes.style.display = isVisible ? "none" : "block";
-  sabados.style.display = "none";
-  domingos.style.display = "none";
-  sucesion.style.display = isVisible ? "none" : "block";
-  especial.style.display = "none";  
-  });
-}
-
-  function ocultarBotonesCarga(){
-
-    document.getElementById("formCargaDatos").style.display = "none";
-   document.querySelectorAll('.filtro').forEach((elemento)=>{
-      elemento.style.display = "none";
-    })
-  }
-
-  function capturarErroresCargaSucesion(){
-     
-    const erroresSemana = JSON.parse('{{ erroresSemana|safe|escapejs }}');
-    const erroresSabados = JSON.parse('{{ erroresSabados|safe|escapejs }}');
-    const erroresDomingo = JSON.parse('{{ erroresDomingo|safe|escapejs }}');
-    const erroresEspecial = JSON.parse('{{ erroresEspecial|safe|escapejs }}');
-
-    let errores = ""
-    erroresSemana.forEach(error =>{
-      errores += "Errores generados: "+error
-    })
-
-     Swal.fire({
-                    icon: "success",
-                    title: "Correcto",
-                    text: data.errores,
-                      })
-
-
-  }
- </script>
 <!--Buscar datos*filtro-->
  <script>
   document.getElementById("buscarDatosFiltro").addEventListener("click",function(){
@@ -1108,7 +973,7 @@ document.getElementById("editTurno").addEventListener("input", function () {
     document.getElementById("modalHorarios").style.display = "none";
   }
 </script>
-
+<!--Script CSRF TOKEN-->
 <script>
      function getCookie(name) {
         let cookieValue = null;
@@ -1125,4 +990,142 @@ document.getElementById("editTurno").addEventListener("input", function () {
         return cookieValue;
     }
 </script>
+
+<!-- DOM Contend loaded-->
+ <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+  showLoader(); 
+  mostrarDatosProcesados(); 
+  setTimeout(mostrarDatosProcesados, 3000); 
+
+
+  document.getElementById("btnCargar").addEventListener("click", function(){
+  showLoader();
+  setTimeout(mostrarDatosProcesados, 5000);
+
+  })
+
+  function mostrarDatosProcesados(){
+    const procesado = "{{ success }}";
+    if(procesado){
+      hideLoader();
+    }
+  }
+
+    function showLoader() {
+      document.getElementById("loader-overlay").classList.remove("hidden");
+  }
+
+   function hideLoader() {
+      document.getElementById("loader-overlay").classList.add("hidden");
+    }
+    ocultarBotonesCarga();
+    aplicarFiltros();
+    mostrarPagina(1);
+    mostrarBotonesCargaTrenes();
+  });
+
+  function mostrarBotonesCargaTrenes(){
+      
+   document.getElementById("trenes").addEventListener("click", function () {
+    const form = document.getElementById("formCargaDatos");
+    const filtros = document.querySelectorAll('.filtro');
+
+    // Toggle manual con display
+    const isVisible = form.style.display === "block";
+
+    form.style.display = isVisible ? "none" : "block";
+
+    filtros.forEach((elemento) => {
+      elemento.style.display = isVisible ? "none" : "block";
+    });
+});
+
+
+ document.getElementById("tranvia").addEventListener("click", function () {
+    const form = document.getElementById("formCargaDatos");
+    const filtros = document.querySelectorAll('.filtro');
+
+    // Toggle manual con display
+    const isVisible = form.style.display === "block";
+
+    form.style.display = isVisible ? "none" : "block";
+
+    filtros.forEach((elemento) => {
+      elemento.style.display = isVisible ? "none" : "block";
+    });
+});
+
+
+  document.getElementById("maniobras").addEventListener("click", function () {
+  const form = document.getElementById("formCargaDatos");
+  const lunesViernes = document.getElementById('lunesViernes');
+  const sabados = document.getElementById('sabados');
+  const domingos = document.getElementById('domingos');
+  const sucesion = document.getElementById('sucesion');
+  const especial = document.getElementById('especial');
+
+  const isVisible = form.style.display === "block";
+
+  // Toggle
+  form.style.display = isVisible ? "none" : "block";
+  lunesViernes.style.display = isVisible ? "none" : "block";
+  sabados.style.display = "none";
+  domingos.style.display = "none";
+  sucesion.style.display = isVisible ? "none" : "block";
+  especial.style.display = "none";
+});
+
+
+ document.getElementById("operadores").addEventListener("click", function () {
+  const form = document.getElementById("formCargaDatos");
+  const lunesViernes = document.getElementById('lunesViernes');
+  const sabados = document.getElementById('sabados');
+  const domingos = document.getElementById('domingos');
+  const sucesion = document.getElementById('sucesion');
+  const especial = document.getElementById('especial');
+
+  const isVisible = form.style.display === "block";
+
+  // Toggle
+  form.style.display = isVisible ? "none" : "block";
+  lunesViernes.style.display = isVisible ? "none" : "block";
+  sabados.style.display = "none";
+  domingos.style.display = "none";
+  sucesion.style.display = isVisible ? "none" : "block";
+  especial.style.display = "none";  
+  });
+}
+
+  function ocultarBotonesCarga(){
+
+    document.getElementById("formCargaDatos").style.display = "none";
+   document.querySelectorAll('.filtro').forEach((elemento)=>{
+      elemento.style.display = "none";
+    })
+  }
+
+  function capturarErroresCargaSucesion(){
+     
+    const erroresSemana = JSON.parse('{{ erroresSemana|safe|escapejs }}');
+    const erroresSabados = JSON.parse('{{ erroresSabados|safe|escapejs }}');
+    const erroresDomingo = JSON.parse('{{ erroresDomingo|safe|escapejs }}');
+    const erroresEspecial = JSON.parse('{{ erroresEspecial|safe|escapejs }}');
+
+    let errores = ""
+    erroresSemana.forEach(error =>{
+      errores += "Errores generados: "+error
+    })
+
+     Swal.fire({
+                    icon: "success",
+                    title: "Correcto",
+                    text: data.errores,
+                      })
+
+
+  }
+ </script>
+
 {% endblock %}

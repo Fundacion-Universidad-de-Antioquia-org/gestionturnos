@@ -904,12 +904,25 @@ def solicitar_cambio_turno(request):
 
     codigoSolicitante = request.data.get('codigoSolicitante')
     codigoReceptor = request.data.get('codigoReceptor')
+
+    print(codigoReceptor)
     
     fechaCambio = datetime.strptime(request.data.get('fechaCambio'), "%Y/%m/%d")
     fechaAnterior = fechaCambio - timedelta(days=1)
     fechaSiguiente = fechaCambio + timedelta(days=1)
 
     #Modelo Empleado // validar que los empleados existen
+    solicitanteEmpleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante , estado = "Activo").exists()
+    receptorEmpleado = Empleado_Oddo.objects.filter(codigo = codigoReceptor, estado = "Activo").exists()
+
+    # Se valida si el codigo existe:
+    if not solicitanteEmpleado:
+        return Response ({"success":False , "message": f"El Empleado con codigo: {codigoSolicitante} no existe"})
+    
+    if not receptorEmpleado:
+        return Response ({"success":False , "message": f"El Empleado con codigo: {codigoReceptor} no existe"})
+    
+    # Se valida el estado del empleado: Activo
     try:
         solicitanteEmpleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante , estado = "Activo").first()
     except Empleado_Oddo.DoesNotExist:
@@ -1462,7 +1475,6 @@ def cabeceras_turnos(request):
     } for e in qs]
 
     return Response({"success": True, "encabezados": encabezados})
-
 
 
 @api_view(["GET"])

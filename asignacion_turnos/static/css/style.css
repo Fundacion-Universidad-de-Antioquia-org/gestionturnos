@@ -46,7 +46,8 @@ body {
     left: 0;
     width: 260px;
     height: 100vh;
-    background-color: #222121;
+    background-color: #0d1117;
+    /* background-color: #222121; */
     transition: all 0.4s ease;
 }
 
@@ -71,7 +72,9 @@ body {
     border-radius: 85%;
 }
 
-.sidebar-header .sidebar-toggler { /* Boton que colapsa el sidebar*/
+/*Boton que colapsa el sidebar*/
+
+.sidebar-header .sidebar-toggler { 
     position: absolute;
     right: 20px;
     height: 35px;
@@ -87,6 +90,7 @@ body {
     top: 75px;
     right: 35px;
 }
+
 
 .sidebar-header .sidebar-toggler:hover {
     background: #d9e1fd;  /*Color original: #d9e1fd*/
@@ -177,7 +181,7 @@ body {
     position: absolute;
     bottom: 30px;
     width: 100%;
-    background-color: #222121;
+    background-color: #0d1117;
 }
 
 .header-logo {
@@ -348,13 +352,13 @@ body {
 
 /* Barra de usuario: saludo a la izquierda y botón a la derecha */
 .usuario-bar {
-
+    
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 7px ;
-    /*border-radius: 12px;*/
-    background-color: #0a0a0a; /* Sin fondo blanco */
+    border-radius: 12px;
+    background-color: #0a3329; /* Sin fondo blanco */
     animation: fadeSlideDown 0.6s ease-in-out;
     transition: box-shadow 0.3s ease;
     max-width: 100%;
