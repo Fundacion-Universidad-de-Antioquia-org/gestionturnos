@@ -81,10 +81,49 @@
     {% endfor %}
   </tbody>
 </table>
-<div id="panelControl">
+<div id="panelControl" >  
   <span class="material-symbols-outlined">error</span><div class="titulo-template">Servicios repetidos</div>
 </div>
 
+<table class="styled-table display" id="tablaDatosServiciosRepetidos">
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Nombre</th>
+      <th>Codigo</th>
+      <th>Estación inicial</th>
+      <th>Estación final</th>
+      <th>Rd_equipo</th>
+      <th>Turno</th>
+      <th>Cargo</th>
+      <th>Dia semana</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in serviciosRepetidos %}
+    <tr>
+      <td>{{ r.FECHA|date:"Y-m-d" }}</td>
+      <td>{{ r.Nombre }}</td>
+      <td>{{ r.CODPER }}</td>
+      <td>{{r.Estacion_ent }}</td>
+      <td>{{ r.Estacion_sal }}</td>
+      <td>{{ r.RD_EQUIPO }}</td>
+      <td>{{ r.CUBIERTO }}</td>
+      <td>{{ r.CARGO }}</td>
+      <td>{{ r.DIA_SEMANA }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+       <td colspan="12">No hay registros para validar</td>
+    </tr>
+    {% endfor %}  
+  </tbody>
+</table>
+
+
+<div id="panelControl" >  
+  <span class="material-symbols-outlined">error</span><div class="titulo-template">Servicios Faltantes</div>
+</div>
 
 {% endblock %}
 

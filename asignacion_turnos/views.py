@@ -31,7 +31,7 @@ from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
 from .resources.cargarArchivosBlob import upload_to_azure_blob
 from .resources.enviarCorreoGmail import enviarCorreoGmail, enviarCorreoGmailHTML
-from .resources.buscarErrores import leer_y_filtrar_excel, diagnostico_servicios
+from .resources.buscarErrores import sobreCargaLaboral,asignacionServicios
 from .resources.peticion_Oddo import sincronizarDbEmpleados
 
 
@@ -337,16 +337,20 @@ def vista_precarga(request, *, context):
             "usuarioLogeado": usuarioLogeado
         })
 
-    filas = leer_y_filtrar_excel(f) 
-    res = diagnostico_servicios(f) 
-    print("hola")
-    
-    print(f"{res.get('repetidos')} , faltantes: {res.get('faltantes')}, sobrantes: {res.get('sobrantes')}")
+    filas = sobreCargaLaboral(f) 
+    serviciosRepetidos, faltantes_lunes_viernes, faltantes_sabado_json, faltantes_domingo_json = asignacionServicios(f) 
+    print("VISTAAAAAAAAAAAAAAAAAA")
+    print(serviciosRepetidos)
 
     return render(request, "account/preCarga.html", {
         "form": form,
         "dfresultado": filas,
-        "usuarioLogeado": usuarioLogeado
+        "usuarioLogeado": usuarioLogeado,
+        "serviciosRepetidos": serviciosRepetidos,
+        "faltantes_lunes_viernes": faltantes_lunes_viernes,
+        "faltantes_sabado_json": faltantes_sabado_json,
+        "faltantes_domingo_json": faltantes_domingo_json
+
     })
 
 

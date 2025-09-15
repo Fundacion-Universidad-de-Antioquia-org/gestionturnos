@@ -29,6 +29,9 @@ body {
     padding: 25px 20px;
 }
 
+.table-responsive{
+  overflow: auto;
+}
 
 .sidebar.collapsed {
     width: 60px;

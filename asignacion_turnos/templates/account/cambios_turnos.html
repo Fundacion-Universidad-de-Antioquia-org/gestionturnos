@@ -6,14 +6,20 @@
 
 <style>
   .btn-icon {
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  padding: 4px 6px;
-}
-.btn-icon .material-symbols-outlined { font-size: 20px; color: #1D5031; }
-.btn-icon:hover .material-symbols-outlined { opacity: .8; }
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
 
+  .btn-icon .material-symbols-outlined {
+    font-size: 20px;
+    color: #1D5031;
+  }
+
+  .btn-icon:hover .material-symbols-outlined {
+    opacity: .8;
+  }
 </style>
 
 {% endblock %}
@@ -22,17 +28,17 @@
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 
   <div class="usuario-bar-logo-nombre">
-      <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
-      <div class="d-flex flex-column align-items-center flex-shrink-0">
-  
-    <!-- Nombre del usuario -->
-    <div class="saludo" style="color: white; font-weight: 500;">
-      {{ usuarioLogeado }}
-    </div>
+    <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
+    <div class="d-flex flex-column align-items-center flex-shrink-0">
 
-    <!-- Título de la página -->
-    <div class="saludo" style="color: #ccc; font-size: 11px;">Cambios de turno</div>
-</div>
+      <!-- Nombre del usuario -->
+      <div class="saludo" style="color: white; font-weight: 500;">
+        {{ usuarioLogeado }}
+      </div>
+
+      <!-- Título de la página -->
+      <div class="saludo" style="color: #ccc; font-size: 11px;">Cambios de turno</div>
+    </div>
   </div>
 
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
@@ -41,7 +47,7 @@
   </form>
 </div>
 
-  <!-- Acordeón de filtros -->
+<!-- Acordeón de filtros -->
 <div class="accordion-container" style="margin-top: 14px;">
   <div class="accordion-header">Filtros de Búsqueda</div>
   <div class="accordion-body">
@@ -61,13 +67,15 @@
       <div class="filtro-item">
         <label for="filtroCargo">Cargo:</label>
         <select name="select" id="filtroCargo">
-            <option value="">Todos</option>
-            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO</option>
-            <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
-            <option value="OPERADOR DE CONDUCCION" >OPERADOR DE CONDUCCION</option>
-            <option value="MANIOBRISTA TRENES" >MANIOBRISTA TRENES</option>
-            <option value="MANIOBRISTA TRANVIA" >MANIOBRISTA TRANVIA</option>
-            <option value="INCONSISTENCIA">INCONSISTENCIA</option>
+          <option value="">Todos</option>
+          <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO
+          </option>
+          <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO
+            TRANVIA</option>
+          <option value="OPERADOR DE CONDUCCION">OPERADOR DE CONDUCCION</option>
+          <option value="MANIOBRISTA TRENES">MANIOBRISTA TRENES</option>
+          <option value="MANIOBRISTA TRANVIA">MANIOBRISTA TRANVIA</option>
+          <option value="INCONSISTENCIA">INCONSISTENCIA</option>
         </select>
       </div>
       <div class="filtro-item">
@@ -87,73 +95,73 @@
 </div>
 <!--Tabla de datos-->
 
-<table class="styled-table display" id="tablaDatos">
-  <thead>
-    <tr>
-      <th>Solicitante</th>
-      <th>Código</th>
-      <th>Cargo</th>
-      <th>Formacion solicitante</th>
-      <th>Turno Original</th>
-      <th>Turno Deseado</th>
-      <th>Fecha de cambio</th>
-      <th>Receptor</th>
-      <th>Código</th>
-      <th>Cargo</th>
-      <th>Formacion receptor</th>
-      <th>Turno Original</th>
-      <th>Turno Deseado</th>
-      <th>Aprobado EMP</th>
-      <th>Aprobado ADM</th>
-      <th>Comentarios</th>
-      <th class="checkbox-cell">
-        <button type="button" id="seleccionarTodos">Seleccionar todos</button>
-      </th>
-    </tr>
-  </thead>
-  <tbody id="tablaBody">
-    
-    {% for data in resultadosCambiosTurnos %}
-    <tr>
-      <td>{{ data.nombre_solicitante }}</td>
-      <td class="codigoSolicitante">{{ data.codigo_solicitante }}</td>
-      <td>{{ data.cargo_solicitante }}</td>
-      <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_solicitante }}</span></td>
-      <td>{{ data.turno_solicitante_original }}</td>
-      <td class="turnoSolicitanteDiaDeseado">{{ data.turno_solicitante_nuevo}}</td>
-      <td class="fechaCambio">{{ data.fecha_solicitud_cambio|date:"d/m/Y" }}</td>
-      <td>{{ data.nombre_receptor }}</td>
-      <td class="codigoReceptor">{{ data.codigo_receptor }}</td>
-      <td>{{ data.cargo_receptor }}</td>
-      <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor}}</span></td>
-      <td>{{ data.turno_receptor_original }}</td>
-      <td class="turnoReceptorDiaDeseado">{{ data.turno_receptor_nuevo }}</td>
-      <td class="aprobadoEmp">{{ data.estado_cambio_emp }}</td>
-      <td class="aprobadoAdm">{{ data.estado_cambio_admin }}</td>
-      <td>{% if data.comentarios %}
-        <button type="button"
-            class="btn-icon ver-msg"
-            data-title="Comentarios"
-            data-msg="{{ data.comentarios|escapejs }}"
-            aria-label="Ver comentarios">
-          <span class="material-symbols-outlined" style="color: #2d6fe9; font-size: 35px;">info</span>
-        </button>
-        {% else %} 
+<div class="table-responsive">
+  <table class="table styled-table display" id="tablaDatos">
+    <thead>
+      <tr>
+        <th>Solicitante</th>
+        <th>Código</th>
+        <th>Cargo</th>
+        <th>Formacion solicitante</th>
+        <th>Turno Original</th>
+        <th>Turno Deseado</th>
+        <th>Fecha de cambio</th>
+        <th>Receptor</th>
+        <th>Código</th>
+        <th>Cargo</th>
+        <th>Formacion receptor</th>
+        <th>Turno Original</th>
+        <th>Turno Deseado</th>
+        <th>Aprobado EMP</th>
+        <th>Aprobado ADM</th>
+        <th>Sistema</th>
+        <th class="checkbox-cell">
+          <button type="button" id="seleccionarTodos">check</button>
+        </th>
+      </tr>
+    </thead>
+    <tbody id="tablaBody">
+
+      {% for data in resultadosCambiosTurnos %}
+      <tr>
+        <td>{{ data.nombre_solicitante }}</td>
+        <td class="codigoSolicitante">{{ data.codigo_solicitante }}</td>
+        <td>{{ data.cargo_solicitante }}</td>
+        <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_solicitante }}</span></td>
+        <td>{{ data.turno_solicitante_original }}</td>
+        <td class="turnoSolicitanteDiaDeseado">{{ data.turno_solicitante_nuevo}}</td>
+        <td class="fechaCambio">{{ data.fecha_solicitud_cambio|date:"d/m/Y" }}</td>
+        <td>{{ data.nombre_receptor }}</td>
+        <td class="codigoReceptor">{{ data.codigo_receptor }}</td>
+        <td>{{ data.cargo_receptor }} </td>
+        <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor }}</span></td>
+        <td>{{ data.turno_receptor_original }}</td>
+        <td class="turnoReceptorDiaDeseado">{{ data.turno_receptor_nuevo }}</td>
+        <td class="aprobadoEmp">{{ data.estado_cambio_emp }}</td>
+        <td class="aprobadoAdm">{{ data.estado_cambio_admin }}</td>
+        <td>{% if data.comentarios %}
+          <button type="button" class="btn-icon ver-msg" data-title="Comentarios"
+            data-msg="{{ data.comentarios|escapejs }}" aria-label="Ver comentarios">
+            <span class="material-symbols-outlined" style="color: #2d6fe9; font-size: 35px;">info</span>
+          </button>
+          {% else %}
           -
-        {% endif %}
+          {% endif %}
 
-      </td>
-      <td class="checkbox-cell"><input type="checkbox" class="checkbox-item"></td>
-      
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="12">No hay solicitudes de cambio por ahora</td>
-    </tr>
+        </td>
+        <td class="checkbox-cell"><input type="checkbox" class="checkbox-item"></td>
 
-    {% endfor %}
-  </tbody>
-</table>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="12">No hay solicitudes de cambio por ahora</td>
+      </tr>
+
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 
 <div class="acciones-finales">
   <button id="aprobarCambios" class="btn-aprobar">Aprobar cambios</button>
@@ -163,56 +171,56 @@
 {% block scripts %}
 <!-- Scripts boton seleccionar todos los elementos de la tabla-->
 <script>
-document.getElementById("seleccionarTodos").addEventListener('click', function () {
+  document.getElementById("seleccionarTodos").addEventListener('click', function () {
     const checkboxes = document.querySelectorAll('.checkbox-item');
     const filas = Array.from(checkboxes).map(cb => cb.closest('tr'));
-    
-    const soloPendientes = filas.filter(fila => 
-        fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase() === "desaprobado"
+
+    const soloPendientes = filas.filter(fila =>
+      fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase() === "desaprobado"
     );
 
     const allChecked = soloPendientes.every(fila => fila.querySelector('.checkbox-item').checked);
 
     soloPendientes.forEach(fila => {
-        const cb = fila.querySelector('.checkbox-item');
-        cb.checked = !allChecked;
+      const cb = fila.querySelector('.checkbox-item');
+      cb.checked = !allChecked;
     });
 
     this.textContent = allChecked ? 'Seleccionar todos' : 'Deseleccionar todos';
-});
+  });
 
 </script>
 
 <!--Scripts DOM-->
 <script>
-document.addEventListener("DOMContentLoaded",function(){
-  aplicarFiltros();
-})
+  document.addEventListener("DOMContentLoaded", function () {
+    aplicarFiltros();
+  })
 </script>
 
 <!--Script boton aprobar cambios de turnos-->
 <script>
-document.getElementById("aprobarCambios").addEventListener("click", function () {
-  
-  const datos = [];
+  document.getElementById("aprobarCambios").addEventListener("click", function () {
+
+    const datos = [];
     const checkboxesSeleccionados = document.querySelectorAll('.checkbox-item:checked');
 
     if (checkboxesSeleccionados.length === 0) {
-        Swal.fire({
-            icon: "warning",
-            title: "Ningún cambio seleccionado",
-            text: "Por favor, selecciona al menos un cambio de turno para aprobar o desaprobar.",
-        });
-        return;
+      Swal.fire({
+        icon: "warning",
+        title: "Ningún cambio seleccionado",
+        text: "Por favor, selecciona al menos un cambio de turno para aprobar o desaprobar.",
+      });
+      return;
     }
 
-   checkboxesSeleccionados.forEach(checkbox => {
-    const fila = checkbox.closest('tr');
+    checkboxesSeleccionados.forEach(checkbox => {
+      const fila = checkbox.closest('tr');
 
-    const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
-    const estadoEmp = fila.querySelector('.aproboEmp')?.textContent.trim().toLocaleLowerCase();
-    
-    if (estadoAdmin === "pendiente" && estadoEmp === "aprobado") {
+      const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
+      const estadoEmp = fila.querySelector('.aproboEmp')?.textContent.trim().toLocaleLowerCase();
+
+      if (estadoAdmin === "pendiente" && estadoEmp === "aprobado") {
         const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
         const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
 
@@ -222,201 +230,201 @@ document.getElementById("aprobarCambios").addEventListener("click", function () 
         const fechaCambioTexto = fila.querySelector('.fechaCambio')?.textContent.trim();
 
         const fechaCambio = /^\d{2}\/\d{2}\/\d{4}$/.test(fechaCambioTexto)
-            ? (() => {
-                const [d, m, y] = fechaCambioTexto.split('/');
-                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-            })()
-            : fechaCambioTexto;
+          ? (() => {
+            const [d, m, y] = fechaCambioTexto.split('/');
+            return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+          })()
+          : fechaCambioTexto;
 
         datos.push({
-            fechaCambio,
-            codigoSolicitante,
-            codigoReceptor,
-            turnoSolicitanteDiaDeseado,
-            turnoReceptorDiaDeseado
+          fechaCambio,
+          codigoSolicitante,
+          codigoReceptor,
+          turnoSolicitanteDiaDeseado,
+          turnoReceptorDiaDeseado
         });
 
-         fetch("{% url 'aprobar_solicitudes_cambios_turnos' %}", {
+        fetch("{% url 'aprobar_solicitudes_cambios_turnos' %}", {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({ solicitudes: datos })
-    })
-        .then(response => {
+          },
+          body: JSON.stringify({ solicitudes: datos })
+        })
+          .then(response => {
             if (!response.ok) {
-                throw new Error("Error en la aprobación");
+              throw new Error("Error en la aprobación");
             }
             return response.json();
-        })
-        .then(data => {
-            if (data.success){
+          })
+          .then(data => {
+            if (data.success) {
               Swal.fire({
                 title: "Good job!",
                 text: data.message,
                 icon: "success"
               })
-             .then(()=>{
-                    location.reload();
+                .then(() => {
+                  location.reload();
                 })
-                
+
             } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "No se pudieron aprobar los cambios",
-                    text: data.message || "Ocurrió un error inesperado",
-                });
+              Swal.fire({
+                icon: "error",
+                title: "No se pudieron aprobar los cambios",
+                text: data.message || "Ocurrió un error inesperado",
+              });
             }
-        })
-        .catch(error => {
+          })
+          .catch(error => {
             console.error("Error en fetch:", error);
             Swal.fire({
-                icon: "error",
-                title: "Error en la solicitud",
-                text: "Error:",error
+              icon: "error",
+              title: "Error en la solicitud",
+              text: "Error:", error
             });
+          });
+
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Solo se pueden aprobar solicitudes de cambios de turnos cuando estadoAdm: pendiente y estadoEmp: aprobado",
+
         });
 
-    }else{
-      Swal.fire({
-                    icon: "error",
-                    title: "Solo se pueden aprobar solicitudes de cambios de turnos cuando estadoAdm: pendiente y estadoEmp: aprobado",
-                    
-                });
+      }
+    });
 
-    }
-});
-   
-});
+  });
 
 </script>
 
 <!-- Script boton eliminar o des aprobar cambios de turnos-->
- <script>
-   document.getElementById("desaprobarCambios").addEventListener("click", function () {
+<script>
+  document.getElementById("desaprobarCambios").addEventListener("click", function () {
     const datos = [];
     const checkboxesSeleccionados = document.querySelectorAll('.checkbox-item:checked');
 
     if (checkboxesSeleccionados.length === 0) {
-        Swal.fire({
-            icon: "warning",
-            title: "Ningún elemento seleccionado",
-            text: "Por favor, selecciona al menos un cambio de turno para desaprobar.",
-        });
-        return;
+      Swal.fire({
+        icon: "warning",
+        title: "Ningún elemento seleccionado",
+        text: "Por favor, selecciona al menos un cambio de turno para desaprobar.",
+      });
+      return;
     }
 
     checkboxesSeleccionados.forEach(checkbox => {
-        const fila = checkbox.closest('tr');
-        const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
+      const fila = checkbox.closest('tr');
+      const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
 
-        if (estadoAdmin === "pendiente") {
-            const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
-            const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
-            const codigoReceptor = fila.querySelector('.codigoReceptor')?.textContent.trim();
-            const turnoReceptorDiaDeseado = fila.querySelector('.turnoReceptorDiaDeseado')?.textContent.trim();
-            const fechaCambioTexto = fila.querySelector('.fechaCambio')?.textContent.trim();
-            const fechaCambio = /^\d{2}\/\d{2}\/\d{4}$/.test(fechaCambioTexto)
-                ? (() => {
-                    const [d, m, y] = fechaCambioTexto.split('/');
-                    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-                })()
-                : fechaCambioTexto;
+      if (estadoAdmin === "pendiente") {
+        const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
+        const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
+        const codigoReceptor = fila.querySelector('.codigoReceptor')?.textContent.trim();
+        const turnoReceptorDiaDeseado = fila.querySelector('.turnoReceptorDiaDeseado')?.textContent.trim();
+        const fechaCambioTexto = fila.querySelector('.fechaCambio')?.textContent.trim();
+        const fechaCambio = /^\d{2}\/\d{2}\/\d{4}$/.test(fechaCambioTexto)
+          ? (() => {
+            const [d, m, y] = fechaCambioTexto.split('/');
+            return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+          })()
+          : fechaCambioTexto;
 
-            datos.push({
-                fechaCambio,
-                codigoSolicitante,
-                codigoReceptor,
-                turnoSolicitanteDiaDeseado,
-                turnoReceptorDiaDeseado
-            });
-        }
+        datos.push({
+          fechaCambio,
+          codigoSolicitante,
+          codigoReceptor,
+          turnoSolicitanteDiaDeseado,
+          turnoReceptorDiaDeseado
+        });
+      }
     });
 
     if (datos.length === 0) {
-        Swal.fire({
-            icon: "error",
-            title: "Ninguna solicitud válida",
-            text: "Solo se pueden desaprobar solicitudes con estado 'pendiente'.",
-        });
-        return;
+      Swal.fire({
+        icon: "error",
+        title: "Ninguna solicitud válida",
+        text: "Solo se pueden desaprobar solicitudes con estado 'pendiente'.",
+      });
+      return;
     }
 
     fetch("{% url 'desaprobar_solicitudes_cambios_turnos' %}", {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({ solicitudes: datos })
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ solicitudes: datos })
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Error en la desaprobación");
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    title: "Solicitudes desaprobadas correctamente",
-                    text: data.message,
-                    width: 600,
-                    padding: "3em",
-                    color: "#ffffff",
-                    background: "url(https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3lybnlpa2N3eG1ibGkxMmkwYXpmY2xkbXRzN2l2aWpkcjhnZjJlOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jJQC2puVZpTMO4vUs0/giphy.gif)",
-                    backdrop: `rgba(198, 215, 207, 0.8)`
-                }).then(function(){
-                  location.reload()
-                })
-                
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "No se pudieron desaprobar los cambios",
-                    text: data.message || "Ocurrió un error inesperado",
-                });
-            }
-        })
-        .catch(error => {
-            console.error("Error en fetch:", error);
-            Swal.fire({
-                icon: "error",
-                title: "Error en la solicitud",
-                text: "Ocurrió un error en la comunicación con el servidor.",
-            });
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Error en la desaprobación");
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            title: "Solicitudes desaprobadas correctamente",
+            text: data.message,
+            width: 600,
+            padding: "3em",
+            color: "#ffffff",
+            background: "url(https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3lybnlpa2N3eG1ibGkxMmkwYXpmY2xkbXRzN2l2aWpkcjhnZjJlOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jJQC2puVZpTMO4vUs0/giphy.gif)",
+            backdrop: `rgba(198, 215, 207, 0.8)`
+          }).then(function () {
+            location.reload()
+          })
+
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "No se pudieron desaprobar los cambios",
+            text: data.message || "Ocurrió un error inesperado",
+          });
+        }
+      })
+      .catch(error => {
+        console.error("Error en fetch:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error en la solicitud",
+          text: "Ocurrió un error en la comunicación con el servidor.",
         });
+      });
 
     // Función para obtener CSRF
     function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + "=")) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.startsWith(name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
         }
-        return cookieValue;
+      }
+      return cookieValue;
     }
-});
+  });
 
- </script>
+</script>
 
- <!--Script filtros-->
+<!--Script filtros-->
 <script>
   // Acordeón toggle
-    document.querySelectorAll('.accordion-header').forEach(hdr => {
-      hdr.addEventListener('click', () => {
-        hdr.classList.toggle('active');
-        const body = hdr.nextElementSibling;
-        body.classList.toggle('active');
-      });
+  document.querySelectorAll('.accordion-header').forEach(hdr => {
+    hdr.addEventListener('click', () => {
+      hdr.classList.toggle('active');
+      const body = hdr.nextElementSibling;
+      body.classList.toggle('active');
     });
+  });
 
 
   // Elementos de filtro
@@ -434,85 +442,85 @@ document.getElementById("aprobarCambios").addEventListener("click", function () 
     input.addEventListener('change', aplicarFiltros);
   });
 
- function aplicarFiltros() {
-  document.getElementById("tablaBody").style.display = "";
-  
-  const valorNombre = filtros.nombre.value.toLowerCase().trim();
-  const valorCodigo = filtros.codigo.value.toLowerCase().trim();
-  const valorCargo = filtros.cargo.value.toLowerCase().trim();  
-  const valorFecha = filtros.fecha.value;
-  const valorEstado = filtros.estado.value.toLowerCase().trim();
-  
+  function aplicarFiltros() {
+    document.getElementById("tablaBody").style.display = "";
 
-  document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
-    const tNombre = row.cells[0].textContent.toLowerCase().trim();
-    const tCodigo = row.cells[1].textContent.toLowerCase().trim();
-    const tCargo = row.cells[2].textContent.toLowerCase().trim(); 
-    const tFecha = row.cells[6].textContent.trim();
-    const tEstado = row.cells[14].textContent.toLowerCase().trim();
+    const valorNombre = filtros.nombre.value.toLowerCase().trim();
+    const valorCodigo = filtros.codigo.value.toLowerCase().trim();
+    const valorCargo = filtros.cargo.value.toLowerCase().trim();
+    const valorFecha = filtros.fecha.value;
+    const valorEstado = filtros.estado.value.toLowerCase().trim();
 
-    const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
-    const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;
-    const coincideCargo = !valorCargo || tCargo === valorCargo; // Comparación exacta
-    const coincideFecha = !valorFecha || tFecha === valorFecha;
-    const coincideEstado = !valorEstado || tEstado === valorEstado;
 
-    row.style.display = (coincideNombre && coincideCodigo && coincideCargo && coincideFecha && coincideEstado) ? 'table-row' : 'none';
+    document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
+      const tNombre = row.cells[0].textContent.toLowerCase().trim();
+      const tCodigo = row.cells[1].textContent.toLowerCase().trim();
+      const tCargo = row.cells[2].textContent.toLowerCase().trim();
+      const tFecha = row.cells[6].textContent.trim();
+      const tEstado = row.cells[14].textContent.toLowerCase().trim();
 
-  });
-}
+      const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
+      const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;
+      const coincideCargo = !valorCargo || tCargo === valorCargo; // Comparación exacta
+      const coincideFecha = !valorFecha || tFecha === valorFecha;
+      const coincideEstado = !valorEstado || tEstado === valorEstado;
+
+      row.style.display = (coincideNombre && coincideCodigo && coincideCargo && coincideFecha && coincideEstado) ? 'table-row' : 'none';
+
+    });
+  }
 
 </script>
 
 <!--Script para escapear el comentario que llega del back-->
 <script>
-(function(){
-  function escapeHtml(str){
-    return String(str)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-      .replace(/'/g,'&#39;');
-  }
+  (function () {
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
 
-  // Convierte "\u000A" y "\n" literales en saltos reales
-  function decodeNewlines(s){
-    if (!s) return '';
-    return s.replace(/\\u000A/gi, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
-  }
+    // Convierte "\u000A" y "\n" literales en saltos reales
+    function decodeNewlines(s) {
+      if (!s) return '';
+      return s.replace(/\\u000A/gi, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
+    }
 
-  document.getElementById('tablaBody').addEventListener('click', e=>{
-    const btn = e.target.closest('.ver-msg');
-    if(!btn) return;
+    document.getElementById('tablaBody').addEventListener('click', e => {
+      const btn = e.target.closest('.ver-msg');
+      if (!btn) return;
 
-    const title = btn.dataset.title || 'Mensaje';
-    const decoded = decodeNewlines(btn.dataset.msg || '');
+      const title = btn.dataset.title || 'Mensaje';
+      const decoded = decodeNewlines(btn.dataset.msg || '');
 
-    Swal.fire({
-      title: title,
-      html: `<div style="text-align:left; font-size:15px; white-space:pre-wrap; max-height:60vh; overflow:auto;">${escapeHtml(decoded)}</div>`,
-      width: 700,
-      confirmButtonText: 'Cerrar'
+      Swal.fire({
+        title: title,
+        html: `<div style="text-align:left; font-size:15px; white-space:pre-wrap; max-height:60vh; overflow:auto;">${escapeHtml(decoded)}</div>`,
+        width: 700,
+        confirmButtonText: 'Cerrar'
+      });
     });
-  });
-})();
+  })();
 
 </script>
-<!-- CSRF TOKEN -->>
+<!-- CSRF TOKEN -->
 <script>
-   function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + "=")) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith(name + "=")) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
-        return cookieValue;
+      }
     }
+    return cookieValue;
+  }
 </script>
 
 {% endblock %}
