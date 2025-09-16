@@ -1538,7 +1538,7 @@ def mis_solicitudes_cambios_turnos(request):
                 'turno_receptor_nuevo': s.turno_receptor_nuevo,
                 'estado_cambio_admin': s.estado_cambio_admin
             })
-        
+    
         return Response({
             "data":data})
     else:
