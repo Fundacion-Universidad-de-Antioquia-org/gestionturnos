@@ -1373,7 +1373,13 @@ def insertar_estado(request):
 def get_comunicados(request):
 
     codigo = request.GET.get('codigo')
-    cargo = request.GET.get('cargo')
+    
+    try:
+        empleado = Empleado_Oddo.objects.get(codigo = codigo , estado = "Activo")
+        cargo = empleado.cargo
+    except Empleado_Oddo.DoesNotExist:
+        return Response({"success":False,
+                         "message": f"El codigo: {codigo} enviado no es valido o se encuentra inactivo"})
 
     print(f"codigo: {codigo}, cargo: {cargo}")
     #fechaVigencia= request.data.get('fechaVigencia')
@@ -1385,7 +1391,7 @@ def get_comunicados(request):
 
     for filtro in archivos:
         if cargo in filtro.cargoVisualizacion:
-            if not ConfirmacionLectura.objects.filter(codigo = codigo, archivos = filtro.id).exists():
+            if not ConfirmacionLectura.objects.filter(codigo = codigo, archivos = filtro.id , confirmacionLectura = "leido").exists():
                 listaArchivos.append(f"id: {filtro.id}, url: {filtro.urlArchivo}, tipo de archivo: {filtro.tipoArchivo}")
 
     return Response({"success":True , "datos": listaArchivos})
@@ -1541,6 +1547,17 @@ def mis_solicitudes_cambios_turnos(request):
             "message": f"Error de parametros, codigoSolicitante: {codigoSolicitante} - estado: {estado}"
         })
 
+api_view(["POST"])
+def confirmacionLectura(request):
+    codigo = request.data.get("codigo")
+    idArchivo = request.data.get("idArchivo")
+    hoy = datetime.now(ZoneInfo("America/Bogota"))
+    if codigo and idArchivo :
+        empleado = Empleado_Oddo.objects.get(codigo = codigo,  estado = "Activo")
 
-
-
+        ConfirmacionLectura.objects.create(fechaLectura = hoy , codigo = codigo, cedula =  empleado.cedula, nombre = 
+                                           empleado.nombre, archivos__id =  idArchivo, confirmacionLectura = "leido")
+        
+        return Response({"success":True, "message": f"Comunicado con id: {idArchivo}, leido por: { empleado.nombre }"})
+    else:
+        return Response({"success":False, "message":f"Error de parametros, codigo: {codigo} - {idArchivo} "})

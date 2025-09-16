@@ -102,18 +102,16 @@
         <th>Solicitante</th>
         <th>Código</th>
         <th>Cargo</th>
-        <th>Formacion solicitante</th>
         <th>Turno Original</th>
         <th>Turno Deseado</th>
         <th>Fecha de cambio</th>
         <th>Receptor</th>
         <th>Código</th>
-        <th>Cargo</th>
-        <th>Formacion receptor</th>
+        <th>Cargo</th>  
         <th>Turno Original</th>
         <th>Turno Deseado</th>
-        <th>Aprobado EMP</th>
-        <th>Aprobado ADM</th>
+        <th>Estado EMP</th>
+        <th>Estado ADM</th>
         <th>Sistema</th>
         <th class="checkbox-cell">
           <button type="button" id="seleccionarTodos">check</button>
@@ -121,20 +119,17 @@
       </tr>
     </thead>
     <tbody id="tablaBody">
-
       {% for data in resultadosCambiosTurnos %}
       <tr>
         <td>{{ data.nombre_solicitante }}</td>
-        <td class="codigoSolicitante">{{ data.codigo_solicitante }}</td>
+        <td class="codigoSolicitante">{{ data.codigo_solicitante }} <span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_solicitante }}</span> </td>
         <td>{{ data.cargo_solicitante }}</td>
-        <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_solicitante }}</span></td>
         <td>{{ data.turno_solicitante_original }}</td>
         <td class="turnoSolicitanteDiaDeseado">{{ data.turno_solicitante_nuevo}}</td>
         <td class="fechaCambio">{{ data.fecha_solicitud_cambio|date:"d/m/Y" }}</td>
         <td>{{ data.nombre_receptor }}</td>
-        <td class="codigoReceptor">{{ data.codigo_receptor }}</td>
+        <td class="codigoReceptor">{{ data.codigo_receptor }} <span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor }}</span> </td>
         <td>{{ data.cargo_receptor }} </td>
-        <td><span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor }}</span></td>
         <td>{{ data.turno_receptor_original }}</td>
         <td class="turnoReceptorDiaDeseado">{{ data.turno_receptor_nuevo }}</td>
         <td class="aprobadoEmp">{{ data.estado_cambio_emp }}</td>
@@ -454,10 +449,11 @@
 
     document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
       const tNombre = row.cells[0].textContent.toLowerCase().trim();
-      const tCodigo = row.cells[1].textContent.toLowerCase().trim();
+      const regexCodigo = row.cells[1].textContent.toLowerCase().trim()
+      const tCodigo = regexCodigo.replace(/\D/g, "" );
       const tCargo = row.cells[2].textContent.toLowerCase().trim();
-      const tFecha = row.cells[6].textContent.trim();
-      const tEstado = row.cells[14].textContent.toLowerCase().trim();
+      const tFecha = row.cells[5].textContent.trim();
+      const tEstado = row.cells[12].textContent.toLowerCase().trim();
 
       const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
       const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;

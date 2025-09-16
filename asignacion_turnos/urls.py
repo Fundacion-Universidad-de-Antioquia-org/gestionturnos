@@ -36,6 +36,7 @@ urlpatterns = [
     path('api/aprobarSolicitudesGt/',views.gestionarSolicitudeGt, name="gestionarSolicitudeGt"),
     path('api/insertar_estado/', views.insertar_estado, name= "insertar_estado"),
     path('api/get_comunicados/',views.get_comunicados, name= "get_comunicados"),
+    path('api/confirmacionLectura/', views.confirmacionLectura, name = "confirmacionLectura"),
     path('api/get_datos_filtro_sucesion/',views.get_datos_filtro_sucesion, name = "datos_filtro_sucesion"),
     path('api/cabeceras_turnos/', views.cabeceras_turnos, name = "cabeceras_turnos"),
     path('api/mis_solicitudes_cambios_turnos/', views.mis_solicitudes_cambios_turnos, name = "mis_solicitudes_cambios_turnos"),
