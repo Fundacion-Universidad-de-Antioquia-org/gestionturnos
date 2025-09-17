@@ -339,8 +339,7 @@ def vista_precarga(request, *, context):
 
     filas = sobreCargaLaboral(f) 
     serviciosRepetidos, faltantes_lunes_viernes, faltantes_sabado_json, faltantes_domingo_json = asignacionServicios(f) 
-    print("VISTAAAAAAAAAAAAAAAAAA")
-  
+   
     return render(request, "account/preCarga.html", {
         "form": form,
         "dfresultado": filas,
@@ -450,10 +449,12 @@ def cargar_Io(request):
 def get_mis_turnos(request):
 
     codigo = request.GET.get('codigo')
-    if not codigo:
-        return Response({"error": "Se requiere el parámetro 'codigo'"}, status=400)
+    fechaInicial = request.GET.get("fechaInicial")
+    fechaFinal = request.GET.get('fechaFinal')
+    if not codigo and fechaInicial and fechaFinal:
+        return Response({"success":True, "message": f"Error de parametros, codigo: {codigo}, fecha incial: {fechaInicial}, fecha final {fechaFinal}"})
     
-    turnos  = Sucesion.objects.filter(codigo = codigo).order_by('fecha')
+    turnos  = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)), codigo = codigo ).order_by('fecha')
     data = []
     for t in turnos:
         data.append({

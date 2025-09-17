@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import unicodedata
+from datetime import date, datetime
+
 
 def sobreCargaLaboral(file):
     # 1) Por si alguien ya leyó el archivo
@@ -414,14 +416,14 @@ def asignacionServicios(file):
 
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_por_dia.items():
-        print(f, "faltan", len(lst), "-", lst[:10], "…")  # muestra los primeros 10
+        #print(f, "faltan", len(lst), "-", lst[:10], "…")  
         faltantes_lunes_viernes = {
-            "fecha":f,
+            "fecha": to_iso_str(f),
             "cantidad":len(lst),
-            "turnos": lst[:]
+            "turnos":lst
         }
+      
           
-
     #SERVICIOS FALTANTES SABADOS:
     print(f"Servicios esperados para el sabado: {dfServicios["SABADO"].count()}")
     dfServicios["TURNOS_ASIGNADOS_SABADO"] = 0
@@ -442,13 +444,12 @@ def asignacionServicios(file):
 
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_sabado.items():
-        print(f, "faltan", len(lst), "-", lst[:10], "…") 
+        #print(f, "faltan", len(lst), "-", lst[:10], "…") 
         faltantes_sabado_json = {
-            "fecha":f.strftime("%Y-%m-%d %H:%M:%S"),
-            "cantidad":str(len(lst)),
-            "turnos": str(lst[:])
+            "fecha": to_iso_str(f),
+            "cantidad":len(lst),
+            "turnos":lst
         }
-
 #-----------------------------------------------------------------------------------------------------------------
     faltantes_domingo = {}
     faltantes_domingo_json = {}
@@ -470,9 +471,16 @@ def asignacionServicios(file):
     for f, lst in faltantes_domingo.items():
         #print(f, "faltan", len(lst), "-", lst[:100], "…")  # muestra los primeros 10
         faltantes_domingo_json = {
-            "fecha":f,
-            "cantidad":str(len(lst)),
-            "turnos": str(lst[:])
+            "fecha":to_iso_str(f),
+            "cantidad":len(lst),
+            "turnos": lst
         }
+    
+    return serviciosRepetidos,faltantes_lunes_viernes,faltantes_sabado_json,faltantes_domingo_json
 
-    return serviciosRepetidos, faltantes_lunes_viernes, faltantes_sabado_json,faltantes_domingo_json
+
+def to_iso_str(f):
+    if isinstance(f, datetime):
+        return f.isoformat(sep=" ", timespec="seconds")   
+    if isinstance(f, date):
+        return f.isoformat()                               
