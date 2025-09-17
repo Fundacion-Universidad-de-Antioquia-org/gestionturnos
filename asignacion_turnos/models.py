@@ -31,7 +31,7 @@ User = get_user_model()
 class Horario(models.Model):
     horario = models.CharField("Nombre del Horario", max_length=100)
     fechavigencia = models.DateField("Fecha de Vigencia")
-    fechaimplementacion = models.DateField("Fecha de Implementación")
+    fechaimplementacion = models.DateField("Fecha de Implementación", null=True)
     version = models.CharField("Versión", max_length=50)
     turno = models.CharField("Nombre del Turno", max_length=20)
     inihora = models.TimeField("Hora de Inicio", null=True, blank=True)                                         # Hora inicial del servicio
@@ -131,6 +131,7 @@ class Solicitudes_Gt(models.Model):
     urlArchivo = models.CharField(max_length=500, null=True )
     tipoArchivo = models.CharField(max_length= 20, null=True)
     empleado = models.ForeignKey('Empleado_Oddo', on_delete=models.SET_NULL,null=True,blank=True)
+    respuesta = models.CharField(max_length=600, null=True)
 
 
 

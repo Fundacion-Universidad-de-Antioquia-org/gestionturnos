@@ -234,8 +234,10 @@ def vista_solicitudes_gestion_turnos(request,*, context):
 
     hoy = date.today()
     inicio = date(hoy.year, 1, 1) #Primer dia del año
+
     solicitudAnual = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy)).count()
     solicitudAnualAprobadas = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy), estado = "aprobado").count()
+    solicitudAnualPendientes = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy), estado = "pendiente").count()
     solicitudAnualDesaprobadas = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy), estado = "desaprobado").count()
     
     if request.method == "GET":
@@ -266,6 +268,7 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                     "usuarioLogeado":usuarioLogeado,
                     "solicitudAnual": solicitudAnual,
                     "solicitudAnualAprobadas":solicitudAnualAprobadas,
+                    "solicitudAnualPendientes":solicitudAnualPendientes,
                     "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
                 })
             else: # Si no ingresa un rango de fechas donde existan solicitudes, se devuelven todas las solicitudes pendientes
@@ -277,6 +280,7 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                      "usuarioLogeado":usuarioLogeado,
                      "solicitudAnual": solicitudAnual,
                      "solicitudAnualAprobadas": solicitudAnualAprobadas,
+                     "solicitudAnualPendientes": solicitudAnualPendientes,
                      "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
 
                 })
@@ -288,6 +292,7 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                  "usuarioLogeado":usuarioLogeado,
                  "solicitudAnual": solicitudAnual,
                  "solicitudAnualAprobadas":solicitudAnualAprobadas,
+                 "solicitudAnualPendientes": solicitudAnualPendientes,
                  "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
             })
     else:
@@ -1277,7 +1282,7 @@ def solicitud_gt(request):
         return Response({"success":False, "message":f"Error, ya tienes un solicitud de: {tipo_solicitud}, entre estas fechas, inicial: {fecha_inicial}, fecha final: {fecha_final}"})
     
     #ACa validamos que el empleado este activo para generar la solicitud
-    if Empleado_Oddo.objects.filter(codigo = codigoSolicitante,  estado = "Activo").exists() == False:
+    if not Empleado_Oddo.objects.filter(codigo = codigoSolicitante,  estado = "Activo").exists():
         return Response({
             "success":False,
             "message":f"Usted no se encuentra activo para realizar este tipo de peticiones"})
@@ -1313,7 +1318,7 @@ def solicitud_gt(request):
         if estadoEnvioCorreo:
             Notificaciones.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, tipo_solicitud = tipo_solicitud,
                                       fecha_solicitud = fecha_solicitud, fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "Correo Electronico", estado = "Notificado")
-            return Response({"success":True, "message":f"Se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de reigstro:{fecha_solicitud}"})
+            return Response({"success":True, "message":f"Se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de registro:{fecha_solicitud}"})
         else:
             Notificaciones.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, tipo_solicitud = tipo_solicitud,
                                       fecha_solicitud = fecha_solicitud, fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "Correo Electronico", estado = "No notificado")
@@ -1551,7 +1556,7 @@ def mis_solicitudes_cambios_turnos(request):
             "message": f"Error de parametros, codigoSolicitante: {codigoSolicitante} - estado: {estado}"
         })
 
-api_view(["POST"])
+@api_view(["POST"])
 def confirmacionLectura(request):
     codigo = request.data.get("codigo")
     idArchivo = request.data.get("idArchivo")
@@ -1565,3 +1570,15 @@ def confirmacionLectura(request):
         return Response({"success":True, "message": f"Comunicado con id: {idArchivo}, leido por: { empleado.nombre }"})
     else:
         return Response({"success":False, "message":f"Error de parametros, codigo: {codigo} - {idArchivo} "})
+    
+
+@api_view(["POST"])
+def insertarRespuesta(request):
+    idSolicitudGt = request.data.get("idSolicitudGt")
+    respuesta = request.data.get("respuesta")
+
+    if idSolicitudGt and respuesta:
+        Solicitudes_Gt.objects.filter(id = idSolicitudGt).update(respuesta = respuesta)
+        return Response({"success": True, "message":f"Se registro correctamente la respuesta a la solicitud con id: {idSolicitudGt}"})
+    else:
+        return Response({"success":True, "message":f"Error de parametros, id enviado: {idSolicitudGt}, respuesta: {respuesta}"})

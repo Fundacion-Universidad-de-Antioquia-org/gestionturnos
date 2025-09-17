@@ -189,6 +189,7 @@
             <th>Fecha final</th>
             <th>Descripción</th>
             <th>Estado</th>
+            <th>Respuesta ADM</th>
         </tr>
     </thead>
     <tbody id="tablaBody">
@@ -203,9 +204,10 @@
             <td><span style="border-radius: 8px; background-color: #f1da05; padding: 7px;">{{s.fecha_inicial|date:"d/m/Y"}}</span></td>
             <td><span style="border-radius: 8px; background-color: #f1da05; padding: 7px;">{{s.fecha_final|date:"d/m/Y"}}</span></td>
              <td>
-               <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #f1da05; padding: 7px;">🔍Detalles</button>
+               <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #1990f1; color: antiquewhite; padding: 7px;">🔍Detalles</button>
              </td> 
              <td><span>{{ s.estado }}</span></td>
+             <td>{{ s.respuesta }}</td>
 
         </tr>
         {% empty %}s
@@ -231,7 +233,7 @@
       <p><strong>Descripción</strong></p>
       <p id="contenidoDescripcion" class="modal-texto"></p>
       <button class="btn-fourth"  id="btnVerAdjunto">🖼️Ver adjunto</button>
-       <button class="btn-third" id="respuestaSolicitud">💌Respuesta </button>
+       <button class="btn-third" id="respuestaSolicitud">📑Respuesta </button>
       <button class="btn-third" id="aprobarSolicitud">✔️Aprobar</button>
       <button class="btn-secondary" id="desaprobarSolicitud">❌Desaprobar</button>
       <div class="modal-content" id="campoRespuesta" style="display: none;">
@@ -288,11 +290,13 @@ setTimeout(() => {
 
     const solicitudAnual = "{{ solicitudAnual }}"
     const solicitudAnualAprobadas = "{{ solicitudAnualAprobadas }}"
+    const solicitudAnualPendientes = "{{ solicitudAnualPendientes }}"
     const solicitudAnualDesaprobadas = "{{ solicitudAnualDesaprobadas }}"
 
     setTimeout(()=>{
       actualizarIndicador("total", "txt-total", solicitudAnual, "Solicitudes");
       actualizarIndicador("aprobado", "txt-aprobadas", solicitudAnualAprobadas, "Aprobadas");
+      actualizarIndicador("pendiente", "txt-pendiente", solicitudAnualPendientes, "Pendientes");
       actualizarIndicador("desaprobado", "txt-rechazadas", solicitudAnualDesaprobadas, "Rechazadas");
     }, 2000);
     
@@ -400,12 +404,6 @@ setTimeout(() => {
         }
 </script>
 
-<script>
-  document.getElementById("respuestaSolicitud").addEventListener("click",function(){
-    campoRespuesta = document.getElementById("campoRespuesta")
-    campoRespuesta.style.display = "block";
-  })
-</script>
 
 <script>
     function getCookie(name) {
@@ -548,6 +546,70 @@ function cerrarModalVisor() {
     }
   });
   observer.observe(document.getElementById("modalDescripcion"), { attributes: true });
+
+    document.getElementById("respuestaSolicitud").addEventListener("click",function(){
+    campoRespuesta = document.getElementById("campoRespuesta")
+
+    if (campoRespuesta.style.display === "none" || campoRespuesta.style.display === "" ){
+      campoRespuesta.style.display = "block";
+    }else{
+      campoRespuesta.style.display = "none";
+    }
+  })
+
+  document.getElementById("guardarRespuesta").addEventListener("click",function(){
+
+    respuesta = document.getElementById("respuesta").value
+    idSolicitudGt = document.getElementById("idSolicitud").textContent
+
+    alert("id: "+ idSolicitudGt+ " respuesta: "+respuesta)
+
+    if(respuesta !== ""){
+
+      fetch("{% url 'insertarRespuesta' %}",{
+      method: "POST",
+      headers:{"Content-Type": "application/json",
+                  "X-CSRFToken": getCookie("csrftoken")},
+      body: JSON.stringify({
+        "idSolicitudGt": idSolicitudGt,
+        "respuesta": respuesta
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if(data.success){
+        cerrarModal();
+        Swal.fire({
+            icon: "success",
+            title: "Correcto",
+            text: "Se envio correctamente tu respuesta"
+          
+        });
+      }else{
+        cerrarModal();
+        Swal.fire({
+            icon: "error",
+            title: "Se detectaron un error al enviar la respuesta",
+
+
+          
+        });
+      }
+    })
+    }else{
+      cerrarModal();
+      Swal.fire({
+            icon: "error",
+            title: "Se detectaron campos vacios",
+          
+        });
+    }
+    
+
+  })
+
+
+
 </script>
 
 <!--Script filtros-->

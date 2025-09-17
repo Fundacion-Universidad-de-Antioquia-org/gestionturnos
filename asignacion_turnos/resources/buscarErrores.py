@@ -303,6 +303,7 @@ def asignacionServicios(file):
     NOMBRE = col("NOMBRE")
     CUBIERTO  = col("CUBIERTO")
     CODPER = col("CODPER", required=False)
+    CODIGO = col("NMNIdentificadorDosNomina")
     RD_EQUIPO  = col("RD_EQUIPO")
     ESTACION_ENT = col("ESTACION_ENT")
     ESTACION_SAL = col("ESTACION_SAL")
@@ -310,7 +311,7 @@ def asignacionServicios(file):
     df["CARGO"] = "SIN CARGO"
 
     #Aca usamos los RD_EQUIPO para separar por cargos.
-    mask_equipo = df[RD_EQUIPO].between(1,27, inclusive="both")
+    mask_equipo = df[RD_EQUIPO].between(1,29, inclusive="both")
     df["CARGO"] = np.where(mask_equipo, "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO",
                            "NO SE ENCONTRO CARGO CORRECTO")
 
@@ -386,7 +387,7 @@ def asignacionServicios(file):
     if mask_dup is not None:
         df_repetidos = df.loc[mask_dup].sort_values([FECHA, CUBIERTO])
         print("Servicios repetidos en la misma fecha \n", df_repetidos.head())
-        df_subset = df_repetidos[[FECHA, NOMBRE, CODPER, ESTACION_ENT, ESTACION_SAL, RD_EQUIPO, CUBIERTO, "CARGO", "DIA_SEMANA"]]
+        df_subset = df_repetidos[[FECHA, NOMBRE, CODPER, CODIGO, ESTACION_ENT, ESTACION_SAL, RD_EQUIPO, CUBIERTO, "CARGO", "DIA_SEMANA", "NMNIdentificadorDosNomina"]]
 
         serviciosRepetidos = df_subset.to_dict(orient="records")
         print(serviciosRepetidos)

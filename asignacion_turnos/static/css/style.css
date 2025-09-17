@@ -1660,6 +1660,8 @@ label {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   padding: 1.8rem;
   animation: modalFadeIn 0.3s ease-in-out;
+  overflow-y: auto;
+  max-height: 500px;
 }
 
 /* Animación entrada */

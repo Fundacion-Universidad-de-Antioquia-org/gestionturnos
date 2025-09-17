@@ -13,9 +13,7 @@
     </div>
 
     <!-- Título de la página -->
-    <div class="saludo" style="color: #ccc; font-size: 11px;">
-      Pre-carga 
-    </div>
+    <div class="saludo" style="color: #5a9138; font-size: 11px;" >Pre-carga </div>
 </div>
   </div>
 
@@ -94,28 +92,30 @@
   <thead>
     <tr>
       <th>Fecha</th>
+      <th>Día</th>
       <th>Nombre</th>
-      <th>Codigo</th>
+      <th>Cedula</th>
+      <th>Código</th>
       <th>Estación inicial</th>
       <th>Estación final</th>
-      <th>Rd_equipo</th>
       <th>Turno</th>
       <th>Cargo</th>
-      <th>Dia semana</th>
+      
     </tr>
   </thead>
   <tbody>
     {% for r in serviciosRepetidos %}
     <tr>
       <td>{{ r.FECHA|date:"Y/m/d" }}</td>
+      <td>{{ r.DIA_SEMANA }}</td>
       <td>{{ r.Nombre }}</td>
       <td>{{ r.CODPER }}</td>
+      <td>{{ r.NMNIdentificadorDosNomina }}</td>
       <td>{{r.Estacion_ent }}</td>
       <td>{{ r.Estacion_sal }}</td>
-      <td>{{ r.RD_EQUIPO }}</td>
       <td>{{ r.CUBIERTO }}</td>
       <td>{{ r.CARGO }}</td>
-      <td>{{ r.DIA_SEMANA }}</td>
+      
     </tr>
     {% empty %}
     <tr>
@@ -139,26 +139,33 @@
     </tr>
   </thead>
   <tbody id="tablaBody">
-   
+    {% if  faltantes_lunes_viernes %}
     <tr>
       <td>{{ faltantes_lunes_viernes.fecha }}</td>
       <td>{{ faltantes_lunes_viernes.cantidad }}</td>
       <td>{{ faltantes_lunes_viernes.turnos }}</td>
      </tr>
+     {% else %}
+     <tr>
+      <td colspan="12">No hay registros para validar</td>
+     </tr>
+     {% endif %}
+     {% if faltantes_sabado_json %}
       <tr>
         <td>{{ faltantes_sabado_json.fecha }}</td>
       <td>{{ faltantes_sabado_json.cantidad }}</td>
       <td>{{ faltantes_sabado_json.turnos }}</td>
       </tr>
+      {% else %}
+      {% endif %}
+      {% if faltantes_domingo_json %}
       <tr>
          <td>{{ faltantes_domingo_json.fecha }}</td>
       <td>{{ faltantes_domingo_json.cantidad }}</td>
       <td>{{ faltantes_domingo_json.turnos }}</td>
       </tr>
+      {% endif %}
       
-     
-   
-    
   </tbody>
 </table>
 
