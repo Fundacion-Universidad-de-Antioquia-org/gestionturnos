@@ -654,6 +654,10 @@ def buscar_cambio_turno(request):
     codigoSolicitante = request.GET.get('codigoSolicitante') #Formato para la fecha: Y/m/d
     fechaCambio = datetime.strptime(request.GET.get('fechaCambio'),"%Y/%m/%d")
 
+    
+    if not Sucesion.objects.filter(codigo = codigoSolicitante, fecha = fechaCambio).exists():
+        return Response({"success":False, "message": f"Para esta fecha: {fechaCambio} no hay sucesión cargada"})
+
     #horaActual = datetime.now().time()
     horaActual = datetime.now(ZoneInfo("America/Bogota")).time()
     print(f"hora actual: {horaActual}")
