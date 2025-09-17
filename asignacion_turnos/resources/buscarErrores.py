@@ -414,7 +414,7 @@ def asignacionServicios(file):
 
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_por_dia.items():
-        #print(f, "faltan", len(lst), "-", lst[:10], "…")  # muestra los primeros 10
+        print(f, "faltan", len(lst), "-", lst[:10], "…")  # muestra los primeros 10
         faltantes_lunes_viernes = {
             "fecha":f,
             "cantidad":len(lst),
@@ -442,11 +442,11 @@ def asignacionServicios(file):
 
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_sabado.items():
-        #print(f, "faltan", len(lst), "-", lst[:10], "…") 
+        print(f, "faltan", len(lst), "-", lst[:10], "…") 
         faltantes_sabado_json = {
-            "fecha":f,
-            "cantidad":len(lst),
-            "turnos": lst[:]
+            "fecha":f.strftime("%Y-%m-%d %H:%M:%S"),
+            "cantidad":str(len(lst)),
+            "turnos": str(lst[:])
         }
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -471,8 +471,8 @@ def asignacionServicios(file):
         #print(f, "faltan", len(lst), "-", lst[:100], "…")  # muestra los primeros 10
         faltantes_domingo_json = {
             "fecha":f,
-            "cantidad":len(lst),
-            "turnos": lst[:]
+            "cantidad":str(len(lst)),
+            "turnos": str(lst[:])
         }
 
     return serviciosRepetidos, faltantes_lunes_viernes, faltantes_sabado_json,faltantes_domingo_json

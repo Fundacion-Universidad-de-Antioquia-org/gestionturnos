@@ -706,7 +706,7 @@ def buscar_cambio_turno(request):
     if sucesionSolicitanteDiaCambio.codigo_horario in turnosInvalidados:
         return Response({
             "success":False,
-             "error": f"{sucesionSolicitanteDiaCambio.nombre}, No es posible cambiar dias LIBRE, COMPE, CP, INCAPACI, SUSPENSI , CAFTA , MAN , FUNDA, VACACION"
+             "message": f"{sucesionSolicitanteDiaCambio.nombre}, No es posible cambiar dias LIBRE, COMPE, CP, INCAPACI, SUSPENSI , CAFTA , MAN , FUNDA, VACACION"
         })
 
     sucesionSolicitanteDiaPosterior = get_object_or_404(Sucesion, codigo = codigoSolicitante, fecha = fechaPosterior)
