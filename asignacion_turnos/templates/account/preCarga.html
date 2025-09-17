@@ -139,8 +139,29 @@
                 icon: "success"
               })
       
+    
+              serviciosFaltantes();
     })
 </script>
+
+<script>
+  function serviciosFaltantes(){
+    const faltantesLv = "{{ faltantes_lunes_viernes }}"
+    const faltantesSa = "{{ faltantes_sabado_json }}"
+    const faltantesDo = "{{ faltantes_domingo_json }}"
+
+  if( faltantesLv != "" && faltantesSa !=  "" && faltantesDo != ""){
+     Swal.fire({
+                title: "Servicios faltantes ",
+                text: "Lunes viernes: "+ faltantesLv + ", Sabado: "+faltantesSa+", Domingo: "+faltantesDo,
+                icon: "success"
+              })
+  }
+  }
+
+</script>
+
+
 <script>
       // Acordeón toggle
     document.querySelectorAll('.accordion-header').forEach(hdr => {

@@ -340,8 +340,7 @@ def vista_precarga(request, *, context):
     filas = sobreCargaLaboral(f) 
     serviciosRepetidos, faltantes_lunes_viernes, faltantes_sabado_json, faltantes_domingo_json = asignacionServicios(f) 
     print("VISTAAAAAAAAAAAAAAAAAA")
-    print(serviciosRepetidos)
-
+  
     return render(request, "account/preCarga.html", {
         "form": form,
         "dfresultado": filas,
