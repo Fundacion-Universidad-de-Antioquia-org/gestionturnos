@@ -66,6 +66,26 @@
   background-color: #dc3545;   /* rojo */
 }
 </style>
+
+<!--Estilos para boton respuesta-->
+<style>
+  .btn-icon {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+
+  .btn-icon .material-symbols-outlined {
+    font-size: 20px;
+    color: #1D5031;
+  }
+
+  .btn-icon:hover .material-symbols-outlined {
+    opacity: .8;
+  }
+</style>
+
 {% endblock%}
 {% block content %}
 <div class="usuario-bar position-relative">
@@ -120,7 +140,7 @@
 
  <!-- Acordeón de filtros -->
 <div class="accordion-container" style="margin-top: 14px;">
-  <div class="accordion-header">Filtros de Búsqueda</div>
+  <div class="accordion-header"><span class="material-symbols-outlined">search</span>Filtros de Búsqueda</div>
   <div class="accordion-body">
     <div class="filtros-horizontal">
        <div class="filtro-item">
@@ -207,8 +227,12 @@
                <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #1990f1; color: antiquewhite; padding: 7px;">🔍Detalles</button>
              </td> 
              <td><span>{{ s.estado }}</span></td>
-             <td>{{ s.respuesta }}</td>
-
+             <td>
+                <button type="button" class="btn-icon ver-msg" data-title="Respuestas ADM"
+            data-msg="{{ s.respuesta|escapejs }}" aria-label="Ver comentarios">
+            <span class="material-symbols-outlined" style="color: #2d6fe9; font-size: 35px;">sms</span>
+          </button>
+             </td>
         </tr>
         {% empty %}s
         <tr>
@@ -689,6 +713,40 @@ function formatoFechaDMYaISO(fechaDMY) {
 
 </script>
 
-<!--Funcion de las animaciones-->
+</script>
+
+<!--Script para escapear el comentario que llega del back-->
+<script>
+  (function () {
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Convierte "\u000A" y "\n" literales en saltos reales
+    function decodeNewlines(s) {
+      if (!s) return '';
+      return s.replace(/\\u000A/gi, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
+    }
+
+    document.getElementById('tablaBody').addEventListener('click', e => {
+      const btn = e.target.closest('.ver-msg');
+      if (!btn) return;
+
+      const title = btn.dataset.title || 'Mensaje';
+      const decoded = decodeNewlines(btn.dataset.msg || '');
+
+      Swal.fire({
+        title: title,
+        html: `<div style="text-align:left; font-size:15px; white-space:pre-wrap; max-height:60vh; overflow:auto;"> <span class="material-symbols-outlined">server_person</span>${escapeHtml(decoded)}</div>`,
+        width: 700,
+        confirmButtonText: 'Cerrar'
+      });
+    });
+  })();
+
+</script>
 
 {% endblock %}

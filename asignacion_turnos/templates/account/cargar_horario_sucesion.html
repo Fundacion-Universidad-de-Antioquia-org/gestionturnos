@@ -67,7 +67,7 @@
 {% load static %}
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 
-  <!-- Sección Izquierda: Foto + Usuario -->
+<!-- Sección Izquierda: Foto + Usuario -->
 <div class="usuario-bar-logo-nombre">
       <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
       <div class="d-flex flex-column align-items-center flex-shrink-0">
@@ -96,7 +96,7 @@
 
 <!-- Acordeon carga de archivos-->
 <div class="accordion-container"  style="margin-top: 14px;">
-  <div class="accordion-header"> Carga de Archivos</div>
+  <div class="accordion-header"><span class="material-symbols-outlined">upload</span>Carga de Archivos</div>
   <div class="accordion-body" id="acordeonCarga">
     <div class="" id="botonesCargos">
       <button class="btn btn-third" id="trenes">Trenes</button>
@@ -143,7 +143,7 @@
 
     <!-- Acordeón de filtros -->
 <div class="accordion-container">
-  <div class="accordion-header" id="acordionHeader">Filtros de Búsqueda</div>
+  <div class="accordion-header" id="acordionHeader"> <span class="material-symbols-outlined">search </span> Filtros de Búsqueda</div>
   <div class="accordion-body cargar-horario" id="acordionBody">
     <div class="filtros-horizontal">
       <div class="filtro-item">
@@ -488,7 +488,7 @@
   });
 
 function aplicarFiltros() {
-  // Mostrar el tbody si lo habías ocultado
+  
   document.getElementById("tablaBody").style.display = "";
 
   // Lee los filtros (si alguno no existe, usa string vacío)

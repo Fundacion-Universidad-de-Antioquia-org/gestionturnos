@@ -1395,12 +1395,14 @@ def get_comunicados(request):
 
     archivos = Archivos.objects.filter( Q(fechaVigencia__gte = datetime.today()) | Q(fechaVigencia__isnull=True))
     listaArchivos = []
+
     print(f"Cantidad de comunicados en la BD: {archivos.count()}")
     print(archivos)
 
     for filtro in archivos:
         if cargo in filtro.cargoVisualizacion:
-            if not ConfirmacionLectura.objects.filter(codigo = codigo, archivos = filtro.id , confirmacionLectura = "leido").exists():
+            print("esta dentro de los cargos")
+            if ConfirmacionLectura.objects.filter(codigo = codigo, archivos__id = filtro.id , confirmacionLectura = "leido").exists() == False:
                 listaArchivos.append(f"id: {filtro.id}, url: {filtro.urlArchivo}, tipo de archivo: {filtro.tipoArchivo}")
 
     return Response({"success":True , "datos": listaArchivos})
@@ -1558,9 +1560,12 @@ def mis_solicitudes_cambios_turnos(request):
 
 @api_view(["POST"])
 def confirmacionLectura(request):
+
     codigo = request.data.get("codigo")
     idArchivo = request.data.get("idArchivo")
+
     hoy = datetime.now(ZoneInfo("America/Bogota"))
+
     if codigo and idArchivo :
         empleado = Empleado_Oddo.objects.get(codigo = codigo,  estado = "Activo")
 
@@ -1582,3 +1587,22 @@ def insertarRespuesta(request):
         return Response({"success": True, "message":f"Se registro correctamente la respuesta a la solicitud con id: {idSolicitudGt}"})
     else:
         return Response({"success":True, "message":f"Error de parametros, id enviado: {idSolicitudGt}, respuesta: {respuesta}"})
+    
+
+
+@api_view(["GET"])
+def getTodosComunicados(request):
+    if request.method == "GET":
+        archivos = Archivos.objects.all()
+        data = []
+        for a in archivos:
+            data.append({
+                "titulo": a.titulo,
+                "tipoComunicado": a.tipoComunicado,
+                "fechaVigencia":a.fechaVigencia,
+                "cargoVisualizacion": a.cargoVisualizacion,
+                "urlArchivo":a.urlArchivo,
+                "tipoArchivo":a.tipoArchivo
+            })
+        return Response({"success":True, "data":data})
+    

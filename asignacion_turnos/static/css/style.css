@@ -709,12 +709,21 @@ button.btn-editar i {
   padding: 0 16px;
 }
 
+
 /* Cuando esté abierto (añade .active al body) */
 .accordion-body.active {
   max-height: 500px; /* suficiente para tu contenido */
   opacity: 1;
   padding: 16px;
   border-top: 1px solid #ddd;
+}
+
+
+/* Iconos headers - filtros */
+.accordion-header  {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Filtros horizontales más elegantes */
