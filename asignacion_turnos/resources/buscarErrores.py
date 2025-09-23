@@ -300,7 +300,7 @@ def sobreCargaLaboralTranvia(file):
             pass
 
     
-    df = pd.read_excel(file, sheet_name=0)
+    df = pd.read_excel(file, sheet_name=3)
 
     # 3) Normalizar cabeceras y helper case-insensitive
     df.columns = [str(c).strip() for c in df.columns]
@@ -322,19 +322,18 @@ def sobreCargaLaboralTranvia(file):
     CODIGO = col("NMNIdentificadorDosNomina")
     RD_EQUIPO = col("RD_EQUIPO")
     
-
-    maskEquipoTrenes = df[RD_EQUIPO].between(1,29,inclusive="both")
-    df["CARGO"] = np.where(maskEquipoTrenes, "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA", "CARGO SIN ASIGNAR")
+    maskEquipoTranvia = df[RD_EQUIPO].between(30,36,inclusive="both")
+    df["CARGO"] = np.where(maskEquipoTranvia, "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA", "CARGO SIN ASIGNAR")
 
     
-    # 4) Tipos y filtro
+   #Aplicamos filtros
     df[FECHA] = pd.to_datetime(df[FECHA], errors="coerce")
     df = df.sort_values(by=FECHA, ascending=True)
     df = df[df[CUBIERTO].astype(str).str.contains("LIBRE|COMPE", case=False, na=False)]
     if df.empty:
-        return []  # nada que mostrar
+        return []  
 
-    # 5) Semanas (bloques de 7 días desde la mínima)
+    #Semanas (bloques de 7 días desde la mínima)
     fecha_inicial = df[FECHA].min().normalize()
     df["SEMANA"] = ((df[FECHA].dt.normalize() - fecha_inicial).dt.days // 7) + 1
     sem1 = df[df["SEMANA"] == 1]
@@ -342,9 +341,6 @@ def sobreCargaLaboralTranvia(file):
 
     # 6) Empleados únicos
     empleados = df[CODPER].dropna().unique()
-
-    print(empleados)
-
     resultados = []
     procesados = set()
 
@@ -406,6 +402,12 @@ def sobreCargaLaboralTranvia(file):
 
 
 def asignacionServicios(file):
+    # 1) Por si alguien ya leyó el archivo
+    if hasattr(file, "seek"):
+        try:
+            file.seek(0)
+        except Exception:
+            pass
     
     df = pd.read_excel(file, sheet_name=1)
     dfServicios = pd.read_excel(file, sheet_name=2)
@@ -608,9 +610,13 @@ def asignacionServicios(file):
     
     return serviciosRepetidos,faltantes_lunes_viernes,faltantes_sabado_json,faltantes_domingo_json
 
-
-
 def asignacionServiciosTranvia(file):
+    # 1) Por si alguien ya leyó el archivo
+    if hasattr(file, "seek"):
+        try:
+            file.seek(0)
+        except Exception:
+            pass
     
     df = pd.read_excel(file, sheet_name=1)
     dfServicios = pd.read_excel(file, sheet_name=2)
@@ -649,7 +655,7 @@ def asignacionServiciosTranvia(file):
     df[FECHA] = pd.to_datetime(df[FECHA], errors="coerce")
 
     # Excluir turnos 
-    excluir = {"LIBRE","COMPE","NOVED","CAFTA","DISPO","INDUC","FUNDA","REIND"}
+    excluir = {"LIBRE","COMPE","NOVED","CAFTA","DISPO","INDUC","FUNDA","REIND","CTRAM"}
     df = df[~df[CUBIERTO].isin(excluir)].copy()
 
     # Día de la semana 
@@ -665,7 +671,7 @@ def asignacionServiciosTranvia(file):
     # Conjuntos válidos por día-plantilla
     valid_lv  = set(norm_ser(dfServicios["LUNES-VIERNES-TRANVIA"].dropna()))
     valid_sab = set(norm_ser(dfServicios["SABADO-TRANVIA"].dropna()))
-    valid_dom = set(norm_ser(dfServicios["DOMINGO-TRANVIA"].dropna()))
+    valid_dom = set(norm_ser(dfServicios["DOMINGO-FESTIVO-TRANVIA"].dropna()))
 
     # --- Máscaras de día ---
     mask_lv  = dow.between(0,4)      
@@ -717,7 +723,7 @@ def asignacionServiciosTranvia(file):
         print("Servicios repetidos en la misma fecha \n", df_repetidos.head())
         df_subset = df_repetidos[[FECHA, NOMBRE, CODPER, CODIGO, ESTACION_ENT, ESTACION_SAL, RD_EQUIPO, CUBIERTO, "CARGO", "DIA_SEMANA", "NMNIdentificadorDosNomina"]]
 
-        serviciosRepetidos = df_subset.to_dict(orient="records")
+        serviciosRepetidosTranvia = df_subset.to_dict(orient="records")
         print(serviciosRepetidos)
 
     # SERVICIOS FALTANTES LUNES A VIERNES:
@@ -746,9 +752,10 @@ def asignacionServiciosTranvia(file):
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_por_dia.items():
         #print(f, "faltan", len(lst), "-", lst[:10], "…")  
-        faltantes_lunes_viernes = {
+        faltantes_lunes_viernesTranvia = {
             "fecha": to_iso_str(f),
             "cantidad":len(lst),
+            "rango":"LUNES - VIERNES",
             "turnos":lst
         }
       
@@ -774,9 +781,10 @@ def asignacionServiciosTranvia(file):
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_sabado.items():
         #print(f, "faltan", len(lst), "-", lst[:10], "…") 
-        faltantes_sabado_json = {
+        faltantes_sabado_jsonTranvia = {
             "fecha": to_iso_str(f),
             "cantidad":len(lst),
+            "rango":"SABADOS",
             "turnos":lst
         }
 #-----------------------------------------------------------------------------------------------------------------
@@ -799,13 +807,14 @@ def asignacionServiciosTranvia(file):
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_domingo.items():
         #print(f, "faltan", len(lst), "-", lst[:100], "…")  # muestra los primeros 10
-        faltantes_domingo_json = {
+        faltantes_domingo_jsonTranvia = {
             "fecha":to_iso_str(f),
             "cantidad":len(lst),
+            "rango":"DOMINGOS",
             "turnos": lst
         }
     
-    return serviciosRepetidos,faltantes_lunes_viernes,faltantes_sabado_json,faltantes_domingo_json
+    return serviciosRepetidosTranvia,faltantes_lunes_viernesTranvia,faltantes_sabado_jsonTranvia,faltantes_domingo_jsonTranvia
 
 def to_iso_str(f):
     if isinstance(f, datetime):

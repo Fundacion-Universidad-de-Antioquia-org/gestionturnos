@@ -82,6 +82,39 @@
     {% endfor %}
   </tbody>
 </table>
+
+<table class="styled-table display" id="tablaDatosSobecargaTranvia">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Cargo</th>
+      <th>Cédula</th>
+      <th>Codigo</th>
+      <th>Días sin descanso</th>
+      <th>Estado</th>
+      <th>Semana uno</th>
+      <th>Semana dos</th>
+    </tr>
+  </thead>
+  <tbody id="tablaBody" >
+    {% for r in sobrecargaLaboralTranvia %}
+    <tr>
+      <td>{{ r.NOMBRE }}</td>
+      <td>{{ r.CARGO }}</td>
+      <td>{{ r.CEDULA }}</td>
+      <td>{{ r.CODIGO }}</td>
+      <td>{{ r.DIAS_SIN_DESCANSO }}</td>
+      <td>{{ r.ESTADO }}</td>
+      <td>{{ r.DESCANSO_SEM1 }}</td>
+      <td>{{ r.DESCANSO_SEM2 }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="12">No hay registros para validar</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 <div id="panelControl" >  
   <span class="material-symbols-outlined">error</span><div class="titulo-template">Servicios repetidos</div>
 </div>
@@ -89,6 +122,10 @@
 {{ faltantes_lunes_viernes|json_script:"faltantesLv" }}
 {{ faltantes_sabado_json|json_script:"faltantesSa" }}
 {{ faltantes_domingo_json|json_script:"faltantesDo" }}
+
+{{ faltantes_lunes_viernes_Tranvia|json_script:"faltantesLv_Tranvia" }}
+{{ faltantes_sabado_json_Tranvia|json_script:"faltantesSa_Tranvia" }}
+{{ faltantes_domingo_jsonTranvia|json_script:"faltantesDo_Tranvia" }}
 
 <table class="styled-table display" id="tablaDatosServiciosRepetidos">
   <thead>
@@ -106,6 +143,41 @@
   </thead>
   <tbody>
     {% for r in serviciosRepetidos %}
+    <tr>
+      <td>{{ r.FECHA|date:"Y/m/d" }}</td>
+      <td>{{ r.DIA_SEMANA }}</td>
+      <td>{{ r.Nombre }}</td>
+      <td>{{ r.CARGO }}</td>
+      <td>{{ r.CODPER }}</td>
+      <td>{{ r.NMNIdentificadorDosNomina }}</td>
+      <td>{{r.Estacion_ent }}</td>
+      <td>{{ r.Estacion_sal }}</td>
+      <td>{{ r.CUBIERTO }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+       <td colspan="12">No hay registros para validar</td>
+    </tr>
+    {% endfor %}  
+  </tbody>
+</table>
+
+<table class="styled-table display" id="tablaDatosServiciosRepetidosTranvia">
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Día</th>
+      <th>Nombre</th>
+      <th>Cargo</th>
+      <th>Cedula</th>
+      <th>Código</th>
+      <th>Estación inicial</th>
+      <th>Estación final</th>
+      <th>Turno</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in serviciosRepetidosTranvia %}
     <tr>
       <td>{{ r.FECHA|date:"Y/m/d" }}</td>
       <td>{{ r.DIA_SEMANA }}</td>
@@ -173,6 +245,49 @@
   </tbody>
 </table>
 
+<table class="styled-table display" >
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Rango</th>
+      <th>Cantidad</th>
+      <th>Codigos turnos</th>
+    </tr>
+  </thead>
+  <tbody id="tablaBody">
+    {% if  faltantes_lunes_viernes_Tranvia %}
+    <tr>
+      <td>{{ faltantes_lunes_viernes_Tranvia.fecha }}</td>
+      <td>{{ faltantes_lunes_viernes_Tranvia.rango }}</td>
+      <td>{{ faltantes_lunes_viernes_Tranvia.cantidad }}</td>
+      <td>{{ faltantes_lunes_viernes_Tranvia.turnos }}</td>
+     </tr>
+     {% else %}
+     <tr>
+      <td colspan="12">No hay registros para validar</td>
+     </tr>
+     {% endif %}
+     {% if faltantes_sabado_json_Tranvia %}
+      <tr>
+        <td>{{ faltantes_sabado_json_Tranvia.fecha }}</td>
+        <td>{{  faltantes_sabado_json_Tranvia.rango }}</td>
+      <td>{{ faltantes_sabado_json_Tranvia.cantidad }}</td>
+      <td>{{ faltantes_sabado_json_Tranvia.turnos }}</td>
+      </tr>
+      {% else %}
+      {% endif %}
+      {% if faltantes_domingo_json_Tranvia %}
+      <tr>
+         <td>{{ faltantes_domingo_json_Tranvia.fecha }}</td>
+         <td>{{ faltantes_domingo_json_Tranvia.rango }}</td>
+      <td>{{ faltantes_domingo_json_Tranvia.cantidad }}</td>
+      <td>{{ faltantes_domingo_json_Tranvia.turnos }}</td>
+      </tr>
+      {% endif %}
+      
+  </tbody>
+</table>
+
 {% endblock %}
 
 
@@ -207,7 +322,6 @@
   }
 
 </script>
-
 
 <script>
       // Acordeón toggle

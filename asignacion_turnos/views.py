@@ -31,7 +31,7 @@ from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
 from .resources.cargarArchivosBlob import upload_to_azure_blob
 from .resources.enviarCorreoGmail import enviarCorreoGmail, enviarCorreoGmailHTML
-from .resources.buscarErrores import sobreCargaLaboral,asignacionServicios
+from .resources.buscarErrores import sobreCargaLaboral,asignacionServicios, asignacionServiciosTranvia, sobreCargaLaboralTranvia
 from .resources.peticion_Oddo import sincronizarDbEmpleados
 
 
@@ -313,8 +313,12 @@ def vista_notificaciones(request,*, context):
 # views.py
 @settings.AUTH.login_required
 def vista_precarga(request, *, context):
+    
+    
+
     user_claims = context["user"]               
     usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
+   
 
     if request.method == "GET":
         return render(request, "account/preCarga.html", {
@@ -342,18 +346,26 @@ def vista_precarga(request, *, context):
             "usuarioLogeado": usuarioLogeado
         })
 
-    filas = sobreCargaLaboral(f) 
+    sobreCargaLaboralTrenes = sobreCargaLaboral(f) 
+    #sobreCargaTranvia = sobreCargaLaboralTranvia(f)
+
+
     serviciosRepetidos, faltantes_lunes_viernes, faltantes_sabado_json, faltantes_domingo_json = asignacionServicios(f) 
+    serviciosRepetidosTranvia, faltantes_lunes_viernesTranvia, faltantes_sabado_jsonTranvia, faltantes_domingo_jsonTranvia = asignacionServiciosTranvia(f) 
    
     return render(request, "account/preCarga.html", {
         "form": form,
-        "dfresultado": filas,
+        "dfresultado": sobreCargaLaboralTrenes,
+        #"sobreCargaLaboralTranvia": sobreCargaTranvia,
         "usuarioLogeado": usuarioLogeado,
         "serviciosRepetidos": serviciosRepetidos,
         "faltantes_lunes_viernes": faltantes_lunes_viernes,
         "faltantes_sabado_json": faltantes_sabado_json,
-        "faltantes_domingo_json": faltantes_domingo_json
-
+        "faltantes_domingo_json": faltantes_domingo_json,
+        "serviciosRepetidosTranvia" : serviciosRepetidosTranvia,
+        "faltantes_lunes_viernesTranvia": faltantes_lunes_viernesTranvia,
+        "faltantes_sabado_jsonTranvia": faltantes_sabado_jsonTranvia,
+        "faltantes_domingo_jsonTranvia": faltantes_domingo_jsonTranvia,
     })
 
 
@@ -456,6 +468,7 @@ def get_mis_turnos(request):
     codigo = request.GET.get('codigo')
     fechaInicial = request.GET.get("fechaInicial")
     fechaFinal = request.GET.get('fechaFinal')
+
     if not codigo and fechaInicial and fechaFinal:
         return Response({"success":True, "message": f"Error de parametros, codigo: {codigo}, fecha incial: {fechaInicial}, fecha final {fechaFinal}"})
     
