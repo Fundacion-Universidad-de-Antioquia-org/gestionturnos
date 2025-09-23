@@ -48,15 +48,15 @@ def sincronizarDbEmpleados():
     data = resp.json() if resp.status_code == 200 else {}
     empleados = data.get("empleados", [])
 
+
     if not isinstance(empleados, list):
         return {"ok": False, "error": "La clave 'empleados' no es lista."}
 
-    # Preparar objetos
-    campos_upd = ["nombre", "codigo", "estado", "cargo", "correo", "formacion","direccion","barrio","zona"]
+    # Preparar objetos / update
+    campos_upd = ["nombre", "codigo", "estado", "cargo", "correo", "formacion","direccion","barrio","zona","foto"]
     objs = []
     sin_cedula = 0
     for e in empleados:
-        
         ced = _s(e.get("cedula"))
         if not ced:
             sin_cedula += 1
@@ -64,6 +64,7 @@ def sincronizarDbEmpleados():
         objs.append(Empleado_Oddo(
             
             cedula=ced,
+            foto = _s(e.get("foto_url")),
             nombre=_s(e.get("nombre")),
             codigo=_s(e.get("Codigo tripulante")),
             estado=_s(e.get("estado")),

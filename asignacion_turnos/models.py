@@ -62,6 +62,7 @@ class Horario(models.Model):
     
 
 class Empleado_Oddo(models.Model):
+    foto = models.URLField(max_length=500, null=True)
     cedula = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
     codigo = models.CharField(max_length=10)
@@ -119,6 +120,7 @@ class Cambios_de_turnos(models.Model):
     
 
 class Solicitudes_Gt(models.Model):
+    foto = models.URLField(max_length=500, null = True)
     nombre = models.CharField(max_length=50)
     codigo = models.CharField(max_length=10)
     cargo = models.CharField(max_length=100)
@@ -133,11 +135,15 @@ class Solicitudes_Gt(models.Model):
     empleado = models.ForeignKey('Empleado_Oddo', on_delete=models.SET_NULL,null=True,blank=True)
     respuesta = models.CharField(max_length=600, null=True)
 
-
-
     def __str__(self):
         return f"{self.fecha} - {self.codigo_solicitante} - {self.codigo_receptor}"
     
+
+class Respuesta_Solicitudes_Gt(models.Model):
+    solicitud = models.ForeignKey('Solicitudes_Gt', on_delete=models.SET_NULL, null=True)
+    respuesta = models.CharField(max_length=200, default='Sin respuesta por ahora', null=True)
+    fechaRespuesta = models.DateTimeField()
+
 class Parametros(models.Model):
     hora_inicio_permitida_cambios = models.TimeField(max_length=10)
     hora_final_permitida_cambios = models.TimeField(max_length=10)

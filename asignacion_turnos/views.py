@@ -760,7 +760,7 @@ def buscar_cambio_turno(request):
             horaFinalTurnoAnterior = horaFinalTurnoAnterior + timedelta(hours=10)
             horaInicioDiaPosteriorCambio10Hrs
 
-            sucesionDiaCambio = (Sucesion.objects.annotate(inicio_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_inicio"), 
+            sucesionDiaCambio = (Sucesion.objects.select_related('empleado').annotate(inicio_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_inicio"), 
                                     output_field=DateTimeField(),
                                     ), 
                                     fin_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_fin"), 
@@ -768,8 +768,10 @@ def buscar_cambio_turno(request):
                                     ),
                                     ).filter(Q(fecha = fechaCambio), Q(empleado__cargo = empleado.cargo), ~Q(codigo_horario__in = turnosInvalidados), ~Q(codigo = codigoSolicitante),
                                     (Q(codigo_horario__in = ["DISPO"])) | (Q(inicio_cambio__gte = horaFinalTurnoAnterior) & Q(fin_cambio__lte = horaInicioDiaPosteriorCambio10Hrs))))
+            
             for t in sucesionDiaCambio:
                 sucesionFiltrada.append({
+                            "foto": t.empleado.foto,
                             "nombre":t.nombre,
                             "codigo":t.codigo,
                             "cargo":t.empleado.cargo,
@@ -788,13 +790,14 @@ def buscar_cambio_turno(request):
         elif SusecionEmpleadoDiaAnterior.hora_inicio is None and sucesionSolicitanteDiaPosterior.hora_inicio is not None:
             print("CASO: DISPO -  X - TURNO")
             print(f"Hora de inicio del dia posteriror{horaInicioDiaPosteriorCambio10Hrs}")
-            sucesionDiaCambio = (Sucesion.objects.annotate(fin_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_fin"), 
+            sucesionDiaCambio = (Sucesion.objects.select_related('empleado').annotate(fin_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_fin"), 
                                     output_field=DateTimeField(),
                                     ),
                                     ).filter(Q(fecha = fechaCambio), Q(empleado__cargo = empleado.cargo), ~Q(codigo_horario__in = turnosInvalidados), ~Q(codigo = codigoSolicitante),
                                     (Q(codigo_horario__in = ["DISPO"])) | (Q(fin_cambio__lte = horaInicioDiaPosteriorCambio10Hrs))))
             for t in sucesionDiaCambio:
                 sucesionFiltrada.append({
+                                "foto":t.empleado.foto,
                                 "nombre":t.nombre,
                                 "codigo":t.codigo,
                                 "cargo":t.empleado.cargo,
@@ -813,13 +816,14 @@ def buscar_cambio_turno(request):
             horaFinalTurnoAnterior = datetime.combine(fechaAnterior, SusecionEmpleadoDiaAnterior.hora_fin) 
             horaFinalTurnoAnterior = horaFinalTurnoAnterior + timedelta(hours=10)
             print("CASO: TURNO -  X - DISPO")
-            sucesionDiaCambio = (Sucesion.objects.annotate(inicio_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_inicio"), 
+            sucesionDiaCambio = (Sucesion.objects.select_related('empleado').annotate(inicio_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_inicio"), 
                                     output_field=DateTimeField(),
                                     ),
                                     ).filter(Q(fecha = fechaCambio), Q(empleado__cargo = empleado.cargo), ~Q(codigo_horario__in = turnosInvalidados), ~Q(codigo = codigoSolicitante),
                                     (Q(codigo_horario__in = ["DISPO"])) | (Q(inicio_cambio__gte = horaFinalTurnoAnterior))))
             for t in sucesionDiaCambio:
                 sucesionFiltrada.append({
+                                "foto":t.empleado.foto,
                                 "nombre":t.nombre,
                                 "codigo":t.codigo,
                                 "cargo":t.empleado.cargo,
@@ -832,6 +836,25 @@ def buscar_cambio_turno(request):
                                 "particularidades": t.horario.observaciones if t.horario and t.horario.observaciones else "Sin observaciones",
                                 "duracion":t.horario.duracion if t.horario and t.horario.duracion else "Sin duración" 
                                     })
+            return Response(sucesionFiltrada)
+        elif SusecionEmpleadoDiaAnterior.hora_inicio is None and sucesionSolicitanteDiaPosterior.hora_inicio is None:
+            print("CASO: DISPO - X - DISPO ")
+            sucesionDiaCambio = Sucesion.objects.select_related("empleado").filter(~Q(codigo_horario__in = turnosInvalidados), ~Q(codigo = codigoSolicitante), fecha = fechaCambio, empleado__cargo = empleado.cargo)
+            for t in sucesionDiaCambio:
+                sucesionFiltrada.append({
+                                "foto":t.empleado.foto,
+                                "nombre":t.nombre,
+                                "codigo":t.codigo,
+                                "cargo":t.empleado.cargo,
+                                "fecha":t.fecha,
+                                "turno":t.codigo_horario,
+                                "estacion_ini":t.estado_inicio if t.estado_inicio  else  'Sin estación',
+                                "estacion_fin":t.estado_fin if t.estado_fin else 'Sin estación',
+                                "hora_ini":t.hora_inicio if t.hora_inicio else  'Sin hora',
+                                "hora_fin":t.hora_fin if t.hora_fin else  'Sin hora',
+                                "particularidades": t.horario.observaciones if t.horario and t.horario.observaciones else "Sin observaciones",
+                                "duracion":t.horario.duracion if t.horario and t.horario.duracion else "Sin duración"
+                })
             return Response(sucesionFiltrada)
         
     elif empleado.cargo in cargos8HorasDescanso:
@@ -1304,7 +1327,7 @@ def solicitud_gt(request):
 
         empleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante,  estado = "Activo").first()
         
-        solicitud_gt = Solicitudes_Gt.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, 
+        solicitud_gt = Solicitudes_Gt.objects.create(foto = empleado.foto, nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, 
                                       tipo_solicitud = tipo_solicitud, fecha_solicitud = fecha_solicitud, 
                                       fecha_inicial = fecha_inicial , fecha_final = fecha_final, descripcion = descripcion)
         
