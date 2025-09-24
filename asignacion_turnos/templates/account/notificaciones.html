@@ -3,6 +3,7 @@
 {% load static %}
 
 {% block content %}
+<section class="usuario-bar-section">
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 
   <div class="usuario-bar-logo-nombre">
@@ -20,16 +21,15 @@
     </div>
 </div>
   </div>
-
-  
-
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
     {% csrf_token %}
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
+</section>
 
  <!-- Acordeón de filtros -->
+<section class="acordion-section">
 <div class="accordion-container" style="margin-top: 14px;">
   <div class="accordion-header">Filtros de Búsqueda</div>
   <div class="accordion-body">
@@ -62,7 +62,8 @@
     </div>
   </div>
 </div>
-
+</section>
+<section class="table-section">
 <table class="styled-table display" id="tablaDatos">
     <thead>
         <tr>
@@ -101,6 +102,7 @@
 
     </tbody>
 </table>
+</section>
 
 <script>
 

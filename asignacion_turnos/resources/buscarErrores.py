@@ -620,6 +620,9 @@ def asignacionServiciosTranvia(file):
     
     df = pd.read_excel(file, sheet_name=1)
     dfServicios = pd.read_excel(file, sheet_name=2)
+    dfServicios.columns = [str(c).strip() for c in dfServicios.columns]
+
+    print(dfServicios)
 
     # --- Normalización de encabezados y acceso seguro a nombres ---
     df.columns = [str(c).strip() for c in df.columns]
@@ -641,21 +644,19 @@ def asignacionServiciosTranvia(file):
     RD_EQUIPO  = col("RD_EQUIPO")
     ESTACION_ENT = col("ESTACION_ENT")
     ESTACION_SAL = col("ESTACION_SAL")
-
-    df["CARGO"] = "SIN CARGO"
-
-    #Aca usamos los RD_EQUIPO para separar por cargos.
    
+    df["CARGO"] = "SIN CARGO"
+    #Aca usamos los RD_EQUIPO para separar por cargos.
     mas_equipoTranvia = df[RD_EQUIPO].between(30,36, inclusive="both")
     df["CARGO"] = np.where(mas_equipoTranvia,"CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA", "SIN CARGO ASIGNADO")
 
-    #Filtrar solo los de trenes
+    #Filtrar tranvia
     df = df[(df[RD_EQUIPO] >= 30) & (df[RD_EQUIPO] <= 36)]
     # FECHA a datetime
     df[FECHA] = pd.to_datetime(df[FECHA], errors="coerce")
 
     # Excluir turnos 
-    excluir = {"LIBRE","COMPE","NOVED","CAFTA","DISPO","INDUC","FUNDA","REIND","CTRAM"}
+    excluir = {"LIBRE","COMPE","NOVED","CAFTA","DISPO","INDUC","FUNDA","REIND","CTRAM", "DISTR"}
     df = df[~df[CUBIERTO].isin(excluir)].copy()
 
     # Día de la semana 
@@ -667,6 +668,7 @@ def asignacionServiciosTranvia(file):
         return (s.astype(str).str.strip().str.upper().str.replace(r"\s+", " ", regex=True))
 
     df[CUBIERTO] = norm_ser(df[CUBIERTO])
+    print(f"SERVICIOS TODOS::: {dfServicios["LUNES-VIERNES-TRANVIA"]}")
 
     # Conjuntos válidos por día-plantilla
     valid_lv  = set(norm_ser(dfServicios["LUNES-VIERNES-TRANVIA"].dropna()))
@@ -740,7 +742,7 @@ def asignacionServiciosTranvia(file):
                .astype(str).str.strip().str.upper())
 
     faltantes_por_dia = {}
-    faltantes_lunes_viernes = {}
+    faltantes_lunes_viernesTranvia = []
 
     for fecha, sub in df[df["DIA_SEMANA"].isin(["LUNES","MARTES","MIERCOLES","JUEVES","VIERNES"])] \
                         .groupby("FECHA"):
@@ -752,12 +754,12 @@ def asignacionServiciosTranvia(file):
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_por_dia.items():
         #print(f, "faltan", len(lst), "-", lst[:10], "…")  
-        faltantes_lunes_viernesTranvia = {
+        faltantes_lunes_viernesTranvia.append({
             "fecha": to_iso_str(f),
             "cantidad":len(lst),
             "rango":"LUNES - VIERNES",
             "turnos":lst
-        }
+        })
       
           
     #SERVICIOS FALTANTES SABADOS:
@@ -769,7 +771,7 @@ def asignacionServiciosTranvia(file):
                .astype(str).str.strip().str.upper())
 
     faltantes_sabado = {}
-    faltantes_sabado_json = {}
+    faltantes_sabado_jsonTranvia = []
 
     for fecha, sub in df[df["DIA_SEMANA"].isin(["SABADO"])] \
                         .groupby("FECHA"):
@@ -781,15 +783,15 @@ def asignacionServiciosTranvia(file):
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_sabado.items():
         #print(f, "faltan", len(lst), "-", lst[:10], "…") 
-        faltantes_sabado_jsonTranvia = {
+        faltantes_sabado_jsonTranvia.append({
             "fecha": to_iso_str(f),
             "cantidad":len(lst),
             "rango":"SABADOS",
             "turnos":lst
-        }
+        })
 #-----------------------------------------------------------------------------------------------------------------
     faltantes_domingo = {}
-    faltantes_domingo_json = {}
+    faltantes_domingo_jsonTranvia = []
 
     #SERVICIOS FALTANTES DOMINGOS & ASIGNADOS:
     print(f"Servicios esperados para el domingo {dfServicios["DOMINGO-FESTIVO-TRANVIA"].count()}")
@@ -807,12 +809,12 @@ def asignacionServiciosTranvia(file):
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_domingo.items():
         #print(f, "faltan", len(lst), "-", lst[:100], "…")  # muestra los primeros 10
-        faltantes_domingo_jsonTranvia = {
+        faltantes_domingo_jsonTranvia.append({
             "fecha":to_iso_str(f),
             "cantidad":len(lst),
             "rango":"DOMINGOS",
             "turnos": lst
-        }
+        })
     
     return serviciosRepetidosTranvia,faltantes_lunes_viernesTranvia,faltantes_sabado_jsonTranvia,faltantes_domingo_jsonTranvia
 

@@ -183,6 +183,9 @@
 </div>
 </section>
 
+<!--Variables que llegan con el render -->
+{{ mensaje|json_script:"mensaje-json" }}
+
 
  <!-- Acordeón de filtros -->
 
@@ -300,6 +303,8 @@
 </table>
 </section>
 
+
+
 <div id="modalDescripcion" class="modal fade modal-descripcion-profesional">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -388,9 +393,9 @@ setTimeout(() => {
 
     aplicarFiltros();
 
-    const cargaSolicitudes = "{{ mensaje|escapejs }}"
-
-    if(cargaSolicitudes != ""){
+    const cargaSolicitudes = JSON.parse(document.getElementById('mensaje-json').textContent)
+    alert(cargaSolicitudes)
+    if(cargaSolicitudes !== ""){
         Swal.fire({
             icon: "success",
             title: "Se cargaron correctamente los resultados",
