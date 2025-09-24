@@ -10,6 +10,7 @@
     gap: 30px;
     margin-top: 40px;
     padding: 0 20px;
+    
   }
 
   .form-section, .viewer-section {
@@ -24,9 +25,10 @@
   .form-section {
     flex: 0 1 auto; /* Evita que se expanda */
     max-width: 500px; /* Ajusta a tu preferencia */
-    background-color: #fff;
-    border-left: 5px solid #1D5031;
+    background-color: #03000c;
+    border-left: 5px solid #5a9138;
     max-height: 70%;
+   
   }
 
   .viewer-section {
@@ -48,7 +50,7 @@
     display: block;
     font-weight: 600;
     font-size: 14px;
-    color: #333;
+    color: #ffffff;
     margin-bottom: 8px;
   }
 
@@ -136,7 +138,7 @@
   width: 100%;
   border: 2px dashed #ccc;
   border-radius: 12px;
-  background-color: #f2f2f2;
+  background-color: #03000c;
   text-align: center;
   padding: 20px;
   box-sizing: border-box;
@@ -288,6 +290,7 @@
 {% endblock %}
 
 {% block content %}
+<section class="usuario-bar-section">
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 <div class="usuario-bar-logo-nombre">
       <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
@@ -310,6 +313,7 @@
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
+</section>
 
 <div class="main-container">
   <!-- Columna izquierda: Formulario -->

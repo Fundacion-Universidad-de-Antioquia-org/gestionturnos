@@ -2,6 +2,8 @@
 {% load static %}
 {% block content %}
 
+
+<section class="usuario-bar-section">
 <div class="usuario-bar position-relative">
   <div class="usuario-bar-logo-nombre">
       <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
@@ -23,8 +25,10 @@
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
+</section>
 
 <!-- Acordeon carga de archivos-->
+ <section class="acordion-section">
 <div class="accordion-container"  style="margin-top: 14px;">
   <div class="accordion-header"><span class="material-symbols-outlined">upload</span>Carga de Archivos | Pre-carga</div>
   <div class="accordion-body" id="acordeonCarga">
@@ -46,10 +50,15 @@
     </form>
   </div>
 </div>
+</section>
 
+<section class="panelControl-section">
 <div id="panelControl">
   <span class="material-symbols-outlined">shield_person</span><div class="titulo-template">Empleados que sobrepasan los 7 dias laborados</div> 
 </div>
+</section>
+
+<section class="table-section">
 <table class="styled-table display" id="tablaDatos">
   <thead>
     <tr>
@@ -82,7 +91,9 @@
     {% endfor %}
   </tbody>
 </table>
+</section>
 
+<section class="table-section">
 <table class="styled-table display" id="tablaDatosSobecargaTranvia">
   <thead>
     <tr>
@@ -115,9 +126,13 @@
     {% endfor %}
   </tbody>
 </table>
+</section>
+
+<section class="panelControl-section">
 <div id="panelControl" >  
   <span class="material-symbols-outlined">error</span><div class="titulo-template">Servicios repetidos</div>
 </div>
+</section>
 
 {{ faltantes_lunes_viernes|json_script:"faltantesLv" }}
 {{ faltantes_sabado_json|json_script:"faltantesSa" }}
@@ -127,6 +142,7 @@
 {{ faltantes_sabado_json_Tranvia|json_script:"faltantesSa_Tranvia" }}
 {{ faltantes_domingo_jsonTranvia|json_script:"faltantesDo_Tranvia" }}
 
+<section class="table-section">
 <table class="styled-table display" id="tablaDatosServiciosRepetidos">
   <thead>
     <tr>
@@ -161,7 +177,9 @@
     {% endfor %}  
   </tbody>
 </table>
+</section>
 
+<section class="table-section">
 <table class="styled-table display" id="tablaDatosServiciosRepetidosTranvia">
   <thead>
     <tr>
@@ -196,12 +214,15 @@
     {% endfor %}  
   </tbody>
 </table>
+</section>
 
-
+<section class="panelControl-section">
 <div id="panelControl" >  
   <span class="material-symbols-outlined">error</span><div class="titulo-template">Servicios Faltantes</div>
 </div>
+</section>
 
+<section class="table-section">
 <table class="styled-table display" >
   <thead>
     <tr>
@@ -250,7 +271,9 @@
      {% endfor %}
   </tbody>
 </table>
+</section>
 
+<section class="table-section">
 <table class="styled-table display" >
   <thead>
     <tr>
@@ -293,7 +316,7 @@
       
   </tbody>
 </table>
-
+</section>
 {% endblock %}
 
 

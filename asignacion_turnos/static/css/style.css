@@ -12,7 +12,9 @@
 body {
     min-height: 100vh;
     /*background: linear-gradient(135deg, #ffffff, #f1f9ef, #d6eacb); */
-    background: rgb(39, 37, 37);
+    /*background: rgb(27, 26, 26);*/
+    /*background-color: #08031a;*/
+    background: radial-gradient(#05072d, #000000)
 }
 
 body {
@@ -1150,7 +1152,7 @@ label {
 }
 
 .modal-content-custom {
-  background-color: #ffffff;
+  background-color: #555151c2;
   margin: auto;
   margin-top: 5%;
   padding: 24px 30px;
@@ -1162,6 +1164,10 @@ label {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
   position: relative;
   animation: slideDown 0.4s ease;
+}
+
+.modal-content-custom label {
+  color: white;
 }
 
 /* Inputs y Textareas */
@@ -1176,6 +1182,8 @@ label {
   font-size: 0.95rem;
   transition: border 0.3s ease, box-shadow 0.3s ease;
   box-sizing: border-box;
+  background-color: #161515;
+  color: white;
 }
 
 .modal-content-custom input:focus,
@@ -1198,7 +1206,7 @@ label {
 #guardarCambiosModalEditar,
 #cerrarBotonManualModalEditar,
 #editarTablaDatos {
-  background-color: #1D5031;
+  background-color: #5a9138;
   color: white;
   padding: 9px 20px;
   border: none;
@@ -1216,7 +1224,7 @@ label {
 #guardarCambiosModalEditar:hover,
 #cerrarBotonManualModalEditar:hover,
 #editarTablaDatos:hover {
-  background-color: #2e6b45;
+  background-color: #54a123;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -1426,10 +1434,12 @@ label {
 
 /* Estilos para el template configuraciones*/
 #panelControl {
+  width: 85%;
   display: flex;
   gap: 15px;
   padding: 20px;
-  background: #ffffff;
+  background: #161515;
+  color: #5a9138;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -1438,6 +1448,11 @@ label {
   margin: 20px 0;
   flex-wrap: wrap;
 } 
+
+.panelControl-section {
+  display: flex;
+  justify-content: center;
+}
 
 #panelControl button {
  background-color: #fafdf8  ;

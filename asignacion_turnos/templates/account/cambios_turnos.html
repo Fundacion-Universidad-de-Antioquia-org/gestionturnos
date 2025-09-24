@@ -26,8 +26,8 @@
 {% endblock %}
 
 {% block content %}
+<section class="usuario-bar-section">
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
-
   <div class="usuario-bar-logo-nombre">
     <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
     <div class="d-flex flex-column align-items-center flex-shrink-0">
@@ -47,8 +47,10 @@
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
+</section>
 
 <!-- Acordeón de filtros -->
+ <section class="acordion-section">
 <div class="accordion-container" style="margin-top: 14px;">
   <div class="accordion-header"><span class="material-symbols-outlined">search</span>Filtros de Búsqueda</div>
   <div class="accordion-body">
@@ -94,9 +96,10 @@
     </div>
   </div>
 </div>
+</section>
 <!--Tabla de datos-->
+<section class="table-section">
 
-<div class="table-responsive">
   <table class="table styled-table display" id="tablaDatos">
     <thead>
       <tr>
@@ -156,13 +159,16 @@
       {% endfor %}
     </tbody>
   </table>
-</div>
+  
 
+</section>
 
+<section class="usuario-bar-section">
 <div class="acciones-finales">
   <button id="aprobarCambios" class="btn-aprobar">Aprobar cambios</button>
   <button class="btn-eliminar" id="desaprobarCambios">Rechazar solicitudes </button>
 </div>
+</section>
 {% endblock %}
 {% block scripts %}
 <!-- Scripts boton seleccionar todos los elementos de la tabla-->
