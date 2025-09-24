@@ -129,7 +129,9 @@
 
 {% endblock%}
 {% block content %}
-<div class="usuario-bar position-relative">
+
+<section class="usuario-bar-section">
+  <div class="usuario-bar position-relative">
 
 <!-- Izquierda: Foto + saludo -->
  <!-- Icono de usuario -->
@@ -179,8 +181,12 @@
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
+</section>
+
 
  <!-- Acordeón de filtros -->
+
+ <section class="acordion-section">
 <div class="accordion-container" style="margin-top: 14px;">
   <div class="accordion-header"><span class="material-symbols-outlined">search</span>Filtros de Búsqueda</div>
   <div class="accordion-body">
@@ -238,7 +244,10 @@
     </div>
   </div>
 </div>
-<table class="styled-table display" id="tablaDatos">
+</section>
+
+<section class="table-section">
+  <table class="styled-table display" id="tablaDatos">
   <thead>
         <tr>
           <th>Foto</th>
@@ -247,7 +256,7 @@
             <th>Código</th>
             <th>Cargo</th>
             <th>Tipo solicitud</th>
-            <th>Fecha ingreso solicitud</th>
+            <th>Fecha solicitud</th>
             <th>Fecha inicial</th>
             <th>Fecha final</th>
             <th>Descripción</th>
@@ -259,17 +268,18 @@
         <tr>
         {% for s in solicitudesGt %}
             <!--<td><img src="{{ s.foto }}" alt="50px" width="50px" style="border-radius: 20px;"></td> -->
-            <td><img src="{{ s.foto }}" alt="40px" width="50px" style="border-radius: 25px;"></td>
+          
+              <td><img src="{{ s.foto }}" alt="40px" width="50px" style="border-radius: 5px;"></td>
             <td>{{s.id}}</td> 
             <td>{{s.nombre}}</td>
             <td>{{s.codigo}}</td>
             <td>{{s.cargo}}</td>
             <td>{{s.tipo_solicitud}}</td>
             <td>{{s.fecha_solicitud|date:"d/m/Y"}}</td>
-            <td><span style="border-radius: 8px; background-color: #f1da05; padding: 7px;">{{s.fecha_inicial|date:"d/m/Y"}}</span></td>
-            <td><span style="border-radius: 8px; background-color: #f1da05; padding: 7px;">{{s.fecha_final|date:"d/m/Y"}}</span></td>
+            <td><span style="border-radius: 8px; background-color: #f1da05; color: #0b0f12; padding: 7px;">{{s.fecha_inicial|date:"d/m/Y"}}</span></td>
+            <td><span style="border-radius: 8px; background-color: #f1da05; color: #0b0f12; padding: 7px;">{{s.fecha_final|date:"d/m/Y"}}</span></td>
              <td>
-               <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #1990f1; color: antiquewhite; padding: 7px;">🔍Detalles</button>
+               <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #3681c4; color: rgb(250, 250, 250); padding: 7px;"><span class="material-symbols-outlined">content_paste_search</span></button>
              </td> 
              <td><span>{{ s.estado }}</span></td>
              <td>
@@ -288,6 +298,8 @@
 
     </tbody>
 </table>
+</section>
+
 <div id="modalDescripcion" class="modal fade modal-descripcion-profesional">
   <div class="modal-dialog">
     <div class="modal-content">

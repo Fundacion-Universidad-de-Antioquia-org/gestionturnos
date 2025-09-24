@@ -258,7 +258,7 @@ def vista_solicitudes_gestion_turnos(request,*, context):
 
             print(f"fecha inicial {fechaInicial} fecha final: {fechaFinal}")
 
-            solicitudesGt = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal)
+            solicitudesGt = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).order_by('-fecha_solicitud')
          
             if solicitudesGt.exists():
                 print("Si existen solicitudes entre estas fechas")
@@ -273,7 +273,7 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                 })
             else: # Si no ingresa un rango de fechas donde existan solicitudes, se devuelven todas las solicitudes pendientes
                 print("No existen solicitudes entre estas fechas")
-                solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente")
+                solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente").order_by('id')
                 return render(request, "account/solicitudes_gestion_turnos.html",{
                     "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
                     "solicitudesGt": solicitudesGt,
@@ -285,7 +285,7 @@ def vista_solicitudes_gestion_turnos(request,*, context):
 
                 })
         else:
-            solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente")
+            solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente").order_by('-id')
             return render(request,"account/solicitudes_gestion_turnos.html",{
                 "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
                 "solicitudesGt":solicitudesGt,
@@ -351,7 +351,7 @@ def vista_precarga(request, *, context):
 
 
     serviciosRepetidos, faltantes_lunes_viernes, faltantes_sabado_json, faltantes_domingo_json = asignacionServicios(f) 
-    serviciosRepetidosTranvia, faltantes_lunes_viernesTranvia, faltantes_sabado_jsonTranvia, faltantes_domingo_jsonTranvia = asignacionServiciosTranvia(f) 
+    #serviciosRepetidosTranvia, faltantes_lunes_viernesTranvia, faltantes_sabado_jsonTranvia, faltantes_domingo_jsonTranvia = asignacionServiciosTranvia(f) 
    
     return render(request, "account/preCarga.html", {
         "form": form,
@@ -362,10 +362,10 @@ def vista_precarga(request, *, context):
         "faltantes_lunes_viernes": faltantes_lunes_viernes,
         "faltantes_sabado_json": faltantes_sabado_json,
         "faltantes_domingo_json": faltantes_domingo_json,
-        "serviciosRepetidosTranvia" : serviciosRepetidosTranvia,
-        "faltantes_lunes_viernesTranvia": faltantes_lunes_viernesTranvia,
-        "faltantes_sabado_jsonTranvia": faltantes_sabado_jsonTranvia,
-        "faltantes_domingo_jsonTranvia": faltantes_domingo_jsonTranvia,
+        #"serviciosRepetidosTranvia" : serviciosRepetidosTranvia,
+        #"faltantes_lunes_viernesTranvia": faltantes_lunes_viernesTranvia,
+        #"faltantes_sabado_jsonTranvia": faltantes_sabado_jsonTranvia,
+        #"faltantes_domingo_jsonTranvia": faltantes_domingo_jsonTranvia,
     })
 
 

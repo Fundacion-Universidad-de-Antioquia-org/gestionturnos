@@ -212,36 +212,42 @@
     </tr>
   </thead>
   <tbody id="tablaBody">
-    {% if  faltantes_lunes_viernes %}
+    {% for f in faltantes_sabado_json %}
+      <tr>
+        <td>{{ f.fecha }}</td>
+        <td>{{ f.rango }}</td>
+        <td>{{ f.cantidad }}</td>
+        <td>{{ f.turnos }}</td>
+      </tr>
+      {% empty %}
+        <tr>
+          <td colspan="12">No hay registros para validar</td>
+        </tr>
+    {% endfor %}
+      {% for f in  faltantes_domingo_json %}
+      <tr>
+         <td>{{ f.fecha }}</td>
+         <td>{{ f.rango }}</td>
+      <td>{{ f.cantidad }}</td>
+      <td>{{ f.turnos }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+      <td colspan="12">No hay registros para validar</td>
+      </tr>
+      {% endfor %}
+    {% for f in faltantes_lunes_viernes %} 
     <tr>
-      <td>{{ faltantes_lunes_viernes.fecha }}</td>
-      <td>{{ faltantes_lunes_viernes.rango }}</td>
-      <td>{{ faltantes_lunes_viernes.cantidad }}</td>
-      <td>{{ faltantes_lunes_viernes.turnos }}</td>
+      <td>{{ f.fecha}}</td>
+      <td>{{ f.rango }}</td>
+      <td>{{ f.cantidad }}</td>
+      <td>{{ f.turnos }}</td>
      </tr>
-     {% else %}
+    {% empty %}
      <tr>
       <td colspan="12">No hay registros para validar</td>
      </tr>
-     {% endif %}
-     {% if faltantes_sabado_json %}
-      <tr>
-        <td>{{ faltantes_sabado_json.fecha }}</td>
-        <td>{{  faltantes_sabado_json.rango }}</td>
-      <td>{{ faltantes_sabado_json.cantidad }}</td>
-      <td>{{ faltantes_sabado_json.turnos }}</td>
-      </tr>
-      {% else %}
-      {% endif %}
-      {% if faltantes_domingo_json %}
-      <tr>
-         <td>{{ faltantes_domingo_json.fecha }}</td>
-         <td>{{ faltantes_domingo_json.rango }}</td>
-      <td>{{ faltantes_domingo_json.cantidad }}</td>
-      <td>{{ faltantes_domingo_json.turnos }}</td>
-      </tr>
-      {% endif %}
-      
+     {% endfor %}
   </tbody>
 </table>
 

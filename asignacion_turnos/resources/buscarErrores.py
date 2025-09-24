@@ -449,7 +449,7 @@ def asignacionServicios(file):
     df[FECHA] = pd.to_datetime(df[FECHA], errors="coerce")
 
     # Excluir turnos 
-    excluir = {"LIBRE","COMPE","NOVED","CAFTA","DISPO","INDUC","FUNDA","REIND"}
+    excluir = {"LIBRE","COMPE","NOVED","CAFTA","DISPO","INDUC","FUNDA","REIND","ACTRAN","TPLC","PLCT"}
     df = df[~df[CUBIERTO].isin(excluir)].copy()
 
     # Día de la semana 
@@ -533,27 +533,27 @@ def asignacionServicios(file):
                .dropna()
                .astype(str).str.strip().str.upper())
 
-    faltantes_por_dia = {}
-    faltantes_lunes_viernes = {}
+    faltantes_por_dia_lunes_viernes = {}
+    faltantes_lunes_viernes = []
 
     for fecha, sub in df[df["DIA_SEMANA"].isin(["LUNES","MARTES","MIERCOLES","JUEVES","VIERNES"])] \
                         .groupby("FECHA"):
         presentes = set(sub["CUBIERTO"].astype(str).str.strip().str.upper())
         faltan = sorted(canon_lv - presentes)
         if faltan:
-            faltantes_por_dia[fecha.date()] = faltan
+            faltantes_por_dia_lunes_viernes[fecha.date()] = faltan
 
     print("Servicios pendientes por asignar / fecha:")
-    for f, lst in faltantes_por_dia.items():
-        #print(f, "faltan", len(lst), "-", lst[:10], "…")  
-        faltantes_lunes_viernes = {
+    for f, lst in faltantes_por_dia_lunes_viernes.items():
+        print(f, "faltan", len(lst), "-", lst[:10], "…")  
+        faltantes_lunes_viernes.append({
             "fecha": to_iso_str(f),
-            "rango":"LUNES- VIERNES",
+            "rango":"LUNES-VIERNES",
             "cantidad":len(lst),
             "turnos":lst
-        }
-      
-          
+        })
+    
+    print(f"SERVICIOS FALTANTES PARA LUNES A VIERNES: {len(faltantes_lunes_viernes)}")
     #SERVICIOS FALTANTES SABADOS:
     print(f"Servicios esperados para el sabado: {dfServicios["SABADO"].count()}")
     dfServicios["TURNOS_ASIGNADOS_SABADO"] = 0
@@ -563,7 +563,7 @@ def asignacionServicios(file):
                .astype(str).str.strip().str.upper())
 
     faltantes_sabado = {}
-    faltantes_sabado_json = {}
+    faltantes_sabado_json = []
 
     for fecha, sub in df[df["DIA_SEMANA"].isin(["SABADO"])] \
                         .groupby("FECHA"):
@@ -575,15 +575,15 @@ def asignacionServicios(file):
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_sabado.items():
         #print(f, "faltan", len(lst), "-", lst[:10], "…") 
-        faltantes_sabado_json = {
+        faltantes_sabado_json.append({
             "fecha": to_iso_str(f),
             "rango": "SABADOS",
             "cantidad":len(lst),
             "turnos":lst
-        }
+        })
 #-----------------------------------------------------------------------------------------------------------------
     faltantes_domingo = {}
-    faltantes_domingo_json = {}
+    faltantes_domingo_json = []
 
     #SERVICIOS FALTANTES DOMINGOS & ASIGNADOS:
     print(f"Servicios esperados para el domingo {dfServicios["DOMINGO"].count()}")
@@ -601,12 +601,12 @@ def asignacionServicios(file):
     print("Servicios pendientes por asignar / fecha:")
     for f, lst in faltantes_domingo.items():
         #print(f, "faltan", len(lst), "-", lst[:100], "…")  # muestra los primeros 10
-        faltantes_domingo_json = {
+        faltantes_domingo_json.append({
             "fecha":to_iso_str(f),
             "rango":"DOMINGO",
             "cantidad":len(lst),
             "turnos": lst
-        }
+        })
     
     return serviciosRepetidos,faltantes_lunes_viernes,faltantes_sabado_json,faltantes_domingo_json
 

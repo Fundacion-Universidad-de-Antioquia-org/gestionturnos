@@ -12,7 +12,7 @@
 body {
     min-height: 100vh;
     /*background: linear-gradient(135deg, #ffffff, #f1f9ef, #d6eacb); */
-    background: white;
+    background: rgb(39, 37, 37);
 }
 
 body {
@@ -273,19 +273,25 @@ body {
 
 /*Estilos de tabla*/
 .styled-table {
-    width: 100%;
+    width: 85%;
+    align-items: center;
     border-collapse: collapse;
     margin: 25px 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    background-color: #0d1117;
     /*font-size: 14px;*/
-    
     /*min-width: unset;*/
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
      /* que use todo el ancho disponible */
 }
 
+.style-table tbody{
+  background-color: #000000;
+}
+
 .styled-table thead tr {
-    background-color: #275f66;
+    background-color: #0b0f12;
     color: #ffffff;
     text-align: center;
 }
@@ -293,24 +299,24 @@ body {
 .styled-table th,
 .styled-table td {
     padding: 6px 10px;
-    border: 1px solid #dddddd;
+    border: 1px solid #0b0f12; /*Color de los bordes de la tabla */
     text-align: center;
 }
 
 .styled-table tbody tr {
-    border-bottom: 1px solid #dddddd;
+    border-bottom: 1px solid #0b0f12;
 }
 
 .styled-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
+    background-color: #0d1117;
 }
 
 .styled-table tbody tr:last-of-type {
-    border-bottom: 2px solid #1D5031;
+    border-bottom: 2px solid #0b0f12;
 }
 
 .styled-table tbody tr:hover {
-    background-color: #f1f1f1;
+    background-color: #252222;
     cursor: pointer;
 }
 
@@ -330,10 +336,15 @@ body {
 }
 
 .styled-table thead tr {
-    background-color: #276647;
+    background-color: #0b0f12;
     color: #ffffff;
     text-align: left;
     box-shadow: inset 0 -1px 0 rgba(255,255,255,0.1);
+}
+
+.table-section {
+  display: flex;
+  justify-content: center;
 }
 
 /* Estilo para títulos */
@@ -355,18 +366,21 @@ body {
 
 /* Barra de usuario: saludo a la izquierda y botón a la derecha */
 .usuario-bar {
-    
+    width: 85%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 7px ;
     border-radius: 12px;
-    background-color: #0a3329; /* Sin fondo blanco */
+    background-color: #1a6c57; /* Sin fondo blanco */
     animation: fadeSlideDown 0.6s ease-in-out;
     transition: box-shadow 0.3s ease;
-    max-width: 100%;
     height: 48px;
-    
+}
+
+.usuario-bar-section{
+  display: flex;
+  justify-content: center;
 }
 
 .usuario-bar .saludo {
@@ -663,10 +677,16 @@ button.btn-editar i {
 /* Filtros acordeon */
  /* Contenedor general */
 .accordion-container {
+  width: 85%;
   margin-bottom: 30px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.acordion-section{
+  display: flex;
+  justify-content: center;
 }
 
 /* Header con degradado, esquinas redondeadas y flecha */
@@ -705,7 +725,7 @@ button.btn-editar i {
   opacity: 0;
   overflow: hidden;
   transition: max-height 0.4s ease, opacity 0.4s ease;
-  background-color: #f9f9f9;
+  background-color: #0b0f12;
   padding: 0 16px;
 }
 
@@ -715,7 +735,7 @@ button.btn-editar i {
   max-height: 500px; /* suficiente para tu contenido */
   opacity: 1;
   padding: 16px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #0b0f12;
 }
 
 
@@ -750,7 +770,8 @@ button.btn-editar i {
   display: flex;
   flex-direction: column;
   min-width: 160px;
-  background: #fff;
+  background: #0b0f12;
+  
   padding: 8px 12px;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -772,6 +793,7 @@ button.btn-editar i {
 /* Label y controles */
 .filtro-item label {
   font-weight: 600;
+  color: white;
   margin-bottom: 6px;
   font-size: 0.95rem;
 }
@@ -1823,6 +1845,7 @@ label {
   }
 
   .usuario-bar {
+    
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
