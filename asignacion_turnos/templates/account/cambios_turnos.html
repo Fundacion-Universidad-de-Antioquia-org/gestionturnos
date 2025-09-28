@@ -224,6 +224,7 @@
 
       if (estadoAdmin === "pendiente" && estadoEmp === "aprobado") {
         const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
+        codigoSolicitante = codigoSolicitante.match(/\d+/g)
         const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
 
         const codigoReceptor = fila.querySelector('.codigoReceptor')?.textContent.trim();
@@ -263,7 +264,7 @@
           .then(data => {
             if (data.success) {
               Swal.fire({
-                title: "Good job!",
+                title: "Se aprobo correctamente el cambio",
                 text: data.message,
                 icon: "success"
               })
@@ -323,6 +324,7 @@
 
       if (estadoAdmin === "pendiente") {
         const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
+        codigoSolicitante = codigoSolicitante.match("/\d+/g")
         const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
         const codigoReceptor = fila.querySelector('.codigoReceptor')?.textContent.trim();
         const turnoReceptorDiaDeseado = fila.querySelector('.turnoReceptorDiaDeseado')?.textContent.trim();
@@ -347,8 +349,8 @@
     if (datos.length === 0) {
       Swal.fire({
         icon: "error",
-        title: "Ninguna solicitud válida",
-        text: "Solo se pueden desaprobar solicitudes con estado 'pendiente'.",
+        title: "Solicitud invalida",
+        text: "Se debe selccionar al menos una solcitud",
       });
       return;
     }

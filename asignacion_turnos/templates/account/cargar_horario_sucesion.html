@@ -82,7 +82,7 @@
     <div class="saludo" style="color: #5a9138; font-size: 11px;">Horarios & Sucesiones</div>
   </div>
   <div class="usuario-bar-apps-centro">
-    <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;">search</span></button>
+    <button style="background-color: #0a3329;" id="buscarSucesion"><span class="material-symbols-outlined" style="color: white;">search</span></button>
     <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
   </div>
   </div>
@@ -209,6 +209,8 @@
   </div>
 </div>
 </section>
+
+
 
 
 <!-- Tabla de datos-->
@@ -359,6 +361,27 @@
   </div>
 </div>
 
+<!--Modal buscar en sucesion -->
+<div class="modal-buscarSucesion" id="modalBuscarSucesion">
+  <div class="modal-buscarSucesion-contenido">
+    <span class="cerrar-buscarSucesion" onclick="cerrarModalBuscarSucesion()">&times;</span>
+    <h3 class="titulo-buscarSucesion">Seleccionar Rango de Fechas</h3>
+
+    <div class="formulario-buscarSucesion">
+      <label for="codigo">Código</label>
+      <input type="text" id="codigoSucesion" class="input-buscarSucesion">
+
+      <label for="fechaFinGT">Fecha inicial:</label>
+      <input type="date" id="fechaInicial" class="input-buscarSucesion">
+
+      <label for="fechaFinGT">Fecha final:</label>
+      <input type="date" id="fechaFinal" class="input-buscarSucesion">
+
+      <button class="btn-cargar-buscarSucesion">Cargar</button>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 
@@ -368,6 +391,26 @@
 
 <!--Buscar datos*filtro-->
  <script>
+
+  document.getElementById("buscarSucesion").addEventListener("click", function(){
+   
+    const modalBuscarSucesion = document.getElementById("modalBuscarSucesion");
+    modalBuscarSucesion.style.display = "block";
+
+    setTimeout(() => {
+    modalBuscarSucesion.classList.add("mostrar");
+  }, 10);
+
+  })
+
+  function cerrarModalBuscarSucesion() {
+  const modalBuscarSucesion = document.getElementById("modalBuscarSucesion");
+  modalBuscarSucesion.classList.remove("mostrar");
+  setTimeout(() => {
+    modal.style.display = "none";
+  }, 300); // coincide con el tiempo de transition
+}
+
   document.getElementById("buscarDatosFiltro").addEventListener("click",function(){
     const acordionHeader = document.getElementById("acordionHeader");
     const acordionBody = document.getElementById("acordionBody");
@@ -557,7 +600,7 @@ function aplicarFiltros() {
   });
 }
 
-mostrarPagina(1);
+/*mostrarPagina(1);*/
 
 </script>
 
@@ -1033,8 +1076,9 @@ document.getElementById("editTurno").addEventListener("input", function () {
    function hideLoader() {
       document.getElementById("loader-overlay").classList.add("hidden");
     }
+
     ocultarBotonesCarga();
-    aplicarFiltros();
+    aplicarFiltros(); 
     mostrarPagina(1);
     mostrarBotonesCargaTrenes();
   });

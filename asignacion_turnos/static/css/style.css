@@ -11,10 +11,12 @@
 
 body {
     min-height: 100vh;
+     background-color: #292929;
     /*background: linear-gradient(135deg, #ffffff, #f1f9ef, #d6eacb); */
-    /*background: rgb(27, 26, 26);*/
-    /*background-color: #08031a;*/
-    background: radial-gradient(#05072d, #000000)
+    /*background: rgb(27, 26, 26); */
+    /*background-color: #08031a; */
+    /*background: radial-gradient(#05072d, #000000);*/
+    
 }
 
 body {
@@ -1571,6 +1573,88 @@ label {
   }
 
 /* Modal solicitudes GT*/
+.modal-buscarSucesion {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+
+.modal-buscarSucesion-contenido {
+  background-color: #71676796;
+  color: white;
+  margin: 10% auto;
+  padding: 30px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.cerrar-buscarSucesion{
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 24px;
+  font-weight: bold;
+  
+  cursor: pointer;
+}
+
+.titulo-buscarSucesion{
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 18px;
+  
+}
+
+.formulario-buscarSucesion{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.input-buscarSucesion {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.btn-cargar-buscarSucesion {
+  background-color: #1a8f3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.btn-cargar-buscarSucesion:hover {
+  background-color: #166c2f;
+}
+
+.modal-buscarSucesion.mostrar {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/* Modal solicitudes GT*/
 .modal-fechas-gt {
   display: none;
   position: fixed;
@@ -1589,7 +1673,8 @@ label {
 
 
 .modal-fechas-gt-contenido {
-  background-color: #fff;
+  background-color: #71676796;
+  color: white;
   margin: 10% auto;
   padding: 30px;
   border-radius: 10px;
