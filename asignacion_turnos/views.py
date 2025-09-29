@@ -1105,7 +1105,7 @@ def solicitar_cambio_turno(request):
 
     transportable = None
     estadoCambio = ""
-    madrugadaLinea = ["ORIENTE","OCCIDENTE"]
+    madrugadaLinea = ["ORIENTE","OCCIDENTE","SUR"]
     madrugadaPatio = ["PBE"]
     
     if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:

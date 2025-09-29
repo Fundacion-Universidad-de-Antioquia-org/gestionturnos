@@ -53,7 +53,7 @@ def sincronizarDbEmpleados():
         return {"ok": False, "error": "La clave 'empleados' no es lista."}
 
     # Preparar objetos / update
-    campos_upd = ["nombre", "codigo", "estado", "cargo", "correo", "formacion","direccion","barrio","zona","foto"]
+    campos_upd = ["foto","nombre", "codigo", "estado", "cargo", "correo", "formacion","direccion","barrio","zona"]
     objs = []
     sin_cedula = 0
     for e in empleados:
