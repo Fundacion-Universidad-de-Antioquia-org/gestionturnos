@@ -402,7 +402,7 @@ def sobreCargaLaboralTranvia(file):
 
 
 def asignacionServicios(file):
-    # 1) Por si alguien ya leyó el archivo
+    # 1) Por si alguien ya leyó el archivo / RESETEAR EL PUNTERO
     if hasattr(file, "seek"):
         try:
             file.seek(0)

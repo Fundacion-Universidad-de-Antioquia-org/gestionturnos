@@ -133,16 +133,15 @@ class Solicitudes_Gt(models.Model):
     urlArchivo = models.CharField(max_length=500, null=True )
     tipoArchivo = models.CharField(max_length= 20, null=True)
     empleado = models.ForeignKey('Empleado_Oddo', on_delete=models.SET_NULL,null=True,blank=True)
-    respuesta = models.CharField(max_length=600, null=True)
 
     def __str__(self):
         return f"{self.fecha} - {self.codigo_solicitante} - {self.codigo_receptor}"
     
 
 class Respuesta_Solicitudes_Gt(models.Model):
-    solicitud = models.ForeignKey('Solicitudes_Gt', on_delete=models.SET_NULL, null=True)
     respuesta = models.CharField(max_length=200, default='Sin respuesta por ahora', null=True)
-    fechaRespuesta = models.DateTimeField()
+    fechaRespuesta = models.DateTimeField(null=True)
+    solicitud = models.ForeignKey("Solicitudes_Gt",related_name='respuestas', on_delete=models.CASCADE, null=True)
 
 class Parametros(models.Model):
     hora_inicio_permitida_cambios = models.TimeField(max_length=10)

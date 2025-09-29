@@ -86,46 +86,55 @@
   }
 </style>
 
-<!--Estilos para la foto de perfil -->
 <style>
-.cell-avatar{
-  padding: 6px 10px;
-  vertical-align: middle;
-  text-align: center;
-}
+  /* Backdrop con blur */
+  .modal-backdrop{
+    position:fixed; inset:0; z-index:9999; display:grid; place-items:center;
+    background: rgba(9,12,16,.35);
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+    backdrop-filter: blur(10px) saturate(130%);
+    opacity:0; pointer-events:none; transition:opacity .18s ease;
+  }
+  .modal-backdrop[aria-hidden="false"]{ opacity:1; pointer-events:auto; }
 
-/* Tamaño compacto y look profesional */
-.avatar-frame{
-  width: 44px;                 /* pequeño pero legible */
-  height: 44px;
-  border-radius: 12px;         /* borde redondeado */
-  overflow: hidden;            /* recorta el zoom dentro del marco */
-  display: inline-block;
-  background: #f3f4f6;         /* fallback */
-  border: 1px solid #e5e7eb;   /* delineado sutil */
-  box-shadow: 0 1px 2px rgba(0,0,0,.06);
-}
+  .modal-container{
+    width:min(900px, 96vw); max-height:88vh; overflow:hidden;
+    border-radius:14px; background:#0e1520; color:#e6eef8;
+    border:1px solid rgba(255,255,255,.07); box-shadow:0 12px 36px rgba(0,0,0,.45);
+    transform: translateY(8px) scale(.98); opacity:0;
+    transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .22s ease;
+  }
+  .modal-backdrop[aria-hidden="false"] .modal-container{ transform:none; opacity:1; }
+  .modal-header, .modal-footer{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 16px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+    border-bottom:1px solid rgba(255,255,255,.07);
+  }
+  .modal-footer{ border-top:1px solid rgba(255,255,255,.07); border-bottom:0; }
+  .modal-body{ padding:12px 16px; max-height: calc(88vh - 120px); overflow:auto; }
 
-.avatar-frame img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;           /* encuadre pro */
-  object-position: center;
-  transition: transform .25s ease;
-}
+  .icon-btn{ border:0; background:transparent; color:#e6eef8; width:36px; height:36px; border-radius:10px; cursor:pointer; }
+  .icon-btn:hover{ background:#1a2430; }
 
-/* Zoom interno para ver detalle sin crecer el componente */
-.avatar-frame:hover img{
-  transform: scale(1.08);
-}
+  /* Tabla */
+  .table-wrap{ width:100%; overflow:auto; }
+  .tbl{ width:100%; border-collapse:collapse; font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+  .tbl thead th{
+    text-align:left; font-weight:600; color:#b9c7d6; position:sticky; top:0; z-index:1;
+    background:#101827; padding:10px 12px; border-bottom:1px solid #263445;
+  }
+  .tbl tbody td{ padding:10px 12px; border-bottom:1px solid #1e293b; vertical-align:top; }
+  .tbl tbody tr:hover td{ background:#0f172a; }
+  .tbl td .muted{ color:#8ea4b8; font-size:12px; }
+  .tbl td .msg{ white-space:pre-wrap; word-break:break-word; }
 
-/* Respeta accesibilidad si el usuario prefiere menos movimiento */
-@media (prefers-reduced-motion: reduce){
-  .avatar-frame img{ transition: none; }
-  .avatar-frame:hover img{ transform: none; }
-}
-
+  .btn-secondary{
+    border:0; border-radius:10px; padding:10px 14px; cursor:pointer;
+    background:#1a2430; color:#e6eef8;
+  }
+  .btn-secondary:hover{ background:#1e2a38; }
 </style>
+
 
 {% endblock%}
 {% block content %}
@@ -286,10 +295,7 @@
              </td> 
              <td><span>{{ s.estado }}</span></td>
              <td>
-                <button type="button" class="btn-icon ver-msg" data-title="Respuestas ADM"
-            data-msg="{{ s.respuesta|escapejs }}" aria-label="Ver comentarios">
-            <span class="material-symbols-outlined" style="color: #2d6fe9; font-size: 35px;">sms</span>
-          </button>
+                <button type="button" class="btn-ver-respuesta btn-icon" data-id="{{ s.id }}"> <span class="material-symbols-outlined" style="color:#2d6fe9;font-size:35px;">sms</span></button>
              </td>
         </tr>
         {% empty %}s
@@ -302,8 +308,6 @@
     </tbody>
 </table>
 </section>
-
-
 
 <div id="modalDescripcion" class="modal fade modal-descripcion-profesional">
   <div class="modal-dialog">
@@ -345,6 +349,37 @@
         <!-- aquí se inyecta iframe o img -->
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ===== Modal: Respuestas (solo modal con tabla) ===== -->
+<div class="modal-backdrop" id="modal-respuestas" aria-hidden="true">
+  <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="mr-title" tabindex="-1">
+    <header class="modal-header">
+      <h3 id="mr-title">Respuestas</h3>
+      <button class="icon-btn" aria-label="Cerrar" data-modal-close>✕</button>
+    </header>
+
+    <div class="modal-body">
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width: 160px;">ID Solicitud</th>
+              <th >Respuesta</th>
+              <th style="width: 160px;">Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="mr-tbody">
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="modal-footer">
+      <button class="btn-secondary" data-modal-close>Cerrar</button>
+    </footer>
   </div>
 </div>
 
@@ -392,6 +427,10 @@ setTimeout(() => {
     animateValue("solicitudesDesaprobadas", 0, solicitudAnualDesaprobadas, 1500);*/
 
     aplicarFiltros();
+
+    function verRespuesta(id){
+      alert(id)
+    }
 
     const cargaSolicitudes = JSON.parse(document.getElementById('mensaje-json').textContent)
     
@@ -489,7 +528,6 @@ setTimeout(() => {
           })
         }
 </script>
-
 
 <script>
     function getCookie(name) {
@@ -645,20 +683,17 @@ function cerrarModalVisor() {
 
   document.getElementById("guardarRespuesta").addEventListener("click",function(){
 
-    respuesta = document.getElementById("respuesta").value
-    idSolicitudGt = document.getElementById("idSolicitud").textContent
-
-    alert("id: "+ idSolicitudGt+ " respuesta: "+respuesta)
+    const respuesta = document.getElementById("respuesta").value
+    const idSolicitudGt = document.getElementById("idSolicitud").textContent
 
     if(respuesta !== ""){
-
       fetch("{% url 'insertarRespuesta' %}",{
       method: "POST",
       headers:{"Content-Type": "application/json",
                   "X-CSRFToken": getCookie("csrftoken")},
       body: JSON.stringify({
         "idSolicitudGt": idSolicitudGt,
-        "respuesta": respuesta
+        "respuesta": respuesta,
       })
     })
     .then(response => response.json())
@@ -693,8 +728,6 @@ function cerrarModalVisor() {
     
 
   })
-
-
 
 </script>
 
@@ -775,40 +808,72 @@ function formatoFechaDMYaISO(fechaDMY) {
 
 </script>
 
+<script>
+document.addEventListener('click', e => {
+
+  const btn = e.target.closest('.btn-ver-respuesta');
+  if (!btn) return;
+  const id = btn.dataset.id; 
+
+const cuerpoTabla = document.getElementById("mr-tbody");
+
+ fetch(`{% url 'getRespuesta' %}?idSolicitudGt=${encodeURIComponent(id)}`, {
+  method: 'GET',
+  headers: { 'Accept': 'application/json' }
+  })
+  .then(response => response.json())
+  .then(data =>{
+    if (data.length == 0){
+      cuerpoTabla.innerHTML = `<tr><td colspan="3"><span class="muted">Sin respuestas.</span></td></tr>`;
+      openModalRespuestas()
+      return;
+    }
+    
+    cuerpoTabla.innerHTML = data.map(r=>`
+      <tr>
+        <td>${safe(r.solicitud_id ?? '' )}</td>
+        <td>${safe(r.fechaRespuesta ?? '')}</td>
+        <td><div class="msg">${safe(r.respuesta ?? '')}</div></td>
+      </tr>
+    `).join('')
+    
+    openModalRespuestas()
+  
+  })
+
+});
+
+ function safe(s){ return String(s)
+    .replaceAll('&','&amp;').replaceAll('<','&lt;')
+    .replaceAll('>','&gt;').replaceAll('"','&quot;')
+    .replaceAll("'","&#039;"); }
 </script>
 
-<!--Script para escapear el comentario que llega del back-->
 <script>
-  (function () {
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+  function openModalRespuestas() {
+    const m = document.getElementById('modal-respuestas');
+    m.setAttribute('aria-hidden','false');
+    // foco accesible
+    requestAnimationFrame(() => m.querySelector('.modal-container').focus({preventScroll:true}));
+    document.addEventListener('keydown', escCloseOnce);
+  }
+
+  function closeModalRespuestas() {
+    const m = document.getElementById('modal-respuestas');
+    m.setAttribute('aria-hidden','true');
+    document.removeEventListener('keydown', escCloseOnce);
+  }
+  function escCloseOnce(e){ if(e.key === 'Escape') closeModalRespuestas(); }
+
+  // Cerrar por botones / click fuera
+  document.addEventListener('click', (e) => {
+    if (e.target.matches('[data-modal-close]')) return closeModalRespuestas();
+    const backdrop = e.target.closest('.modal-backdrop');
+    if (backdrop && backdrop.getAttribute('aria-hidden') === 'false') {
+      const container = backdrop.querySelector('.modal-container');
+      if (!container.contains(e.target)) closeModalRespuestas();
     }
-
-    // Convierte "\u000A" y "\n" literales en saltos reales
-    function decodeNewlines(s) {
-      if (!s) return '';
-      return s.replace(/\\u000A/gi, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
-    }
-
-    document.getElementById('tablaBody').addEventListener('click', e => {
-      const btn = e.target.closest('.ver-msg');
-      if (!btn) return;
-
-      const title = btn.dataset.title || 'Mensaje';
-      const decoded = decodeNewlines(btn.dataset.msg || '');
-
-      Swal.fire({
-        title: title,
-        html: `<div style="text-align:left; font-size:15px; white-space:pre-wrap; max-height:60vh; overflow:auto;"> <span class="material-symbols-outlined">server_person</span>${escapeHtml(decoded)}</div>`,
-        width: 700,
-        confirmButtonText: 'Cerrar'
-      });
-    });
-  })();
-
+  });
 </script>
 
 {% endblock %}

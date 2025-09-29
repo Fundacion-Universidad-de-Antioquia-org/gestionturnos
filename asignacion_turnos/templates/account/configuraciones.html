@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block content %}
+<section class="usuario-bar-section">
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
   <div class="usuario-bar-logo-nombre">
       <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
@@ -31,11 +32,14 @@
     <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
   </form>
 </div>
+</section>
 
+<section class="panelControl-section">
 <div id="panelControl">
     <span class="material-symbols-outlined">settings_cinematic_blur</span><div class="titulo-template">Parametros para el cambio de turnos y solicitudes GT</div> 
     <button class="btn-third">➕ Nuevo parametro</button>
 </div>
+</section>
 
  <div class="modal-custom" id="modalParametros">
     <div class="modal-content-custom">
@@ -103,6 +107,7 @@
   </div>
 
 <!-- Primera tabla -->
+ <section class="table-section">
   <table class="styled-table display" id="tablaDatos">
     <thead>
       <tr>
@@ -135,20 +140,23 @@
           data-horafinsoli="{{ p.hora_final_solicitudesgt|time:'H:i' }}"
           >Editar</button>
         </td>
-
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  </section>
 
 <!-- Segunda tabla -->
  
+<section class="panelControl-section">
  <div id="panelControl">
     <span class="material-symbols-outlined">settings_cinematic_blur</span><div class="titulo-template">Servicios invalidos para el cambio de turnos</div>
     <button type="button" class="btn-third"  id="AgregarServicioInvalido" >➕ Nuevo parametro</button>
     <button type="button" class="btn-third"  id="ocultarTablaServicioInvalidos" >➕ Mostrar | Ocultar servicios</button>
-</div>  
+</div> 
+</section>
  
+<section class="table-section">
   <table class="styled-table display" id="tablaServiciosInvalidos" style="display: none;">
     <thead>
       <tr>
@@ -171,6 +179,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </section>
 
 {% endblock %}
 

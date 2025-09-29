@@ -26,7 +26,7 @@ from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from asignacion_turnos.models import Sucesion
-from asignacion_turnos.models import Horario , Cambios_de_turnos, Estados_servicios,Empleado_Oddo, Parametros, Archivos, Solicitudes_Gt, Notificaciones, ConfirmacionLectura
+from asignacion_turnos.models import Horario , Cambios_de_turnos, Estados_servicios,Empleado_Oddo, Parametros, Archivos, Solicitudes_Gt, Notificaciones, ConfirmacionLectura,Respuesta_Solicitudes_Gt
 from .resources.validarDescanso import validar_descanso
 from .resources.registrarLog import send_log
 from .resources.cargarArchivosBlob import upload_to_azure_blob
@@ -256,20 +256,25 @@ def vista_solicitudes_gestion_turnos(request,*, context):
             fechaInicial = datetime.strptime(fechaInicial_peticion, "%Y-%m-%d").date()
             fechaFinal = datetime.strptime(fechaFinal_peticion, "%Y-%m-%d").date()
 
-            print(f"fecha inicial {fechaInicial} fecha final: {fechaFinal}")
+            print(f"fecha inicial {fechaInicial} fecha final: {fechaFinal}") 
 
-            solicitudesGt = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).order_by('-fecha_solicitud')
+            solicitudesGt = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).prefetch_related('respuestas').order_by('-id')
+
+            indicadorTotal = solicitudesGt.count()
+            indicadorPendiente = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "pendiente").count()
+            indicadorAprobada = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "aprobado").count()
+            indicadorDesaprobado = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "desaprobado").count()
          
             if solicitudesGt.exists():
                 print("Si existen solicitudes entre estas fechas")
                 return render(request,"account/solicitudes_gestion_turnos.html",{
-                    "mensaje":f"Se cargaron {solicitudesGt.count()} solicitudes entre este rango de fechas: {fechaInicial}, {fechaFinal}",
+                    "mensaje":f"Se cargaron {solicitudesGt.count()} solicitudes entre: {fechaInicial} , {fechaFinal} \n Solicitudes totales: {indicadorTotal} - Pendientes: {indicadorPendiente} - Aprobadas: {indicadorAprobada} - Desaprobadas: {indicadorDesaprobado} ",
                     "solicitudesGt":solicitudesGt,
                     "usuarioLogeado":usuarioLogeado,
-                    "solicitudAnual": solicitudAnual,
-                    "solicitudAnualAprobadas":solicitudAnualAprobadas,
-                    "solicitudAnualPendientes":solicitudAnualPendientes,
-                    "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
+                    "solicitudAnual": indicadorTotal,
+                    "solicitudAnualAprobadas":indicadorAprobada,
+                    "solicitudAnualPendientes":indicadorPendiente,
+                    "solicitudAnualDesaprobadas":indicadorDesaprobado
                 })
             else: # Si no ingresa un rango de fechas donde existan solicitudes, se devuelven todas las solicitudes pendientes
                 print("No existen solicitudes entre estas fechas")
@@ -1107,15 +1112,16 @@ def solicitar_cambio_turno(request):
     estadoCambio = ""
     madrugadaLinea = ["ORIENTE","OCCIDENTE","SUR"]
     madrugadaPatio = ["PBE"]
-    
-    if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
-        comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
-        transportable = True
-        estadoCambio = "aprobado"
-    elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
-         comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
-         transportable = True
-         estadoCambio = "aprobado"
+
+    if receptor_dia.hora_inicio <= datetime.combine(fechaCambio,"03:59"):
+        if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
+            comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
+            transportable = True
+            estadoCambio = "aprobado"
+        elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
+            comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
+            transportable = True
+            estadoCambio = "aprobado"
     elif solicitante.zona ==  receptor.zona:
         comentarios = f"{comentarios}\n✅ Ambos cumplen, zona: No son transportables"
         transportable = True
@@ -1607,16 +1613,40 @@ def confirmacionLectura(request):
 
 @api_view(["POST"])
 def insertarRespuesta(request):
+
     idSolicitudGt = request.data.get("idSolicitudGt")
     respuesta = request.data.get("respuesta")
+    fechaRespuesta = datetime.today().astimezone(ZoneInfo("America/Bogota"))
+
+    print(fechaRespuesta)
 
     if idSolicitudGt and respuesta:
-        Solicitudes_Gt.objects.filter(id = idSolicitudGt).update(respuesta = respuesta)
+
+        solicitud = Solicitudes_Gt.objects.get(id = idSolicitudGt)
+        solicitud.respuestas.create(respuesta = respuesta, fechaRespuesta = fechaRespuesta)
+
+        #Respuesta_Solicitudes_Gt.objects.create(idSolicitud = idSolicitudGt, respuesta = respuesta, fechaRespuesta = fechaRespuesta)
         return Response({"success": True, "message":f"Se registro correctamente la respuesta a la solicitud con id: {idSolicitudGt}"})
     else:
         return Response({"success":True, "message":f"Error de parametros, id enviado: {idSolicitudGt}, respuesta: {respuesta}"})
     
 
+@api_view(["GET"])
+def getRespuesta(request):
+    idSolicitudGt = request.GET.get("idSolicitudGt")
+    print(idSolicitudGt)
+    data = []
+    if idSolicitudGt:
+       respuestas =  Respuesta_Solicitudes_Gt.objects.filter(solicitud_id = idSolicitudGt).order_by('-fechaRespuesta')
+
+    for r in respuestas:
+        data.append({
+            "idSolicitud":r.solicitud.id,
+            "fechaRespuesta":r.fechaRespuesta,
+            "respuesta": r.respuesta
+        })
+
+    return Response(data)
 
 @api_view(["GET"])
 def getTodosComunicados(request):

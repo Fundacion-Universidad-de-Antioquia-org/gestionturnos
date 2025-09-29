@@ -42,4 +42,5 @@ urlpatterns = [
     path('api/cabeceras_turnos/', views.cabeceras_turnos, name = "cabeceras_turnos"),
     path('api/mis_solicitudes_cambios_turnos/', views.mis_solicitudes_cambios_turnos, name = "mis_solicitudes_cambios_turnos"),
     path('api/insertarRespuesta', views.insertarRespuesta, name = "insertarRespuesta"),
+    path('api/getRespuesta', views.getRespuesta, name = "getRespuesta"),
 ]

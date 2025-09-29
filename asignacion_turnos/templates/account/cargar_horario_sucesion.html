@@ -82,8 +82,10 @@
     <div class="saludo" style="color: #5a9138; font-size: 11px;">Horarios & Sucesiones</div>
   </div>
   <div class="usuario-bar-apps-centro">
-    <button style="background-color: #0a3329;" id="buscarSucesion"><span class="material-symbols-outlined" style="color: white;">search</span></button>
+    <button style="background-color: #0a3329;" id="buscarSucesion" title="Buscar sucesión por codigo | fecha"><span class="material-symbols-outlined" style="color: white;">search</span></button>
+    <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;">find_replace</span></button>
     <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
+    
   </div>
   </div>
 
@@ -209,9 +211,6 @@
   </div>
 </div>
 </section>
-
-
-
 
 <!-- Tabla de datos-->
  <section class="table-section">
@@ -365,19 +364,19 @@
 <div class="modal-buscarSucesion" id="modalBuscarSucesion">
   <div class="modal-buscarSucesion-contenido">
     <span class="cerrar-buscarSucesion" onclick="cerrarModalBuscarSucesion()">&times;</span>
-    <h3 class="titulo-buscarSucesion">Seleccionar Rango de Fechas</h3>
+    <h3 class="titulo-buscarSucesion">Buscar sucesión</h3>
 
     <div class="formulario-buscarSucesion">
       <label for="codigo">Código</label>
       <input type="text" id="codigoSucesion" class="input-buscarSucesion">
 
       <label for="fechaFinGT">Fecha inicial:</label>
-      <input type="date" id="fechaInicial" class="input-buscarSucesion">
+      <input type="date" id="modalFechaInicial" class="input-buscarSucesion">
 
       <label for="fechaFinGT">Fecha final:</label>
-      <input type="date" id="fechaFinal" class="input-buscarSucesion">
+      <input type="date" id="modalFechaFinal" class="input-buscarSucesion">
 
-      <button class="btn-cargar-buscarSucesion">Cargar</button>
+      <button class="btn-cargar-buscarSucesion" id="btnbuscarSucesion">Buscar</button>
     </div>
   </div>
 </div>
@@ -391,9 +390,8 @@
 
 <!--Buscar datos*filtro-->
  <script>
-
   document.getElementById("buscarSucesion").addEventListener("click", function(){
-   
+
     const modalBuscarSucesion = document.getElementById("modalBuscarSucesion");
     modalBuscarSucesion.style.display = "block";
 
@@ -411,18 +409,14 @@
   }, 300); // coincide con el tiempo de transition
 }
 
-  document.getElementById("buscarDatosFiltro").addEventListener("click",function(){
-    const acordionHeader = document.getElementById("acordionHeader");
-    const acordionBody = document.getElementById("acordionBody");
-    const estado = document.getElementById("filtroEstado").value;
-    const codigo = document.getElementById("filtroCodigo").value
-    
-    
-    const fechaInicial = document.getElementById("filtroFechaInicial").value
-    const fechaFinal = document.getElementById("filtroFechaFinal").value
+  document.getElementById("btnbuscarSucesion").addEventListener("click",function(){
+
+    const estado = "publicado";
+    const codigo = document.getElementById("codigoSucesion").value
+    const fechaInicial = document.getElementById("modalFechaInicial").value
+    const fechaFinal = document.getElementById("modalFechaFinal").value
 
     let bodyTabla = document.getElementById("tablaBody");
-
 
     if(codigo !== "" && estado !== "" && fechaInicial !== "" && fechaFinal !== ""){
       
@@ -435,7 +429,7 @@
                       })
 
       return;
-                    }
+        }
           
            fetch("{% url 'datos_filtro_sucesion' %}",{
       method : "POST",
@@ -481,10 +475,8 @@
         bodyTabla.innerHTML = rows;
         bodyTabla.style.display = "table-row-group";
 
-        acordionHeader.classList.remove("active");
-        acordionBody.classList.remove("active");
-        
-        
+         cerrarModalBuscarSucesion()
+      
       }else{
           Swal.fire({
                     icon: "error",
@@ -830,7 +822,7 @@ document.getElementById("guardarCambios").addEventListener("click", function () 
          Swal.fire({
                     icon: "warning",
                     title: "Advertencia",
-                    text: "Se detectaron campos vacios"
+                    text: "Codigo de turno vacio, por favor ingrese un codigo valido"
                     });
       }
 
