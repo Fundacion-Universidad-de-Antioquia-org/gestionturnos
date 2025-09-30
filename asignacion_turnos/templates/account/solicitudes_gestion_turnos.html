@@ -69,21 +69,24 @@
 
 <!--Estilos para boton respuesta-->
 <style>
-  .btn-icon {
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-    padding: 4px 6px;
-  }
+.btn-icon {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: transform 150ms ease;   /* transición suave */
+}
 
-  .btn-icon .material-symbols-outlined {
-    font-size: 20px;
-    color: #1D5031;
-  }
+.btn-icon:hover {
+  transform: scale(1.35);
+            /* crece ~8% al hover */
+}
 
-  .btn-icon:hover .material-symbols-outlined {
-    opacity: .8;
-  }
+.btn-icon .material-symbols-outlined {
+  font-size: 20px;
+}
+
+
 </style>
 
 <style>
@@ -160,7 +163,7 @@
     
   </div>
    <div class="usuario-bar-apps-centro">
-    <button style="background-color: #0a3329;" id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined" style="color: white;">assignment</span></button>
+    <button style="background-color: #0a3329;" id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined" style="color: white;">convert_to_text</span></button>
   </div>
   </div>
   
@@ -274,8 +277,8 @@
             <th>Fecha solicitud</th>
             <th>Fecha inicial</th>
             <th>Fecha final</th>
-            <th>Descripción</th>
             <th>Estado</th>
+            <th>Descripción</th>
             <th>Respuesta ADM</th>
         </tr>
     </thead>
@@ -291,12 +294,13 @@
             <td>{{s.cargo}}</td>
             <td>{{s.tipo_solicitud}}</td>
             <td>{{s.fecha_solicitud|date:"d/m/Y"}}</td>
-            <td><span style="border-radius: 8px; background-color: #f1da05; color: #0b0f12; padding: 7px;">{{s.fecha_inicial|date:"d/m/Y"}}</span></td>
-            <td><span style="border-radius: 8px; background-color: #f1da05; color: #0b0f12; padding: 7px;">{{s.fecha_final|date:"d/m/Y"}}</span></td>
+            <td>{{s.fecha_inicial|date:"d/m/Y"}}</td> <!--<span style="border-radius: 8px; background-color: #f1da05; color: #0b0f12; padding: 7px;">-->
+            <td>{{s.fecha_final|date:"d/m/Y"}}</td>
+            <td><span>{{ s.estado }}</span></td>
              <td>
-               <button class="toggle-desc-btn" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #3681c4; color: rgb(250, 250, 250); padding: 7px;"><span class="material-symbols-outlined">content_paste_search</span></button>
+               <button class="btn-ver-respuesta btn-icon" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #2d6fe9; color: rgb(250, 250, 250); padding: 7px;"><span class="material-symbols-outlined">content_paste_search</span></button>
              </td> 
-             <td><span>{{ s.estado }}</span></td>
+             
              <td>
                 <button type="button" class="btn-ver-respuesta btn-icon" data-id="{{ s.id }}"> <span class="material-symbols-outlined" style="color:#2d6fe9;font-size:35px;">sms</span></button>
              </td>
@@ -390,7 +394,7 @@
 <div id="modalInformeGT" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
     <span class="cerrar-fechas-gt" onclick="cerrarModalFechasGT()">&times;</span>
-    <h3 class="titulo-fechas-gt">Informe de Solicitudes-GT</h3>
+    <h3 class="titulo-fechas-gt"><span class="material-symbols-outlined">convert_to_text</span>Descarga de datos Solicitudes GT</h3>
 
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha inicial:</label>
@@ -807,7 +811,7 @@ function aplicarFiltros() {
     const tTipoSolicitud = row.cells[5].textContent.toLowerCase().trim();
     const tFechaInicial = row.cells[7].textContent.trim();
     const tFechaFinal = row.cells[8].textContent.trim();
-    const tEstado = row.cells[10].textContent.toLowerCase().trim();
+    const tEstado = row.cells[9].textContent.toLowerCase().trim();
 
     const coincideId = !valorId || tId === valorId;
     const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
@@ -843,6 +847,10 @@ document.addEventListener('click', e => {
   const btn = e.target.closest('.btn-ver-respuesta');
   if (!btn) return;
   const id = btn.dataset.id; 
+  
+  if(id === undefined){
+    return;
+  }
 
 const cuerpoTabla = document.getElementById("mr-tbody");
 
@@ -853,7 +861,7 @@ const cuerpoTabla = document.getElementById("mr-tbody");
   .then(response => response.json())
   .then(data =>{
     if (data.length == 0){
-      cuerpoTabla.innerHTML = `<tr><td colspan="3"><span class="muted">Sin respuestas.</span></td></tr>`;
+      cuerpoTabla.innerHTML = `<tr><td colspan="3"><span class="muted">Sin respuestas aún.</span></td></tr>`;
       openModalRespuestas()
       return;
     }

@@ -1642,18 +1642,21 @@ def getRespuesta(request):
     bogota = ZoneInfo('America/Bogota')
     data = []
 
-    if idSolicitudGt:
-       respuestas =  Respuesta_Solicitudes_Gt.objects.filter(solicitud_id = idSolicitudGt).order_by('-fechaRespuesta')
+    if idSolicitudGt is not None:
+       if Respuesta_Solicitudes_Gt.objects.filter(solicitud_id = idSolicitudGt).exists():
+        respuestas =  Respuesta_Solicitudes_Gt.objects.filter(solicitud_id = idSolicitudGt).order_by('-fechaRespuesta')
 
-    for r in respuestas:
-        data.append({
-            "idSolicitud":r.solicitud.id,
-            "fechaRespuesta": timezone.localtime( r.fechaRespuesta, bogota).strftime('%Y-%m-%d %H:%M'),
-            "respuesta": r.respuesta
-        })
-        
+        for r in respuestas:
+            data.append({
+                "idSolicitud":r.solicitud.id,
+                "fechaRespuesta": timezone.localtime( r.fechaRespuesta, bogota).strftime('%Y-%m-%d %H:%M'),
+                "respuesta": r.respuesta
+            })
+            
+
+        return Response(data)
+       
     return Response(data)
-
 
 CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 @api_view(["GET"])
@@ -1707,7 +1710,7 @@ def descargarInformeGt(request):
 
                 buf.seek(0)
                 resp = HttpResponse(buf.read(), content_type=CONTENT_TYPE_XLSX)
-                resp["Content-Disposition"] = 'attachment; filename="empleados.xlsx"'
+                resp["Content-Disposition"] = f'attachment; filename="solicitudesGT-{fechaInicial}-{fechaFinal}.xlsx"'
                 # Para que el front pueda leer el nombre de archivo vía JS en CORS:
                 resp["Access-Control-Expose-Headers"] = "Content-Disposition"
             
