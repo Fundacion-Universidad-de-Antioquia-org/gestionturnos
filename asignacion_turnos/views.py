@@ -17,6 +17,8 @@ from zoneinfo import ZoneInfo
 from django.db.models import F, Value, ExpressionWrapper, DateTimeField, DateField, DurationField
 from django.db.models.functions import Cast, TruncWeek
 
+import pandas as pd
+from io import BytesIO
 
 
 from datetime import datetime, timedelta, date
@@ -1652,6 +1654,68 @@ def getRespuesta(request):
         
     return Response(data)
 
+
+CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+@api_view(["GET"])
+def descargarInformeGt(request):
+
+    fechaInicial  = request.GET.get("fechaInicialFormateada")
+    fechaFinal = request.GET.get("fechaFinalFormateada")
+    estado = request.GET.get("opcionSeleccionada")
+    print(f"Fecha inicial: {fechaInicial}, fecha final: {fechaFinal}, estado: {estado}")
+    data = []
+
+    if fechaFinal and fechaFinal and estado:
+
+        fechaInicialFormateada = datetime.strptime(fechaInicial,"%Y/%m/%d").date()
+        fechaFinalFormateada = datetime.strptime(fechaFinal, "%Y/%m/%d").date()
+        
+        solicitudes = None
+
+        if estado in ["aprobado","desaprobado","pendiente"]:
+            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado).values('nombre','codigo','cargo',                                                                                                 
+                'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
+        elif estado == "todo":
+            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada).values('nombre','codigo','cargo',
+                'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
+
+        if solicitudes is not None:
+            for s in solicitudes:
+                data.append({
+                    "nombre": s.get("nombre"),
+                    "codigo":s.get("codigo"),
+                    "cargo":s.get("cargo"),
+                    "tipo_solicitud": s.get("tipo_solicitud"),
+                    "fecha_solicitud":s.get("fecha_solicitud"),
+                    "fecha_inicial": s.get("fecha_inicial"),
+                    "fecha_final": s.get("fecha_final"),
+                    "estado": s.get("estado"),
+                    "descripcion": s.get("descripcion") 
+                })
+        
+            if len(data)> 0:
+                #cols = ["Nombre", "Codigo","Cargo","Tipo_solicitud","Fecha_solicitud","Fecha_inicial","Fecha_final","Estado","Descripcion"]
+                df = pd.DataFrame(data)
+                #df = df.reindex(columns=cols)
+
+                buf = BytesIO()
+                with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+                    df.to_excel(writer, index=False, sheet_name="Solicitudes")
+                    ws = writer.book["Solicitudes"]
+                    ws.auto_filter.ref = ws.dimensions
+                    ws.freeze_panes = "A2"
+
+                buf.seek(0)
+                resp = HttpResponse(buf.read(), content_type=CONTENT_TYPE_XLSX)
+                resp["Content-Disposition"] = 'attachment; filename="empleados.xlsx"'
+                # Para que el front pueda leer el nombre de archivo vía JS en CORS:
+                resp["Access-Control-Expose-Headers"] = "Content-Disposition"
+            
+            return resp
+
+
+
+
 @api_view(["GET"])
 def getTodosComunicados(request):
     if request.method == "GET":
@@ -1667,4 +1731,5 @@ def getTodosComunicados(request):
                 "tipoArchivo":a.tipoArchivo
             })
         return Response({"success":True, "data":data})
+    
     

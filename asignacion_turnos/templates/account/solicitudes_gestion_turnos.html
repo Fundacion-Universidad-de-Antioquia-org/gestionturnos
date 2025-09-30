@@ -160,7 +160,7 @@
     
   </div>
    <div class="usuario-bar-apps-centro">
-    <button style="background-color: #0a3329;" id="buscarSucesion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined" style="color: white;">assignment</span></button>
+    <button style="background-color: #0a3329;" id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined" style="color: white;">assignment</span></button>
   </div>
   </div>
   
@@ -355,7 +355,7 @@
   </div>
 </div>
 
-<!-- ===== Modal: Respuestas (solo modal con tabla) ===== -->
+<!-- Modal Respuestas-ADM -->
 <div class="modal-backdrop" id="modal-respuestas" aria-hidden="true">
   <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="mr-title" tabindex="-1">
     <header class="modal-header">
@@ -383,6 +383,32 @@
     <footer class="modal-footer">
       <button class="btn-secondary" data-modal-close>Cerrar</button>
     </footer>
+  </div>
+</div>
+
+<!--Modal informe GT-Solicitudes -->
+<div id="modalInformeGT" class="modal-fechas-gt">
+  <div class="modal-fechas-gt-contenido">
+    <span class="cerrar-fechas-gt" onclick="cerrarModalFechasGT()">&times;</span>
+    <h3 class="titulo-fechas-gt">Informe de Solicitudes-GT</h3>
+
+    <div class="formulario-fechas-gt">
+      <label for="fechaInicioGT">Fecha inicial:</label>
+      <input type="date" id="fechaInicioGTX" class="input-fechas-gt">
+
+      <label for="fechaFinGT">Fecha final:</label>
+      <input type="date" id="fechaFinGTX" class="input-fechas-gt">
+
+      <label for="">Estado de la solicitud</label>
+      <select name="" id="opcionEstado" class="input-fechas-gt">
+        <option value="todo">Todas</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="aprobado">Aprobados</option>
+        <option value="desaprobado">Desaprobados</option>
+      </select>
+
+      <button class="btn-cargar-fechas-gt" id="descargarInforme">Descargar</button>
+    </div>
   </div>
 </div>
 
@@ -852,6 +878,7 @@ const cuerpoTabla = document.getElementById("mr-tbody");
     .replaceAll("'","&#039;"); }
 </script>
 
+<!--Funcionalidad modal respuestas ADM-->
 <script>
   function openModalRespuestas() {
     const m = document.getElementById('modal-respuestas');
@@ -878,5 +905,82 @@ const cuerpoTabla = document.getElementById("mr-tbody");
     }
   });
 </script>
+
+<!--Funcionalidad modal informe de GT-Solicitudes-->
+<script>
+  document.getElementById("generarInformeGestion").addEventListener("click", function(){
+  
+    const modalFechas = document.getElementById("modalInformeGT");
+    modalFechas.style.display = "block";
+    setTimeout(() => {
+    modalFechas.classList.add("mostrar");
+  }, 10); 
+
+  })
+
+  function cerrarModalFechasGT() {
+  const modal = document.getElementById("modalInformeGT");
+  modal.classList.remove("mostrar");
+  setTimeout(() => {
+    modal.style.display = "none";
+  }, 300); 
+}
+
+
+  document.getElementById("descargarInforme").addEventListener("click",function(){
+
+    const fechaInicial = document.getElementById("fechaInicioGTX");
+    const fechaFinal =  document.getElementById("fechaFinGTX");
+    const opcionSeleccionada = document.getElementById("opcionEstado").value
+
+   
+    const fechaInicialFormateada = fechaInicial.value.replaceAll("-","/")
+    const fechaFinalFormateada = fechaFinal.value.replaceAll("-","/")
+
+    alert(`Fecha inicial ${fechaInicialFormateada} fecha final: ${fechaFinalFormateada}, estado: ${opcionSeleccionada}`)
+     const params = new URLSearchParams({
+      fechaInicialFormateada,    
+      fechaFinalFormateada,             
+      opcionSeleccionada,     
+  });
+  
+  const url = `{% url 'descargarInformeGt' %}?${params.toString()}`;
+  descargarExcel(url);
+
+  })
+
+  async function descargarExcel(url) {
+  const res = await fetch(url, {
+    method: 'GET',
+    // incluye credenciales si tu API las requiere (tokens/cookies)
+    // headers: { Authorization: 'Bearer ...' }
+  });
+
+  if (!res.ok) {
+    const msg = await res.text().catch(()=>'');
+    throw new Error(`Error ${res.status}: ${msg}`);
+  }
+
+  // tomar filename del header (si el backend lo expuso)
+  const cd = res.headers.get('Content-Disposition') || '';
+  const match = cd.match(/filename\*=UTF-8''([^;]+)|filename="([^"]+)"/);
+  const filename = decodeURIComponent(match?.[1] || match?.[2] || 'reporte.xlsx');
+
+  const blob = await res.blob();
+  const urlBlob = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = urlBlob;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(urlBlob);
+}
+
+</script>
+
+
+
 
 {% endblock %}
