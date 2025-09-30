@@ -21,6 +21,8 @@ from django.db.models.functions import Cast, TruncWeek
 
 from datetime import datetime, timedelta, date
 from django.utils import timezone
+from django.db.models.functions import TruncMinute
+
 
 from django.db.models import Count
 from rest_framework.decorators import api_view
@@ -1633,19 +1635,21 @@ def insertarRespuesta(request):
 
 @api_view(["GET"])
 def getRespuesta(request):
+
     idSolicitudGt = request.GET.get("idSolicitudGt")
-    print(idSolicitudGt)
+    bogota = ZoneInfo('America/Bogota')
     data = []
+
     if idSolicitudGt:
        respuestas =  Respuesta_Solicitudes_Gt.objects.filter(solicitud_id = idSolicitudGt).order_by('-fechaRespuesta')
 
     for r in respuestas:
         data.append({
             "idSolicitud":r.solicitud.id,
-            "fechaRespuesta":r.fechaRespuesta,
+            "fechaRespuesta": timezone.localtime( r.fechaRespuesta, bogota).strftime('%Y-%m-%d %H:%M'),
             "respuesta": r.respuesta
         })
-
+        
     return Response(data)
 
 @api_view(["GET"])

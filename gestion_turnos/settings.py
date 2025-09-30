@@ -64,6 +64,15 @@ INSTALLED_APPS = [
     'identity',  # Asegúrate de que este es el nombre correcto del paquete
 ]
 
+
+TIME_ZONE = 'America/Bogota'
+USE_TZ = True
+
+# DRF: formatear salida
+REST_FRAMEWORK = {
+    'DATETIME_FORMAT': '%Y-%m-%d %H:%M', 
+}
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',

@@ -157,12 +157,15 @@
     <div class="saludo" style="color: #ccc; font-size: 11px;">
       Solicitudes GT
     </div>
-</div>
+    
+  </div>
+   <div class="usuario-bar-apps-centro">
+    <button style="background-color: #0a3329;" id="buscarSucesion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined" style="color: white;">assignment</span></button>
+  </div>
   </div>
   
   <div class="indicadores">
   <div class="indicador-card small total">
-    <span class="material-symbols-outlined">area_chart</span>
     <div class="spinner"></div>
     <span id="txt-total">Cargando...</span>
   </div>
@@ -831,9 +834,9 @@ const cuerpoTabla = document.getElementById("mr-tbody");
     
     cuerpoTabla.innerHTML = data.map(r=>`
       <tr>
-        <td>${safe(r.solicitud_id ?? '' )}</td>
-        <td>${safe(r.fechaRespuesta ?? '')}</td>
-        <td><div class="msg">${safe(r.respuesta ?? '')}</div></td>
+        <td>${safe(r.idSolicitud ?? '' )}</td>
+        <td>${safe(r.respuesta ?? '')}</td>
+        <td><div class="msg">${safe(r.fechaRespuesta ?? '')}</div></td>
       </tr>
     `).join('')
     

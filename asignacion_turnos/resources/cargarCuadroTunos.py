@@ -34,12 +34,12 @@ def procesar_cuadro_turnos(file, usuario):
 
             elif i == 4:
                 try:
-                    d1 = str(value[2]).strip()          # Fecha vigencia
+                    d1 = str(value[2]).strip()     # Fecha vigencia
                     d2 = str(value[10]).strip()         # Fecha implementación (columna K)
                     version_val = str(value[6]).strip() # Valor de la versión (columna G)
 
                     # Procesar fecha de vigencia
-                    arr["fechavigencia"] = pd.to_datetime(d1, dayfirst=True, errors='raise').date()
+                    arr["fechavigencia"] = pd.to_datetime(d1, dayfirst=True, errors='coerce')
 
                     # Procesar fecha de implementación
                     if d2:
