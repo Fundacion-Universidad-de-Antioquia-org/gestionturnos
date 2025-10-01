@@ -11,11 +11,11 @@
 
 body {
     min-height: 100vh;
-     background-color: #292929;
-    /*background: linear-gradient(135deg, #ffffff, #f1f9ef, #d6eacb); */
+    background-color: #252424;
+   /* background: linear-gradient(135deg, #ffffff, #f1f9ef, #d6eacb); */
     /*background: rgb(27, 26, 26); */
     /*background-color: #08031a; */
-    /*background: radial-gradient(#05072d, #000000);*/
+    /*background: radial-gradient(#0b0f52, #131212);*/
     
 }
 
@@ -25,6 +25,13 @@ body {
     padding: 0;
     height: 100vh;
     overflow: auto;
+}
+
+.icon-title{
+  
+  display: flex;
+  justify-content: center;
+  gap: 4px;
 }
 
 .content {
@@ -1785,10 +1792,10 @@ label {
 }
 
 .modal-descripcion-profesional .modal-content {
-  background-color: #ffffff;
+  background-color: #252424;
   border-radius: 12px;
   border: none;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px rgba(33, 4, 160, 0.553);
   padding: 1.8rem;
   animation: modalFadeIn 0.3s ease-in-out;
   overflow-y: auto;
@@ -1820,7 +1827,7 @@ label {
 .modal-descripcion-profesional .modal-header-custom-dos {
   font-size: 1.4rem;
   font-weight: bold;
-  color: #2d3436;
+  color: #4cc530;
   margin-bottom: 1rem;
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 0.5rem;
@@ -1830,20 +1837,20 @@ label {
 .modal-descripcion-profesional p {
   margin: 0.4rem 0;
   font-size: 0.95rem;
-  color: #2f3640;
+  color: #fdfeff;
 }
 
 .modal-descripcion-profesional p strong {
-  color: #636e72;
+  color: #52ab1d;
 }
 
 /* Texto destacado */
 .modal-descripcion-profesional .modal-texto {
   padding: 0.3rem 0.6rem;
-  background-color: #f8f9fa;
+  background-color: #2f3640;
   border-radius: 6px;
   font-size: 0.95rem;
-  color: #2d3436;
+  color: #ffffff;
 }
 
 /* Botones */
@@ -1907,7 +1914,6 @@ label {
   resize: vertical;
   min-height: 100px;
 }
-
 
 
 /* --- Ajustes Responsive --- */

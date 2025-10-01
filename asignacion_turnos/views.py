@@ -166,6 +166,10 @@ def vista_cargarSucesionTrenes(request, *, context):
         'resultadosSucesion': resultadosCargarSucesion,
         'usuarioLogeado': usuarioLogeado,
         'datos_sucesion': sucesion_mas_particularidades,
+        'erroresSemana':erroresSemana,
+        'erroresSabados': erroresSabados,
+        'erroresDomingos':erroresDomingos,
+        'erroresEspecial':erroresEspecial,
         'success':True })
 
 @settings.AUTH.login_required
@@ -1716,6 +1720,29 @@ def descargarInformeGt(request):
             
             return resp
 
+
+
+@api_view(["GET"])
+def misSolicitudesGT(request):
+    codigo = request.GET.get("codigo")
+    
+    data = []
+
+    if codigo is not None:
+        solicitudes = Solicitudes_Gt.objects.filter(codigo = codigo)
+        for s in solicitudes:
+            data.append({
+                "nombre": s.nombre,
+                "codigo":s.codigo,
+                "cargo": s.cargo,
+                "tipo_solicitud": s.tipo_solicitud,
+                "fecha_solicitud": s.fecha_solicitud,
+                "fecha_inicial": s.fecha_inicial,
+                "fecha_final": s.fecha_final,
+                "estado": s.estado,
+                "descripcion": s.descripcion
+            })
+        return Response(data)
 
 
 

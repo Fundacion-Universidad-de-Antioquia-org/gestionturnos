@@ -206,7 +206,7 @@
 
  <section class="acordion-section">
 <div class="accordion-container" style="margin-top: 14px;">
-  <div class="accordion-header"><span class="material-symbols-outlined">search</span>Filtros de Búsqueda</div>
+  <div class="accordion-header"><span class="material-symbols-outlined">filter_alt</span>Filtros de Búsqueda</div>
   <div class="accordion-body">
     <div class="filtros-horizontal">
        <div class="filtro-item">
@@ -298,7 +298,7 @@
             <td>{{s.fecha_final|date:"d/m/Y"}}</td>
             <td><span>{{ s.estado }}</span></td>
              <td>
-               <button class="btn-ver-respuesta btn-icon" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #2d6fe9; color: rgb(250, 250, 250); padding: 7px;"><span class="material-symbols-outlined">content_paste_search</span></button>
+               <button class="btn-ver-respuesta btn-icon" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #0d1117; color: rgb(250, 250, 250); padding: 7px;"><span class="material-symbols-outlined">content_paste_search</span></button>
              </td> 
              
              <td>
@@ -393,8 +393,8 @@
 <!--Modal informe GT-Solicitudes -->
 <div id="modalInformeGT" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
-    <span class="cerrar-fechas-gt" onclick="cerrarModalFechasGT()">&times;</span>
-    <h3 class="titulo-fechas-gt"><span class="material-symbols-outlined">convert_to_text</span>Descarga de datos Solicitudes GT</h3>
+    <span class="cerrar-fechas-gt" onclick="cerrarModalInformeGT()">&times;</span>
+    <div class="icon-title"><span class="material-symbols-outlined">convert_to_text</span><h3 class="titulo-fechas-gt">Descarga de datos Solicitudes GT</h3></div>
 
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha inicial:</label>
@@ -926,7 +926,7 @@ const cuerpoTabla = document.getElementById("mr-tbody");
 
   })
 
-  function cerrarModalFechasGT() {
+  function cerrarModalInformeGT() {
   const modal = document.getElementById("modalInformeGT");
   modal.classList.remove("mostrar");
   setTimeout(() => {
@@ -945,7 +945,7 @@ const cuerpoTabla = document.getElementById("mr-tbody");
     const fechaInicialFormateada = fechaInicial.value.replaceAll("-","/")
     const fechaFinalFormateada = fechaFinal.value.replaceAll("-","/")
 
-    alert(`Fecha inicial ${fechaInicialFormateada} fecha final: ${fechaFinalFormateada}, estado: ${opcionSeleccionada}`)
+    /* alert(`Fecha inicial ${fechaInicialFormateada} fecha final: ${fechaFinalFormateada}, estado: ${opcionSeleccionada}`) */
      const params = new URLSearchParams({
       fechaInicialFormateada,    
       fechaFinalFormateada,             

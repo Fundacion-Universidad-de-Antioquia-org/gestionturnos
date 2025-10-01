@@ -28,7 +28,6 @@
 }
 </style>
 
-
 <!--Estilos de filtros-->
 <style>
     .accordion-header {
@@ -607,6 +606,8 @@ label {
     mostrarPagina(1);
     aplicarFiltros()
     document.getElementById("tablaBody").style.display = "";
+
+    
   });
 </script>
 
@@ -840,6 +841,8 @@ document.getElementById("editTurno").addEventListener("input", function () {
 
 // Botón cerrar manual
 document.addEventListener("DOMContentLoaded", function () {
+
+
   document.getElementById("cerrarBotonManual").addEventListener("click", function () {
     document.getElementById("modalEditar").style.display = "none";
   });

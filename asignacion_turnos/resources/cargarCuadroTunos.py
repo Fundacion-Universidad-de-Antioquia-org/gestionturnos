@@ -38,19 +38,26 @@ def procesar_cuadro_turnos(file, usuario):
                     d2 = str(value[10]).strip()         # Fecha implementación (columna K)
                     version_val = str(value[6]).strip() # Valor de la versión (columna G)
 
-                    # Procesar fecha de vigencia
-                    arr["fechavigencia"] = pd.to_datetime(d1, dayfirst=True, errors='coerce')
+                    if d1:
+                        fecha_vigen = pd.to_datetime(d1, dayfirst=True, errors='coerce')
+                        if pd.isna(fecha_vigen):
+                            errores.append("Fecha de vigencia no encontrada")
+                            arr["fechavigencia"] = None
+                        else:
+                            arr["fechavigencia"] = fecha_vigen.date()
+                    else:
+                        errores.append("Fecha de vigencia vacía")
 
-                    # Procesar fecha de implementación
+                    
                     if d2:
                         fecha_impl = pd.to_datetime(d2, dayfirst=True, errors='coerce')
                         if pd.isna(fecha_impl):
-                            errores.append("Fecha implementación no válida.")
+                            errores.append("Fecha implementación no encontrada")
                             arr["fechaimplementacion"] = None
                         else:
                             arr["fechaimplementacion"] = fecha_impl.date()
                     else:
-                        errores.append("Fecha implementación vacía.")
+                        errores.append("Fecha implementación vacía")
                         arr["fechaimplementacion"] = None
 
                     # Procesar versión
@@ -61,7 +68,6 @@ def procesar_cuadro_turnos(file, usuario):
                     # Actualizar horario, eliminando el anteriror usando la el nombre horario, fecha vigencia y version
                     Horario.objects.filter(horario= arr["horario"], fechavigencia=arr["fechavigencia"], version=arr["version"]).delete()
                     print(f"Borrando registros para Horario: {arr['horario']}, {arr['fechavigencia']}, versión {arr['version']}")
-
                 except Exception as e:
                     errores.append(f"Error leyendo fechas en fila 4: {e}")
 

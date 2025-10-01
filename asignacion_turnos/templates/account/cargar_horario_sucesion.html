@@ -83,7 +83,7 @@
   </div>
   <div class="usuario-bar-apps-centro">
     <button style="background-color: #0a3329;" id="buscarSucesion" title="Buscar sucesión por codigo | fecha"><span class="material-symbols-outlined" style="color: white;">search</span></button>
-    <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;">find_replace</span></button>
+    <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;" onclick="abrirModalHorarios()">find_replace</span></button>
     <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
     
   </div>
@@ -292,9 +292,7 @@
 <!--Modal  - editar por filas-->
 <div id="modalEditar" class="modal-custom">
   <div class="modal-content-custom">
-      <div class="modal-header-custom">
-        Actualizar empleado o turno
-        <span class="cerrar-modal" id="cerrarModal">&times;</span>
+      <div class="modal-header-custom">Actualizar empleado o turno <span class="cerrar-modal" id="cerrarModal">&times;</span>
       </div>
 
     <label>Nombre</label>
@@ -364,7 +362,7 @@
 <div class="modal-buscarSucesion" id="modalBuscarSucesion">
   <div class="modal-buscarSucesion-contenido">
     <span class="cerrar-buscarSucesion" onclick="cerrarModalBuscarSucesion()">&times;</span>
-    <h3 class="titulo-buscarSucesion">Buscar sucesión</h3>
+    <div class="icon-title"><span class="material-symbols-outlined">search</span><h3 class="titulo-buscarSucesion">Buscar sucesión</h3></div>
 
     <div class="formulario-buscarSucesion">
       <label for="codigo">Código</label>
@@ -586,9 +584,9 @@ function aplicarFiltros() {
     const coincideFecha  = !valorFecha  || tFecha === valorFecha; // exacta
     const coincideEstado = !valorEstado || tEstado === valorEstado;
 
-    row.style.display = (coincideNombre && coincideCodigo && coincideTurno &&
+    /*row.style.display = (coincideNombre && coincideCodigo && coincideTurno &&
                          coincideCargo && coincideFecha && coincideEstado)
-                        ? '' : 'none';
+                        ? '' : 'none'; */
   });
 }
 
@@ -1073,6 +1071,7 @@ document.getElementById("editTurno").addEventListener("input", function () {
     aplicarFiltros(); 
     mostrarPagina(1);
     mostrarBotonesCargaTrenes();
+    capturarErroresCargaSucesion();
   });
 
   function mostrarBotonesCargaTrenes(){
@@ -1156,25 +1155,19 @@ document.getElementById("editTurno").addEventListener("input", function () {
   }
 
   function capturarErroresCargaSucesion(){
-     
-    const erroresSemana = JSON.parse('{{ erroresSemana|safe|escapejs }}');
-    const erroresSabados = JSON.parse('{{ erroresSabados|safe|escapejs }}');
-    const erroresDomingo = JSON.parse('{{ erroresDomingo|safe|escapejs }}');
-    const erroresEspecial = JSON.parse('{{ erroresEspecial|safe|escapejs }}');
 
-    let errores = ""
-    erroresSemana.forEach(error =>{
-      errores += "Errores generados: "+error
-    })
-
-     Swal.fire({
-                    icon: "success",
-                    title: "Correcto",
-                    text: data.errores,
+   
+    const erroresSemana = ('{{ erroresSemana|safe|escapejs }}');
+   
+    if(erroresSemana !== "None" ){
+         Swal.fire({
+                    icon: "error",
+                    title: "Se detectaron errores al cargar los archivos.",
+                    text: erroresSemana.slice(0,150)+ "[ La fecha de vigencia debe estar ubicada en la fila 4, columna 2 ]",
                       })
-
-
-  }
+      }
+   
+      }
  </script>
 
 {% endblock %}
