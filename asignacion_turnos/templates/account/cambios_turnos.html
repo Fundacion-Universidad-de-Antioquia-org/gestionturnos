@@ -28,24 +28,23 @@
 {% block content %}
 <section class="usuario-bar-section">
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
-  <div class="usuario-bar-logo-nombre">
+
+<!-- Sección Izquierda: Foto + Usuario -->
+<div class="usuario-bar-logo-nombre">
     <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
-    <div class="d-flex flex-column align-items-center flex-shrink-0">
-
-      <!-- Nombre del usuario -->
-      <div class="saludo" style="color: white; font-weight: 500;">
-        {{ usuarioLogeado }}
-      </div>
-
-      <!-- Título de la página -->
-      <div class="saludo" style="color: #5a9138; font-size: 11px;">Cambios de turno</div>
+  <div class="d-flex flex-column align-items-center flex-shrink-0">
+  
+    <!-- Nombre del usuario -->
+    <div class="saludo" style="color: white; font-weight: 500;">
+      {{ usuarioLogeado }}
     </div>
+
+    <!-- Título de la página -->
+    <div class="saludo" style="color: #5a9138; font-size: 11px;">Cambios de turnos</div>
+  </div>
+ 
   </div>
 
-  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
-    {% csrf_token %}
-    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
-  </form>
 </div>
 </section>
 
@@ -163,7 +162,7 @@
 
 </section>
 
-<section class="usuario-bar-section">
+<section class="panelControl-cambiosTurnos">  
 <div class="acciones-finales">
   <button id="aprobarCambios" class="btn-aprobar">Aprobar cambios</button>
   <button class="btn-eliminar" id="desaprobarCambios">Rechazar solicitudes </button>

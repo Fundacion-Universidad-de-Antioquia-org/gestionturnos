@@ -43,15 +43,19 @@ from .resources.peticion_Oddo import sincronizarDbEmpleados
 
 @settings.AUTH.login_required
 def vista_home(request,*, context):
+    usuarioLogeado = str(request.user).upper()
+    print(usuarioLogeado)
     data = sincronizarDbEmpleados()
     return render(request,'account/home.html',{
+        
         "success": data.get('success'),
         "recibidos": data.get('recibidos'),
         "validos": data.get('validos'),
         "sin_cedula": data.get('sin_cedula'),
         "creados": data.get('creados'),
         "actualizados": data.get('creados'),
-        "tiempo_s": data.get('tiempo')
+        "tiempo_s": data.get('tiempo'),
+        "usuarioLogeado": usuarioLogeado,
     })
 
 

@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <!-- Solo necesitas UNA importación general -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnfuadesarrollo.blob.core.windows.net/gestionturnos/style.css ">
+    <!-- <link rel="stylesheet" href="https://cdnfuadesarrollo.blob.core.windows.net/gestionturnos/style.css "> -->
     <!-- Estilos del template -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -19,7 +19,7 @@
 </head>
 
 <body>
-    <!-- Modal de fechas GT -->
+      <!-- Modal de fechas GT -->
 <div id="modalFechasGT" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
     <span class="cerrar-fechas-gt" onclick="cerrarModalFechasGT()">&times;</span>
@@ -36,6 +36,28 @@
     </div>
   </div>
 </div>
+    <!-- === Barra superior fija === -->
+    <section class="usuario-bar-section">
+    <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
+
+    <!-- Sección Izquierda: Foto + Usuario -->
+    <div class="usuario-bar-logo-nombre">
+        <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
+      <div class="d-flex flex-column align-items-center flex-shrink-0">
+      
+        <!-- Nombre del usuario -->
+        <div class="saludo" style="color: white; font-weight: 500;">
+          
+        </div>
+
+        <!-- Título de la página -->
+        <div class="saludo" style="color: #5a9138; font-size: 11px;"></div>
+      </div>
+      </div>
+
+    </div>
+    </section>
+
     <!-- Sidebar -->
     <aside class="sidebar collapsed " id="sidebar">
         <!-- Sidebar Header -->

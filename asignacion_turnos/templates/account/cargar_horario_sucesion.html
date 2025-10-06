@@ -81,18 +81,14 @@
     <!-- Título de la página -->
     <div class="saludo" style="color: #5a9138; font-size: 11px;">Horarios & Sucesiones</div>
   </div>
-  <div class="usuario-bar-apps-centro">
-    <button style="background-color: #0a3329;" id="buscarSucesion" title="Buscar sucesión por codigo | fecha"><span class="material-symbols-outlined" style="color: white;">search</span></button>
-    <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;" onclick="abrirModalHorarios()">find_replace</span></button>
-    <button style="background-color: #0a3329;"><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
+  <div class="usuario-bar-centro">
+    <button title="Buscar sucesión por codigo | fecha" id="btnBuscarSucesion" ><span class="material-symbols-outlined">search</span></button>
+    <button><span class="material-symbols-outlined" onclick="abrirModalHorarios()">find_replace</span></button>
+    <button><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
     
   </div>
   </div>
 
-  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
-    {% csrf_token %}
-    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
-  </form>
 </div>
 </section>
 
@@ -385,11 +381,10 @@
 
 {% block scripts %}
 
-
 <!--Buscar datos*filtro-->
  <script>
-  document.getElementById("buscarSucesion").addEventListener("click", function(){
-
+  document.getElementById("btnBuscarSucesion").addEventListener("click", function(){
+  
     const modalBuscarSucesion = document.getElementById("modalBuscarSucesion");
     modalBuscarSucesion.style.display = "block";
 

@@ -40,6 +40,8 @@ body {
     padding: 25px 20px;
 }
 
+
+
 .table-responsive{
   overflow: auto;
 }
@@ -63,6 +65,7 @@ body {
     background-color: #0d1117;
     /* background-color: #222121; */
     transition: all 0.4s ease;
+    z-index: 10000;
 }
 
 
@@ -87,8 +90,8 @@ body {
 }
 
 /*Boton que colapsa el sidebar*/
-
-.sidebar-header .sidebar-toggler { 
+.sidebar-header .sidebar-toggler {
+    
     position: absolute;
     right: 20px;
     height: 35px;
@@ -173,11 +176,13 @@ body {
     align-items: center;
     text-decoration: none;
     border-radius: 8px;
-    border: 1px solid #599b31;
+    /*border: 1px solid #599b31;*/
     transition: 0.4s ease;
+    
 }
 
 .sidebar-nav .nav-item:hover > .nav-link:not(.dropdown-title) {  /*Boton que desplega */
+  
     color: #151A2E;
     background-color: #EEF2FF;
 }
@@ -281,6 +286,115 @@ body {
 .sidebar.collapsed .dropdown-menu .nav-item .dropdown-title {
     display: block;
 }
+/* === Barra superior fija === */
+.usuario-bar-section {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; /* fuerza a ocupar todo el ancho de la pantalla */
+  height: 95px;
+  background-color: #0c1118; /* verde institucional */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 9999; /* encima de todo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.usuario-bar {
+  width: 85%;
+  max-width: 1400px;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: #0c1118;
+}
+
+/* === Izquierda === */
+.usuario-bar-izquierda {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icono-usuario {
+  color: white;
+  font-size: 46px;
+}
+
+.usuario-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.usuario-nombre {
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.usuario-subtitulo {
+  color: #5a9138;
+  font-size: 11px;
+}
+
+/* === Centro === */
+.usuario-bar-centro {
+  display: flex;
+  gap: 8px;
+}
+
+.usuario-bar-centro button {
+  background-color: #0a3329;
+  border: none;
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.usuario-bar-centro button:hover {
+  background-color: #145f4a;
+}
+
+.usuario-bar-centro .material-symbols-outlined {
+  color: white;
+  font-size: 22px;
+}
+
+/* === Derecha === */
+.btn-cerrar-sesion {
+  background-color: #c0392b;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cerrar-sesion:hover {
+  background-color: #e74c3c;
+}
+
+/* === Ajuste del contenido principal === */
+main.content {
+  margin-top: 80px; /* deja espacio debajo de la barra fija */
+}
+
+/* === Corrección de interferencias === */
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+
 
 /*Estilos de tabla*/
 .styled-table {
@@ -383,16 +497,16 @@ body {
     align-items: center;
     padding: 0 7px ;
     border-radius: 12px;
-    background-color: #1a6c57; /* Sin fondo blanco */
+    background-color: #0c1118; /* Sin fondo blanco */
     animation: fadeSlideDown 0.6s ease-in-out;
     transition: box-shadow 0.3s ease;
     height: 48px;
 }
 
-.usuario-bar-section{
+/*.usuario-bar-section{
   display: flex;
   justify-content: center;
-}
+} */
 
 .usuario-bar .saludo {
     font-size: 1.05rem;
@@ -480,6 +594,12 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.panelControl-cambiosTurnos {
+    width: 85%;
+    align-items: flex-end;
+
 }
 
 .btn-cerrarSesion {
@@ -1975,4 +2095,21 @@ label {
   .styled-table td {
     padding: 8px 10px;
   }
+
+     .usuario-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    height: auto;
+    padding: 10px 15px;
+  }
+
+  .usuario-bar-centro {
+    margin-left: 0;
+  }
+
+  .btn-cerrar-sesion {
+    align-self: flex-end;
+  }
+
 }

@@ -59,15 +59,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Manejo del botón de colapsar sidebar (si existe)
-    const sidebarToggler = document.querySelector(".sidebar-toggler");
+    /*const sidebarToggler = document.querySelector(".sidebar-toggler");
     if (sidebarToggler) {
         console.log("Sidebar-toggler encontrado.");
         sidebarToggler.addEventListener("click", function () {
             closeAllDropdowns(); // Cierra menús abiertos
             document.querySelector(".sidebar").classList.toggle("collapsed");
         });
-    }
+    } */
 });
+
+
 
 /* Filtros - acordeon*/
   document.querySelectorAll(".accordion-title").forEach(title => {
@@ -83,7 +85,7 @@ function abrirModalFechasGT() {
   modal.style.display = "block";
   setTimeout(() => {
     modal.classList.add("mostrar");
-  }, 10); // pequeño delay para que el transition funcione
+  }, 10);
 }
 
 function cerrarModalFechasGT() {
@@ -91,7 +93,7 @@ function cerrarModalFechasGT() {
   modal.classList.remove("mostrar");
   setTimeout(() => {
     modal.style.display = "none";
-  }, 300); // coincide con el tiempo de transition
+  }, 300);
 }
 
 
@@ -113,8 +115,6 @@ function cargarFechasGT() {
     window.location.href = url; 
 
 }
-
-
-  cerrarModalFechasGT(); // Cierra el modal
+  cerrarModalFechasGT();
 }
 
