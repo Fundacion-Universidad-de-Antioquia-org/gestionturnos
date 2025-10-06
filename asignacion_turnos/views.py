@@ -528,8 +528,12 @@ def get_sucesion_cargo(request):
 @api_view(["POST"])
 def actualizar_turno(request):
 
-    turno = request.data.get('turno','').strip()
     data = request.data
+
+    turnoOriginal = data.get("turnoOriginal")
+    turno = data.get("turno")
+    codigo = data.get("codigo")
+    fecha = data.get("fecha")
     peticion = request.data.get('peticion')
 
     if not turno:
@@ -539,20 +543,12 @@ def actualizar_turno(request):
     if peticion == "accesoRapido":
         print(peticion)
 
-        horario = get_object_or_404(Horario, turno=turno) 
-        horario.inilugar = data.get('inilugar') 
-        horario.finallugar = data.get('finallugar')
-        horario.inihora = data.get('inihora')
-        horario.finalhora = data.get('finalhora')
-        #horario.inicir = data.get('circulacionIni')
-        #horario.finbalcir =  data.get('circulacionFin')
-        #horario.duracion = data.get('duracion')
-        horario.observaciones = data.get('observaciones')
-        horario.save()
+        horario_relacion = Horario.objects.filter(turno = turno)
 
-        # actulizamos la suce tambien
-        Sucesion.objects.filter(codigo_horario = turno).update(estado_inicio = data.get('inilugar'), estado_fin = data.get('finallugar'), hora_inicio = data.get('inihora'), hora_fin = data.get('finalhora'))
-        
+        Sucesion.objects.filter(fecha = fecha, codigo = codigo, codigo_horario = turnoOriginal).update(codigo_horario = turno,horario = horario_relacion, 
+                estado_inicio = data.get("inilugar"),estado_fin = data.get("inilugar"), 
+                hora_inicio = data.get("inihora"), hora_fin = data.get("finalhora"))
+
         return Response({
             "success":True,
             "message": f"Turno: {turno}, actualizado correctamente"

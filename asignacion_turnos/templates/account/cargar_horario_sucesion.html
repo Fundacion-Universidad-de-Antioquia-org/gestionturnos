@@ -791,7 +791,9 @@ document.getElementById("guardarCambios").addEventListener("click", function () 
                   headers:{"Content-Type": "application/json",
                           "X-CSRFToken": getCookie("csrftoken")},
                   body: JSON.stringify({
+                    turnoOriginal: datosOriginales.turno.toUpperCase(),
                     turno: datosNuevos.turno.toUpperCase(),
+                    codigo: datosNuevos.codigo.toUpperCase(),
                     inilugar: datosNuevos.estacionIni.toUpperCase(),
                     finallugar: datosNuevos.estacionFin.toUpperCase(),
                     inihora: datosNuevos.horaIni,
