@@ -310,7 +310,7 @@
 
     <h3> <label for="">Editar información del turno</label></h3>
     <label>Turno <span style="background-color: #5a9138;" class="material-symbols-outlined">ads_click</span>Click aca para permitir editar</label>
-    <input type="text" name="" id="editTurno" readonly>  
+    <input type="text" name="" id="editTurno" >  
      <label>Fecha turno</label>
     <input type="datetime" id="editFecha" readonly>
 
@@ -748,7 +748,8 @@ document.getElementById("cerrarModal").addEventListener("click", function () {
 //Script del boton guardar cambios dentro del MOdal, este permite acentar los cambios en el modelo correspondiente, ya sea Empleados o Horario.
 document.getElementById("guardarCambios").addEventListener("click", function () {
     const datosOriginales = JSON.parse(localStorage.getItem("datosOriginales") || "{}");
-
+    const diaHoy = hoyBogotaISODate()
+    
     const datosNuevos = {
         nombre : document.getElementById("editNombre").value,
         codigo : document.getElementById("editCodigo").value,
@@ -770,13 +771,21 @@ document.getElementById("guardarCambios").addEventListener("click", function () 
     }else if(datosOriginales.turno !== datosNuevos.turno || datosOriginales.estacionIni !== datosNuevos.estacionIni 
     || datosOriginales.estacionFin !== datosNuevos.estacionFin || datosOriginales.horaIni !== datosNuevos.horaIni 
     || datosOriginales.horaFin !== datosNuevos.horaFin || datosOriginales.particularidades !== datosNuevos.particularidades){
-
         //alert("se modifico el turno")
         /*Actualización de datos del turno*/
       if(datosNuevos.turno !== ""){
+        if(datosOriginales.fecha < diaHoy){
+          document.getElementById("modalEditar").style.display = "none";
+            Swal.fire({
+                    icon: "error",
+                    title: "Modificación no permitida",
+                    text: `Solo es posible editar turnos posteriores a la fecha de hoy ${diaHoy}`,
+                      })
+              return;
+        }
           if(datosNuevos.turno !== "COMPE" && datosNuevos.turno !== "LIBRE" && datosNuevos.turno !== "FUNDA" && datosNuevos.turno !== "SUSPEN"){ // SRM548
               if(datosNuevos.estacionIni !== "" && datosNuevos.estacionFin !== "" && datosNuevos.horaIni !== "" && datosNuevos.horaFin !== "" && datosNuevos.particularidades !==  ""){
-                  
+
                 fetch("{% url 'actualizar_turno' %}",{
                   method:"POST",
                   headers:{"Content-Type": "application/json",
@@ -813,7 +822,7 @@ document.getElementById("guardarCambios").addEventListener("click", function () 
 
       }else{
          Swal.fire({
-                    icon: "warning",
+                    icon: "error",
                     title: "Advertencia",
                     text: "Codigo de turno vacio, por favor ingrese un codigo valido"
                     });
@@ -1163,6 +1172,21 @@ document.getElementById("editTurno").addEventListener("input", function () {
       }
    
       }
+ </script>
+
+<!--Funcion para obtener fecha con horario BOGOTA-->
+ <script>
+  function hoyBogotaISODate() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Bogota',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date());
+
+  const y = parts.find(p => p.type === 'year').value;
+  const m = parts.find(p => p.type === 'month').value;
+  const d = parts.find(p => p.type === 'day').value;
+  return `${y}-${m}-${d}`; // p.ej. "2025-10-06"
+}
  </script>
 
 {% endblock %}

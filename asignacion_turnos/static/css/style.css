@@ -1,12 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: "Poppins", "sans-serif";
-    font-size: 12.5px;
+    font-size: 12px;
 }
 
 body {
@@ -67,7 +66,6 @@ body {
     transition: all 0.4s ease;
     z-index: 10000;
 }
-
 
 .sidebar.collapsed {
     width: 85px;
@@ -394,8 +392,6 @@ body, html {
   overflow-x: hidden;
 }
 
-
-
 /*Estilos de tabla*/
 .styled-table {
     width: 85%;
@@ -470,6 +466,7 @@ body, html {
 .table-section {
   display: flex;
   justify-content: center;
+  
 }
 
 /* Estilo para títulos */
@@ -975,7 +972,7 @@ button.btn-editar i {
 .modal-custom {
   display: none;
   position: fixed;
-  z-index: 1001;
+  z-index: 10000;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(2px); /* efecto de desenfoque de fondo */
@@ -1273,7 +1270,7 @@ label {
 .modal-custom {
   display: none;
   position: fixed;
-  z-index: 1001;
+  z-index: 10000;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(2px); /* efecto de desenfoque de fondo */
@@ -1442,50 +1439,6 @@ label {
 
 .modal-header-custom .cerrar-modal:hover {
   color: #ffffff;
-}
-
-/*Estilos tabla solicitudes de cambios de turnos*/
-.tabla-cambios-turno {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin-bottom: 30px;
-}
-
-.tabla-cambios-turno thead {
-  background-color: #1D5031;
-  color: white;
-}
-
-.tabla-cambios-turno th,
-.tabla-cambios-turno td {
-  padding: 12px 10px;
-  text-align: left;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
-
-.tabla-cambios-turno tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.tabla-cambios-turno tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
-.tabla-cambios-turno button {
-  background-color: #1D5031;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-}
-
-.tabla-cambios-turno button:hover {
-  background-color: #146021;
 }
 
 .acciones-finales {
@@ -2112,4 +2065,13 @@ label {
     align-self: flex-end;
   }
 
+}
+
+@media (width <= 1400px){
+ .styled-table th,
+.styled-table td {
+    padding: 4px;
+    border: 1px solid #0b0f12; /*Color de los bordes de la tabla */
+    text-align: center;
+}
 }

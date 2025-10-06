@@ -42,6 +42,13 @@
     <!-- Título de la página -->
     <div class="saludo" style="color: #5a9138; font-size: 11px;">Cambios de turnos</div>
   </div>
+  <div class="usuario-bar-centro">
+    <button title="Activar o desactivar filtros" id="btnActivarFiltros" ><span class="material-symbols-outlined">filter_alt</span></button>
+    <button title="Buscar cambio de turno" id="btnBuscarCambio" ><span class="material-symbols-outlined">search</span></button>
+    <button><span class="material-symbols-outlined" onclick="abrirModalHorarios()">find_replace</span></button>
+    <button><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
+    
+  </div>
  
   </div>
 
@@ -49,7 +56,7 @@
 </section>
 
 <!-- Acordeón de filtros -->
- <section class="acordion-section">
+ <section class="acordion-section" id="accordionHeader">
 <div class="accordion-container" style="margin-top: 14px;">
   <div class="accordion-header"><span class="material-symbols-outlined">search</span>Filtros de Búsqueda</div>
   <div class="accordion-body">
@@ -87,6 +94,7 @@
       <div class="filtro-item">
         <label for="filtroFecha">Estado de solicitud:</label>
         <select name="" id="filtroEstadoSolicitud">
+          <option value="todos">todos</option>
           <option value="pendiente" selected>pendiente</option>
           <option value="aprobado">aprobado</option>
           <option value="desaprobado">desaprobado</option>
@@ -322,10 +330,12 @@
       const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
 
       if (estadoAdmin === "pendiente") {
-        const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
-        codigoSolicitante = codigoSolicitante.match("/\d+/g")
+        const codigoSolicitanteTabla = fila.querySelector('.codigoSolicitante')?.textContent.trim();
+        codigoSolicitante = codigoSolicitanteTabla.replace(/\D/g, "");
+        alert(codigoSolicitante)
         const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
-        const codigoReceptor = fila.querySelector('.codigoReceptor')?.textContent.trim();
+        const codigoReceptorTabla = fila.querySelector('.codigoReceptor')?.textContent.trim();
+        const codigoReceptor = codigoReceptorTabla.replace(/\D/g, "");
         const turnoReceptorDiaDeseado = fila.querySelector('.turnoReceptorDiaDeseado')?.textContent.trim();
         const fechaCambioTexto = fila.querySelector('.fechaCambio')?.textContent.trim();
         const fechaCambio = /^\d{2}\/\d{2}\/\d{4}$/.test(fechaCambioTexto)
@@ -525,6 +535,20 @@
     }
     return cookieValue;
   }
+</script>
+
+<script>
+  document.getElementById("btnActivarFiltros").addEventListener("click", function(){
+    const acordion = document.getElementById("accordionHeader");
+
+    if(acordion.style.visibility === "visible"){
+      acordion.style.visibility = "hidden";
+    }else if(acordion.style.visibility === "hidden"){
+      acordion.style.visibility = "visible";
+    }
+   
+    
+  })
 </script>
 
 {% endblock %}

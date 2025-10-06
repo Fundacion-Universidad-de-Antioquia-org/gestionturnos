@@ -21,7 +21,7 @@ import pandas as pd
 from io import BytesIO
 
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 from django.utils import timezone
 from django.db.models.functions import TruncMinute
 
@@ -975,10 +975,10 @@ def solicitar_cambio_turno(request):
 
     # Se valida si el codigo existe:
     if not solicitanteEmpleado:
-        return Response ({"success":False , "message": f"El Empleado con codigo: {codigoSolicitante} no existe"})
+        return Response ({"success":False , "message": f"El Empleado con codigo: {codigoSolicitante} no existe ó se encuentra inactivo"})
     
     if not receptorEmpleado:
-        return Response ({"success":False , "message": f"El Empleado con codigo: {codigoReceptor} no existe"})
+        return Response ({"success":False , "message": f"El Empleado con codigo: {codigoReceptor} no existe ó se encuentra inactivo"})
     
     # Se valida el estado del empleado: Activo
     try:
@@ -1124,8 +1124,12 @@ def solicitar_cambio_turno(request):
     estadoCambio = ""
     madrugadaLinea = ["ORIENTE","OCCIDENTE","SUR"]
     madrugadaPatio = ["PBE"]
+    
+   
+    t = time.fromisoformat("03:59")
+    limiteMadrugada = datetime.combine(fechaCambio,t)
 
-    if receptor_dia.hora_inicio <= datetime.combine(fechaCambio,"03:59"):
+    if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) <= limiteMadrugada and  datetime.combine(fechaCambio,receptor_dia.hora_inicio) <= limiteMadrugada:
         if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
             comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
             transportable = True
@@ -1277,33 +1281,45 @@ def aprobar_solicitudes_cambios_turnos(request):
 
 @api_view(["POST"])
 def desaprobar_solicitudes_cambios(request):
-
     solicitudes = request.data.get('solicitudes') 
-    
+    print("Entro al endpoint")
+
     if solicitudes: 
+        print("Hay solicitudes")
         for solicitud in solicitudes:
+            if solicitud.get('codigoSolicitante') and solicitud.get('codigoReceptor'):
+                empleadoSolicitante = Empleado_Oddo.objects.filter(codigo = solicitud['codigoSolicitante'], estado = "Activo").first()
+                empleadoReceptor = Empleado_Oddo.objects.filter(codigo = solicitud['codigoReceptor'] , estado = "Activo").first()
 
-            empleadoSolicitante = Empleado_Oddo.objects.filter(codigo = solicitud['codigoSolicitante'], estado = "Activo").first()
-            empleadoReceptor = Empleado_Oddo.objects.filter(codigo = solicitud['codigoReceptor'] , estado = "Activo").first()
-
-            solicitudCambioTurno = get_object_or_404(Cambios_de_turnos, fecha_solicitud_cambio = solicitud['fechaCambio'], 
-                                             codigo_solicitante = solicitud['codigoSolicitante'], 
-                                             codigo_receptor = solicitud['codigoReceptor'])
-            
-            Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
-                                             codigo_solicitante = solicitud['codigoSolicitante'], 
-                                             codigo_receptor = solicitud['codigoReceptor'],
-                                             ).update(estado_cambio_admin = "desaprobado")
-            
-            send_log(empleadoSolicitante.cedula, datetime.today(), "Rechazar solicitud",
-                     f"Se rechazo la solicitud de cambio entre: {empleadoSolicitante.nombre}, cod: {empleadoSolicitante.codigo} y {empleadoReceptor.nombre}, cod: {empleadoReceptor.codigo}, para la fecha: {solicitud['fechaCambio']}",
-                      "AppGestionTurnos","Update:estadoSolicitud", solicitudCambioTurno.id)
-            
-            return Response({
-                "success":True,
-                "message":f"Se desaprobo el cambio de turno entre: {solicitud['codigoSolicitante']} y {solicitud['codigoReceptor']}, para la fecha: {solicitud['fechaCambio']}",
-            }, status=200)
-
+                solicitud = Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
+                                                codigo_solicitante = solicitud['codigoSolicitante'], 
+                                                codigo_receptor = solicitud['codigoReceptor'],
+                                                )
+                
+                Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
+                                                codigo_solicitante = solicitud['codigoSolicitante'], 
+                                                codigo_receptor = solicitud['codigoReceptor'],
+                                                ).update(estado_cambio_admin = "desaprobado")
+                
+                print(empleadoReceptor.nombre)
+                send_log(empleadoSolicitante.cedula, datetime.today(), "Rechazar solicitud",
+                        f"Se rechazo la solicitud de cambio entre: {empleadoSolicitante.nombre}, cod: {empleadoSolicitante.codigo} y {empleadoReceptor.nombre}, cod: {empleadoReceptor.codigo}, para la fecha: {solicitud['fechaCambio']}",
+                        "AppGestionTurnos","Update:estadoSolicitud", solicitud.id)
+                
+                return Response({
+                    "success":True,
+                    "message":f"Se desaprobo el cambio de turno entre: {solicitud['codigoSolicitante']} y {solicitud['codigoReceptor']}, para la fecha: {solicitud['fechaCambio']}",
+                }, status=200)
+            else:
+                return Response({
+                    "success":False,
+                    "message":f"Los codigos de solicitante o receptor llegaron vacios, S: {solicitud.get('codigoSolicitante')}, R: {solicitud.get('codigoReceptor')}"
+                })
+    else:
+        return Response({
+            "success":False,
+            "message":"Solicitudes vacias"
+        })
 
 
 @api_view(["POST"])
