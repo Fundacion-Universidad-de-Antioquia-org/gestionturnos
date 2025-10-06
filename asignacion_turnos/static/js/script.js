@@ -59,14 +59,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Manejo del botón de colapsar sidebar (si existe)
-    /*const sidebarToggler = document.querySelector(".sidebar-toggler");
+    const sidebarToggler = document.querySelector(".sidebar-toggler");
     if (sidebarToggler) {
         console.log("Sidebar-toggler encontrado.");
         sidebarToggler.addEventListener("click", function () {
             closeAllDropdowns(); // Cierra menús abiertos
             document.querySelector(".sidebar").classList.toggle("collapsed");
         });
-    } */
+    } 
 });
 
 
