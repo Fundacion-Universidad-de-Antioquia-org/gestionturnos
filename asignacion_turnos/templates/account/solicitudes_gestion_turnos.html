@@ -71,6 +71,7 @@
 <style>
 .btn-icon {
   border: 0;
+  color: #2d6fe9;
   background: transparent;
   cursor: pointer;
   padding: 4px 6px;
@@ -83,7 +84,7 @@
 }
 
 .btn-icon .material-symbols-outlined {
-  font-size: 20px;
+  font-size: 35px;
 }
 
 
@@ -157,14 +158,14 @@
     </div>
 
     <!-- Título de la página -->
-    <div class="saludo" style="color: #ccc; font-size: 11px;">
-      Solicitudes GT
-    </div>
+    <div class="saludo" style="color: #5a9138; font-size: 11px;">Solicitudes GT</div>
     
   </div>
    <div class="usuario-bar-centro">
     <button title="Buscar sucesión por codigo | fecha" id="btnBuscarSucesion" ><span class="material-symbols-outlined">search</span></button>
     <button id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined">convert_to_text</span></button>
+    <button><a href="{% url 'vista_dashboard' %}"><span class="material-symbols-outlined">bar_chart_4_bars</span></a></button>
+    
   </div>
   </div>
   
@@ -297,11 +298,11 @@
             <td>{{s.fecha_final|date:"d/m/Y"}}</td>
             <td><span>{{ s.estado }}</span></td>
              <td>
-               <button class="btn-ver-respuesta btn-icon" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')" style="border-radius: 8px; background-color: #0d1117; color: rgb(250, 250, 250); padding: 7px;"><span class="material-symbols-outlined">content_paste_search</span></button>
+               <button class="btn-ver-respuesta btn-icon" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')"><span class="material-symbols-outlined">content_paste_search</span></button>
              </td> 
              
              <td>
-                <button type="button" class="btn-ver-respuesta btn-icon" data-id="{{ s.id }}"> <span class="material-symbols-outlined" style="color:#2d6fe9;font-size:35px;">sms</span></button>
+                <button type="button" class="btn-ver-respuesta btn-icon" data-id="{{ s.id }}"> <span class="material-symbols-outlined">sms</span></button>
              </td>
         </tr>
         {% empty %}s
@@ -499,7 +500,6 @@ setTimeout(() => {
       if (celda) {
       const span = celda.querySelector("span"); 
       if (span && span.textContent.trim() === "pendiente") {
-        
         span.style.backgroundColor = "#f1da05";
         span.style.color = "black";
         span.style.padding = "7px"; 

@@ -59,6 +59,9 @@ def vista_home(request,*, context):
     })
 
 
+
+
+
 @settings.AUTH.login_required
 def vista_cargarSucesionOperador(request,*, context):
 
@@ -92,6 +95,17 @@ def vista_cargarSucesionOperador(request,*, context):
         'usuarioLogeado': usuarioLogeado
         
     })
+
+
+@settings.AUTH.login_required
+def vista_dashboard(request,*, context):
+
+    if request.method == "GET":
+        usuarioLogeado = str(request.user).upper()
+
+        return render(request,"account/dashboard.html",{
+            'usuarioLogeado': usuarioLogeado
+        })
 
 @settings.AUTH.login_required
 def vista_cargarSucesionTrenes(request, *, context):
@@ -1777,5 +1791,7 @@ def getTodosComunicados(request):
                 "tipoArchivo":a.tipoArchivo
             })
         return Response({"success":True, "data":data})
+    
+
     
     

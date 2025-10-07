@@ -166,7 +166,8 @@ body {
 }
 
 .sidebar-nav .nav-item .nav-link {
-    color: #FFF;
+    color: #ffffff;
+    background-color: #0a3329;
     display: flex;
     gap: 12px;
     white-space: nowrap;
@@ -180,7 +181,6 @@ body {
 }
 
 .sidebar-nav .nav-item:hover > .nav-link:not(.dropdown-title) {  /*Boton que desplega */
-  
     color: #151A2E;
     background-color: #EEF2FF;
 }
@@ -819,17 +819,19 @@ button.btn-editar i {
 
 /* Header con degradado, esquinas redondeadas y flecha */
 .accordion-header {
-  background: linear-gradient(135deg, #5a9138, #276647);
+  background: linear-gradient(135deg, #050505, #0b0f12);
   color: white;
   padding: 12px 16px;
   cursor: pointer;
   font-weight: bold;
   position: relative;
   transition: background 0.3s ease;
+  box-shadow: 0 8px 25px rgba(53, 137, 27, 0.553);
 }
 
 /* Flecha indicadora */
 .accordion-header::after {
+  
   content: "▼";
   position: absolute;
   right: 16px;
@@ -841,7 +843,7 @@ button.btn-editar i {
 
 /* Cuando esté abierto (añade .active vía JS al hacer click) */
 .accordion-header.active { 
-  background: linear-gradient(135deg, #5a9138, #276647);
+  background: linear-gradient(135deg, #050505, #0b0f12);
 }
 .accordion-header.active::after {
   transform: translateY(-50%) rotate(180deg);
@@ -1988,6 +1990,10 @@ label {
   min-height: 100px;
 }
 
+.contenedorGraficos{
+  display: flex;
+  justify-content: center;
+}
 
 /* --- Ajustes Responsive --- */
 @media (max-width: 992px) {

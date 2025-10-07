@@ -1,5 +1,4 @@
 
-
 const toggleDropdown = (dropdown, menu, isOpen) => {
     console.log("toggleDropdown:", dropdown, "isOpen:", isOpen);
     dropdown.classList.toggle("open", isOpen);
