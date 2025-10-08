@@ -7,7 +7,6 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(authentication_form=LoginForm), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='registration/logged_out.html'), name='logout'),
     path('sucesiones_trenes/',views.vista_cargarSucesionTrenes, name= 'vista_cargarSucesionTrenes'),
-    path('operadores/',views.vista_cargarSucesionOperador, name='sucesion_operadores'),
     path ('home/',views.vista_home, name = 'home'),
     path('cambios_turnos/',views.get_solicitudes_cambios_turnos, name= 'cambios_turnos'),
     path('editarHorario/',views.editar_horario, name='editar_horario'),
@@ -45,5 +44,6 @@ urlpatterns = [
     path('api/insertarRespuesta/', views.insertarRespuesta, name = "insertarRespuesta"),
     path('api/getRespuesta/', views.getRespuesta, name = "getRespuesta"),
     path('api/descargarInformeGt/', views.descargarInformeGt, name = "descargarInformeGt"),
+    path('api/misSolicitudesGT/', views.misSolicitudesGT, name= 'misSolicitudesGT'),
     
     ]

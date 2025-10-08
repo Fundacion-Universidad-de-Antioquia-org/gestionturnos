@@ -190,19 +190,6 @@
         <label for="filtroFecha">Fecha:</label>
         <input type="datetime" id="filtroFecha">
       </div>
-      <div class="filtro-item">
-        <label for="filtroFechaInicial">Fecha inicial:</label>
-        <input type="date" id="filtroFechaInicial">
-      </div>
-      <div class="filtro-item">
-        <label for="filtroFechaFinal">Fecha final:</label>
-        <input type="date" id="filtroFechaFinal">
-      </div>
-      <div class="filtro-item f-btn">
-        <label for="botonBusqueda">  </label>
-        <button class="btn-third"  id="buscarDatosFiltro">Buscar datos</button>
-      </div>
-      
     </div>
   </div>
 </div>
@@ -361,7 +348,7 @@
     <div class="icon-title"><span class="material-symbols-outlined">search</span><h3 class="titulo-buscarSucesion">Buscar sucesión</h3></div>
 
     <div class="formulario-buscarSucesion">
-      <label for="codigo">Código</label>
+      <label for="codigo">Código:</label>
       <input type="text" id="codigoSucesion" class="input-buscarSucesion">
 
       <label for="fechaFinGT">Fecha inicial:</label>
@@ -579,9 +566,15 @@ function aplicarFiltros() {
     const coincideFecha  = !valorFecha  || tFecha === valorFecha; // exacta
     const coincideEstado = !valorEstado || tEstado === valorEstado;
 
-    /*row.style.display = (coincideNombre && coincideCodigo && coincideTurno &&
+    const tablaBody = document.getElementById("tablaBody")
+    const tieneFilas = tablaBody.querySelectorAll("tr").length > 1
+
+    if(tieneFilas){
+        row.style.display = (coincideNombre && coincideCodigo && coincideTurno &&
                          coincideCargo && coincideFecha && coincideEstado)
-                        ? '' : 'none'; */
+                        ? '' : 'none'; 
+    }
+    
   });
 }
 

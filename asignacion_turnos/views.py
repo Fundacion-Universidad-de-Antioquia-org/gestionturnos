@@ -58,45 +58,6 @@ def vista_home(request,*, context):
         "usuarioLogeado": usuarioLogeado,
     })
 
-
-
-
-
-@settings.AUTH.login_required
-def vista_cargarSucesionOperador(request,*, context):
-
-    usuarioLogeado = str(request.user).upper()
-    sucesionOperadores = Sucesion.objects.all()
-    resultadosCargarSucesion = None
-    errores = []
-
-    if request.method == "POST":
-        form = CargarSucesionOperadoresForm(request.POST, request.FILES)
-        accion = request.POST.get('action')
-        if accion == "cargar":
-            if form.is_valid():
-                file_sucesion = form.cleaned_data.get('file_sucesion')
-                if file_sucesion and validarExcel(file_sucesion):
-                    total_sucesion, errores = procesar_sucesion_multifila(file_sucesion, request.user)
-                    resultadosCargarSucesion = f"Se cargaron correctamente {total_sucesion} registros."
-                    sucesionOperadores = Sucesion.objects.all()
-                else:
-                    form.add_error(None,"No se cargo ningun archivo o documento con extension invalida")
-        elif accion == "publicar":
-            Sucesion.objects.filter(estado_sucesion='revision').update(estado_sucesion='publicado')
-            return redirect('sucesion_operadores')
-    else:
-        form = CargarSucesionOperadoresForm()
-    
-    return render(request,'account/cargar_sucesion_operadores.html',{
-        'resultadosSucesion':resultadosCargarSucesion,
-        'errores': errores,
-        'datos_sucesion':sucesionOperadores,
-        'usuarioLogeado': usuarioLogeado
-        
-    })
-
-
 @settings.AUTH.login_required
 def vista_dashboard(request,*, context):
 
@@ -1759,7 +1720,7 @@ def misSolicitudesGT(request):
     data = []
 
     if codigo is not None:
-        solicitudes = Solicitudes_Gt.objects.filter(codigo = codigo)
+        solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo=codigo, estado="Activo").select_related('empleado')
         for s in solicitudes:
             data.append({
                 "nombre": s.nombre,
@@ -1773,7 +1734,6 @@ def misSolicitudesGT(request):
                 "descripcion": s.descripcion
             })
         return Response(data)
-
 
 
 @api_view(["GET"])
@@ -1791,7 +1751,4 @@ def getTodosComunicados(request):
                 "tipoArchivo":a.tipoArchivo
             })
         return Response({"success":True, "data":data})
-    
-
-    
     
