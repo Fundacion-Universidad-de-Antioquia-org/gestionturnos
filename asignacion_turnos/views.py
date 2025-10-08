@@ -1321,12 +1321,12 @@ def solicitud_gt(request):
             "message":f"Usted no se encuentra activo para realizar este tipo de peticiones"})
     
     if codigoSolicitante is not None:
-
+        
         empleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante,  estado = "Activo").first()
         
         solicitud_gt = Solicitudes_Gt.objects.create(foto = empleado.foto, nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, 
                                       tipo_solicitud = tipo_solicitud, fecha_solicitud = fecha_solicitud, 
-                                      fecha_inicial = fecha_inicial , fecha_final = fecha_final, descripcion = descripcion)
+                                      fecha_inicial = fecha_inicial , fecha_final = fecha_final, descripcion = descripcion, empleado = empleado)
         
     
         if archivo:
@@ -1351,7 +1351,7 @@ def solicitud_gt(request):
         if estadoEnvioCorreo:
             Notificaciones.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, tipo_solicitud = tipo_solicitud,
                                       fecha_solicitud = fecha_solicitud, fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "Correo Electronico", estado = "Notificado")
-            return Response({"success":True, "message":f"Se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de registro:{fecha_solicitud}"})
+            return Response({"success":True, "message":f"Se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de registro: {fecha_solicitud}"})
         else:
             Notificaciones.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, tipo_solicitud = tipo_solicitud,
                                       fecha_solicitud = fecha_solicitud, fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "Correo Electronico", estado = "No notificado")
@@ -1716,11 +1716,10 @@ def descargarInformeGt(request):
 @api_view(["GET"])
 def misSolicitudesGT(request):
     codigo = request.GET.get("codigo")
-    
+    print(codigo)
     data = []
-
     if codigo is not None:
-        solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo=codigo, estado="Activo").select_related('empleado')
+        solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo = codigo).select_related('empleado')
         for s in solicitudes:
             data.append({
                 "nombre": s.nombre,
