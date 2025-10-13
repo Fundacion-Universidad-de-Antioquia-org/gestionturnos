@@ -164,7 +164,7 @@
    <div class="usuario-bar-centro">
     <button title="Buscar sucesión por codigo | fecha" id="btnBuscarSucesion" ><span class="material-symbols-outlined">search</span></button>
     <button id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined">convert_to_text</span></button>
-    <button><a href="{% url 'vista_dashboard' %}"><span class="material-symbols-outlined">bar_chart_4_bars</span></a></button>
+    <button id="generarDashboard"><span class="material-symbols-outlined">bar_chart_4_bars</span></button>
     
   </div>
   </div>
@@ -190,7 +190,6 @@
     <span id="txt-rechazadas">Cargando...</span>
   </div>
 </div>
-
 
   <!-- Derecha -->
   <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
@@ -263,10 +262,8 @@
   </div>
 </div>
 </section>
-
-<section class="table-section">
-  <table class="styled-table display" id="tablaDatos">
-  <thead>
+<section class="table-section"><table class="styled-table display" id="tablaDatos">
+<thead>
         <tr>
           <th>Foto</th>
           <th>ID Solicitud</th>
@@ -394,7 +391,7 @@
 <div id="modalInformeGT" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
     <span class="cerrar-fechas-gt" onclick="cerrarModalInformeGT()">&times;</span>
-    <div class="icon-title"><span class="material-symbols-outlined">convert_to_text</span><h3 class="titulo-fechas-gt">Descarga de datos Solicitudes GT</h3></div>
+    <div class="icon-title"><span class="material-symbols-outlined">download</span><h3 class="titulo-fechas-gt">Descarga de datos</h3></div>
 
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha inicial:</label>
@@ -412,6 +409,32 @@
       </select>
 
       <button class="btn-cargar-fechas-gt" id="descargarInforme">Descargar</button>
+    </div>
+  </div>
+</div>
+
+<!--Modal dashboard -->
+<div id="modalDashboard" class="modal-fechas-gt">
+  <div class="modal-fechas-gt-contenido">
+    <span class="cerrar-fechas-gt" onclick="cerrarModalDashboard()">&times;</span>
+    <div class="icon-title"><span class="material-symbols-outlined">pie_chart</span><h3 class="titulo-fechas-gt">Dashboard</h3></div>
+
+    <div class="formulario-fechas-gt">
+      <label for="fechaInicioGT">Fecha inicial:</label>
+      <input type="date" id="fechaInicioDash" class="input-fechas-gt">
+
+      <label for="fechaFinGT">Fecha final:</label>
+      <input type="date" id="fechaFinDash" class="input-fechas-gt">
+
+      <label for="">Generar dashboard por:</label>
+      <select name="" id="opcionEstadoDash" class="input-fechas-gt">
+        <option value="todo">Todas</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="aprobado">Aprobados</option>
+        <option value="desaprobado">Desaprobados</option>
+      </select>
+
+      <button class="btn-cargar-fechas-gt" id="cargarDashboard">Generar</button>
     </div>
   </div>
 </div>
@@ -959,8 +982,6 @@ const cuerpoTabla = document.getElementById("mr-tbody");
   async function descargarExcel(url) {
   const res = await fetch(url, {
     method: 'GET',
-    // incluye credenciales si tu API las requiere (tokens/cookies)
-    // headers: { Authorization: 'Bearer ...' }
   });
 
   if (!res.ok) {
@@ -985,6 +1006,51 @@ const cuerpoTabla = document.getElementById("mr-tbody");
   URL.revokeObjectURL(urlBlob);
 }
 
+</script>
+
+<script>
+  document.getElementById("generarDashboard").addEventListener("click", function(){
+    const modalDasboard = document.getElementById("modalDashboard")
+    modalDasboard.style.display = "block";
+    setTimeout(() => {
+    modalDasboard.classList.add("mostrar");
+  }, 10); 
+  })
+
+  function cerrarModalDashboard() {
+  const modalDasboard = document.getElementById("modalDashboard");
+  modalDasboard.classList.remove("mostrar");
+  setTimeout(() => {
+    modalDasboard.style.display = "none";
+  }, 300); 
+}
+
+document.getElementById("cargarDashboard").addEventListener("click", function(){
+  
+  const fechaInicial = document.getElementById("fechaInicioDash");
+  const fechaFinal = document.getElementById("fechaFinDash");
+  const peticion = document.getElementById("opcionEstadoDash").value;
+
+  const fechaInicialFormateada = fechaInicial.value.replaceAll("-","/");
+  const fechaFinalFormateada = fechaFinal.value.replaceAll("-","/");
+
+  const parametros = new URLSearchParams({
+    fechaInicialFormateada,
+    fechaFinalFormateada,
+    peticion
+    }
+  )
+
+  alert(`Fecha inicial: ${fechaInicialFormateada}, fecha final: ${fechaFinalFormateada}, peticion: ${peticion}`)
+  const url = `{% url 'vista_dashboard' %}?${parametros.toString()}`
+  fetch(url,{
+    "method": "GET"
+  }).then(response => {
+    if(response.ok){
+      window.open(url, '_blank')
+    }
+  })
+})
 </script>
 
 

@@ -38,6 +38,10 @@
 <div id="graficoCircularPersonales" style="width: 500px;height:400px;"></div>
 </section>
 
+<section class="contenedorGraficos">
+  <div id="graficoBarras" style="width: 1000px; height:300px;"></div>
+</section>
+
 {% endblock %}
 
 {% block scripts %}
@@ -50,153 +54,129 @@
 </script>
 
  <script>
-  var chartDom = document.getElementById('main');
-var myChart = echarts.init(chartDom);
-var option;
+  const aprobadasAcademicas = "{{ porcentajeAprobacion }}"
+  const desaprobadasAcademicas = "{{ porcentajeDesaprobadas }}"
+  const pendientesAcademicas = "{{ porcentajePendientes }}"
+  const totalAcademicas = "{{ numSolicitudesTotal }}"
+  const fechaInicialAcademicas = "{{ fechaIni }}"
+  const fechaFinalAcademicas = "{{ fechaFin }}"
+ </script>
 
-setTimeout(function () {
+<!--Graficos circulares-->
+<script>
+graficoCircular = echarts.init(document.getElementById('graficoCircularAcademicas'));
   option = {
-    legend: {},
-    tooltip: {
-      trigger: 'axis',
-      showContent: false
-    },
-    dataset: {
-      source: [
-        ['total', '2012', '2013', '2014', '2015', '2016', '2017'],
-        ['Milk Tea', 56.5, 82.1, 88.7, 70.1, 53.4, 85.1],
-        ['Matcha Latte', 51.1, 51.4, 55.1, 53.3, 73.8, 68.7],
-        ['Cheese Cocoa', 40.1, 62.2, 69.5, 36.4, 45.2, 32.5],
-        ['Walnut Brownie', 25.2, 37.1, 41.2, 18, 33.9, 49.1]
-      ]
-    },
-    xAxis: { type: 'category' },
-    yAxis: { gridIndex: 0 },
-    grid: { top: '55%' },
-    series: [
-      {
-        type: 'line',
-        smooth: true,
-        seriesLayoutBy: 'row',
-        emphasis: { focus: 'series' }
-      },
-      {
-        type: 'line',
-        smooth: true,
-        seriesLayoutBy: 'row',
-        emphasis: { focus: 'series' }
-      },
-      {
-        type: 'line',
-        smooth: true,
-        seriesLayoutBy: 'row',
-        emphasis: { focus: 'series' }
-      },
-      {
-        type: 'line',
-        smooth: true,
-        seriesLayoutBy: 'row',
-        emphasis: { focus: 'series' }
-      },
-      {
-        type: 'pie',
-        id: 'pie',
-        radius: '30%',
-        center: ['50%', '25%'],
-        emphasis: {
-          focus: 'self'
-        },
-        label: {
-          formatter: '{b}: {@2012} ({d}%)'
-        },
-        encode: {
-          itemName: 'product',
-          value: '2012',
-          tooltip: '2012'
+  title: {
+    text: `Tipo academicas `,
+    subtext: `Aprobadas entre: ${fechaInicialAcademicas} - ${fechaFinalAcademicas}\n  \nTotal solicitudes: ${totalAcademicas}`,
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'item'
+  },
+  legend: {
+    orient: 'vertical',
+    left: 'left'
+  },
+  series: [
+    {
+      name: 'Porcentajes',
+      type: 'pie',
+      radius: '50%',
+      data: [
+        { value: aprobadasAcademicas, name: 'Aprobadas' },
+        { value: desaprobadasAcademicas, name: 'Desaparobadas' },
+        { value: pendientesAcademicas, name: 'Pendientes' },
+      ],
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)'
         }
       }
-    ]
-  };
-  myChart.on('updateAxisPointer', function (event) {
-    const xAxisInfo = event.axesInfo[0];
-    if (xAxisInfo) {
-      const dimension = xAxisInfo.value + 1;
-      myChart.setOption({
-        series: {
-          id: 'pie',
-          label: {
-            formatter: '{b}: {@[' + dimension + ']} ({d}%)'
-          },
-          encode: {
-            value: dimension,
-            tooltip: dimension
-          }
-        }
-      });
-    }
-  });
-  myChart.setOption(option);
-});
-
-option && myChart.setOption(option);
- </script>
-    <script>
-      graficoCircular = echarts.init(document.getElementById('graficoCircularAcademicas'));
-      option = {
-         title: {
-        text: 'Tipo solicitud: Academicas',
-        subtext: 'Fake Data'
-          },
-  series: [
-    {
-      type: 'pie',
-      data: [
-        {
-          value: 335,
-          name: 'Aprobadas'
-        },
-        {
-          value: 234,
-          name: 'Pendientes'
-        },
-        {
-          value: 1548,
-          name: 'Rechazadas'
-        }
-      ]
     }
   ]
 };
 graficoCircular.setOption(option);
 
-const totalPersonales = '600';
 graficoCircular = echarts.init(document.getElementById('graficoCircularPersonales'));
-      option = {
-         title: {
-        text: 'Tipo solicitud: Personales',
-        subtext: totalPersonales
-          },
+  option = {
+  title: {
+    text: `Tipo personales`,
+    subtext: `Aprobadas entre: ${fechaInicialAcademicas} - ${fechaFinalAcademicas}\n  \nTotal solicitudes: ${totalAcademicas}`,
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'item'
+  },
+  legend: {
+    orient: 'vertical',
+    left: 'left'
+  },
   series: [
     {
+      name: 'Porcentajes',
       type: 'pie',
+      radius: '50%',
       data: [
-        {
-          value: 544,
-          name: 'Aprobadas'
-        },
-        {
-          value: 44,
-          name: 'Pendientes'
-        },
-        {
-          value: 55,
-          name: 'Rechazadas'
+        { value: aprobadasAcademicas, name: 'Aprobadas' },
+        { value: desaprobadasAcademicas, name: 'Desaparobadas' },
+        { value: pendientesAcademicas, name: 'Pendientes' },
+      ],
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)'
         }
-      ]
+      }
     }
   ]
 };
 graficoCircular.setOption(option);
-    </script>
+</script>
+
+<!--Grafico barras-->
+<script>
+const graficoBarras = echarts.init(document.getElementById('graficoBarras'));
+option = {
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  xAxis: [
+    {
+      type: 'category',
+      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      axisTick: {
+        alignWithLabel: true
+      }
+    }
+  ],
+  yAxis: [
+    {
+      type: 'value'
+    }
+  ],
+  series: [
+    {
+      name: 'Direct',
+      type: 'bar',
+      barWidth: '60%',
+      data: [10, 52, 200, 334, 390, 330, 220]
+    }
+  ]
+};
+graficoBarras.setOption(option)
+</script>
 
 {% endblock %}

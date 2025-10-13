@@ -60,13 +60,65 @@ def vista_home(request,*, context):
 
 @settings.AUTH.login_required
 def vista_dashboard(request,*, context):
-
+   
     if request.method == "GET":
+        
         usuarioLogeado = str(request.user).upper()
+        fechaInicial = request.GET.get("fechaInicialFormateada")
+        fechaFinal = request.GET.get("fechaFinalFormateada")
+        peticion = request.GET.get("peticion")
+        print(f"peticion: {peticion}")
 
+        porcentajeAprobacion = None
+        porcentajeDesaprobadas = None
+        porcentajePendientes = None
+        total = None
+
+        if fechaInicial is not None and fechaFinal is not None and peticion is not None:
+            print("Enoraadasdadasda")
+            if peticion == "aprobado":
+                
+                #numSolicitudesApro =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "academicas", estado = "aprobado").count()
+                #numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "academicas", estado = "desaprobado").count()
+                #numSolicitudesPend =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "academicas", estado = "pendiente").count()
+                #numSolicitudesTotal =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "academicas").count()
+
+                #porcentajeAprobacion = 100* (numSolicitudesApro/numSolicitudesTotal)
+                #porcentajeDesaprobadas = 100* (numSolicitudesDesa/numSolicitudesTotal)
+                #porcentajePendientes = 100* (numSolicitudesPend/numSolicitudesTotal)
+                
+                porcentajeAprobacion = 50
+                porcentajeDesaprobadas = 40
+                porcentajePendientes = 10
+                total = 100
+            
+                return render(request,"account/dashboard.html",{
+                    'usuarioLogeado': usuarioLogeado,
+                    'porcentajeAprobacion': porcentajeAprobacion,
+                    'porcentajeDesaprobadas': porcentajeDesaprobadas,
+                    'porcentajePendientes':porcentajePendientes,
+                    'numSolicitudesTotal':total,
+                    'fechaIni':fechaInicial,
+                    'fechaFin': fechaFinal,
+                })
+        else:
+            print("parametros fallidos ")   
+            return render(request,"account/dashboard.html",{
+                    'usuarioLogeado': usuarioLogeado,
+                    'porcentajeAprobacion': porcentajeAprobacion,
+                    'porcentajeDesaprobadas': porcentajeDesaprobadas,
+                    'porcentajePendientes':porcentajePendientes,
+                    'numSolicitudesTotal':total,
+                })
+
+    else:
         return render(request,"account/dashboard.html",{
-            'usuarioLogeado': usuarioLogeado
-        })
+                    'usuarioLogeado': usuarioLogeado,
+                    'porcentajeAprobacion': porcentajeAprobacion,
+                    'porcentajeDesaprobadas': porcentajeDesaprobadas,
+                    'porcentajePendientes':porcentajePendientes,
+                    'numSolicitudesTotal':total,
+                })
 
 @settings.AUTH.login_required
 def vista_cargarSucesionTrenes(request, *, context):
