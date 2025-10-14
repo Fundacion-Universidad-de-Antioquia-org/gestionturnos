@@ -15,7 +15,7 @@ from django.conf import settings
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from django.db.models import F, Value, ExpressionWrapper, DateTimeField, DateField, DurationField
-from django.db.models.functions import Cast, TruncWeek
+from django.db.models.functions import Cast, TruncWeek, TruncMonth
 
 import pandas as pd
 from io import BytesIO
@@ -78,26 +78,37 @@ def vista_dashboard(request,*, context):
             print("Enoraadasdadasda")
             if peticion == "aprobado":
                 
-                #numSolicitudesApro =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "academicas", estado = "aprobado").count()
-                #numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "academicas", estado = "desaprobado").count()
-                #numSolicitudesPend =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "academicas", estado = "pendiente").count()
-                #numSolicitudesTotal =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "academicas").count()
+                numSolicitudesApro =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "aprobado").count()
+                numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "desaprobado").count()
+                numSolicitudesPend =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "pendiente").count()
+                numSolicitudesTotal =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO").count()
 
-                #porcentajeAprobacion = 100* (numSolicitudesApro/numSolicitudesTotal)
-                #porcentajeDesaprobadas = 100* (numSolicitudesDesa/numSolicitudesTotal)
-                #porcentajePendientes = 100* (numSolicitudesPend/numSolicitudesTotal)
+                print(f"# aprobadas: {numSolicitudesApro}, desaprobadas: {numSolicitudesDesa}, pendientes: {numSolicitudesPend}, total: {numSolicitudesTotal}")
+                porcentajeAprobacion = 100* (numSolicitudesApro/numSolicitudesTotal)
+                porcentajeDesaprobadas = 100* (numSolicitudesDesa/numSolicitudesTotal)
+                porcentajePendientes = 100* (numSolicitudesPend/numSolicitudesTotal)
+
+                solicitudesXmes = []
+                solicitudesXtotales = []
+                solicitudesPorMes = Solicitudes_Gt.objects.annotate(mes = TruncMonth('fecha_solicitud')).values('mes').annotate(total = Count('id')).order_by('mes')
+                for s in solicitudesPorMes:
+                    solicitudesXmes.append({
+                        "mes":s["mes"].strftime('%B %Y').capitalize()
+                    })
+                    solicitudesXtotales.append({
+                        "total": s.get("total")
+                    })
                 
-                porcentajeAprobacion = 50
-                porcentajeDesaprobadas = 40
-                porcentajePendientes = 10
-                total = 100
-            
+
+                print(f"Solicitudes por meses: {solicitudesXmes}")
+                print(f"Solicitudes por totales: {solicitudesXtotales}")
+                
                 return render(request,"account/dashboard.html",{
                     'usuarioLogeado': usuarioLogeado,
                     'porcentajeAprobacion': porcentajeAprobacion,
                     'porcentajeDesaprobadas': porcentajeDesaprobadas,
                     'porcentajePendientes':porcentajePendientes,
-                    'numSolicitudesTotal':total,
+                    'numSolicitudesTotal':numSolicitudesTotal,
                     'fechaIni':fechaInicial,
                     'fechaFin': fechaFinal,
                 })
@@ -109,6 +120,8 @@ def vista_dashboard(request,*, context):
                     'porcentajeDesaprobadas': porcentajeDesaprobadas,
                     'porcentajePendientes':porcentajePendientes,
                     'numSolicitudesTotal':total,
+                    'solicitudesXmes': solicitudesXmes,
+                    'solicitudesXtotales': solicitudesXtotales
                 })
 
     else:
@@ -1782,7 +1795,8 @@ def misSolicitudesGT(request):
                 "fecha_inicial": s.fecha_inicial,
                 "fecha_final": s.fecha_final,
                 "estado": s.estado,
-                "descripcion": s.descripcion
+                "descripcion": s.descripcion,
+                "urlArchivo": s.urlArchivo,
             })
         return Response(data)
 

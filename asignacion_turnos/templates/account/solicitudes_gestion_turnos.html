@@ -1031,8 +1031,8 @@ document.getElementById("cargarDashboard").addEventListener("click", function(){
   const fechaFinal = document.getElementById("fechaFinDash");
   const peticion = document.getElementById("opcionEstadoDash").value;
 
-  const fechaInicialFormateada = fechaInicial.value.replaceAll("-","/");
-  const fechaFinalFormateada = fechaFinal.value.replaceAll("-","/");
+  const fechaInicialFormateada = fechaInicial.value.replaceAll("/","-");
+  const fechaFinalFormateada = fechaFinal.value.replaceAll("/","-");
 
   const parametros = new URLSearchParams({
     fechaInicialFormateada,

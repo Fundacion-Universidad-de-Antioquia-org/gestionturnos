@@ -20,10 +20,6 @@
     <div class="saludo" style="color: #5a9138; font-size: 11px;">Graficas y Metricas</div>
   </div>
   <div class="usuario-bar-centro">
-    <button title="Activar o desactivar filtros" id="btnActivarFiltros" ><span class="material-symbols-outlined">filter_alt</span></button>
-    <button title="Buscar cambio de turno" id="btnBuscarCambio" ><span class="material-symbols-outlined">search</span></button>
-    <button><span class="material-symbols-outlined" onclick="abrirModalHorarios()">find_replace</span></button>
-    <button><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
     
   </div>
   
@@ -67,7 +63,7 @@
 graficoCircular = echarts.init(document.getElementById('graficoCircularAcademicas'));
   option = {
   title: {
-    text: `Tipo academicas `,
+    text: `Tipo académicas `,
     subtext: `Aprobadas entre: ${fechaInicialAcademicas} - ${fechaFinalAcademicas}\n  \nTotal solicitudes: ${totalAcademicas}`,
     left: 'center'
   },
