@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
+
 {% block styles %}
 {% endblock %}
 
@@ -22,12 +23,14 @@
   <div class="usuario-bar-centro">
     
   </div>
-  
-   
   </div>
-
 </div>
 </section>
+
+<!--Variables que llegan con el render -->
+
+{{ solicitudesXmes|json_script:"meses-data" }}
+{{ solicitudesXtotales|json_script:"totales-data" }}
 
 <section class="contenedorGraficos">
 <div id="graficoCircularAcademicas" style="width: 500px;height:400px;"></div>
@@ -37,6 +40,9 @@
 <section class="contenedorGraficos">
   <div id="graficoBarras" style="width: 1000px; height:300px;"></div>
 </section>
+
+
+
 
 {% endblock %}
 
@@ -49,6 +55,7 @@
   })
 </script>
 
+
  <script>
   const aprobadasAcademicas = "{{ porcentajeAprobacion }}"
   const desaprobadasAcademicas = "{{ porcentajeDesaprobadas }}"
@@ -56,6 +63,18 @@
   const totalAcademicas = "{{ numSolicitudesTotal }}"
   const fechaInicialAcademicas = "{{ fechaIni }}"
   const fechaFinalAcademicas = "{{ fechaFin }}"
+
+  const meses = JSON.parse(document.getElementById("meses-data").textContent);
+  const totales = JSON.parse(document.getElementById("totales-data").textContent);
+
+  alert(meses)
+
+  const mesesFormateados = meses.map(item => item.mes);
+  const totalesFormateados = totales.map(item => item.total);
+
+  alert(mesesFormateados)
+
+
  </script>
 
 <!--Graficos circulares-->
@@ -137,6 +156,10 @@ graficoCircular.setOption(option);
 <script>
 const graficoBarras = echarts.init(document.getElementById('graficoBarras'));
 option = {
+   title: {
+    text: `Distribución de solitudes academicas por mes, desde ${fechaInicialAcademicas} - hasta: ${fechaFinalAcademicas}`,
+    left: 'center'
+  },
   tooltip: {
     trigger: 'axis',
     axisPointer: {
@@ -152,7 +175,7 @@ option = {
   xAxis: [
     {
       type: 'category',
-      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      data: mesesFormateados,
       axisTick: {
         alignWithLabel: true
       }
@@ -165,10 +188,10 @@ option = {
   ],
   series: [
     {
-      name: 'Direct',
+      name: 'Cantidad',
       type: 'bar',
       barWidth: '60%',
-      data: [10, 52, 200, 334, 390, 330, 220]
+      data: totalesFormateados
     }
   ]
 };

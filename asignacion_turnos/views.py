@@ -90,7 +90,7 @@ def vista_dashboard(request,*, context):
 
                 solicitudesXmes = []
                 solicitudesXtotales = []
-                solicitudesPorMes = Solicitudes_Gt.objects.annotate(mes = TruncMonth('fecha_solicitud')).values('mes').annotate(total = Count('id')).order_by('mes')
+                solicitudesPorMes = Solicitudes_Gt.objects.filter(tipo_solicitud = "PERMISO ACADEMICO").annotate(mes = TruncMonth('fecha_solicitud')).values('mes').annotate(total = Count('id')).order_by('mes')
                 for s in solicitudesPorMes:
                     solicitudesXmes.append({
                         "mes":s["mes"].strftime('%B %Y').capitalize()
@@ -111,6 +111,9 @@ def vista_dashboard(request,*, context):
                     'numSolicitudesTotal':numSolicitudesTotal,
                     'fechaIni':fechaInicial,
                     'fechaFin': fechaFinal,
+                    'solicitudesXmes': solicitudesXmes,
+                    'solicitudesXtotales': solicitudesXtotales
+
                 })
         else:
             print("parametros fallidos ")   
