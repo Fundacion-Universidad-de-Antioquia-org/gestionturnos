@@ -429,9 +429,8 @@
       <label for="">Generar dashboard por:</label>
       <select name="" id="opcionEstadoDash" class="input-fechas-gt">
         <option value="todo">Todas</option>
-        <option value="pendiente">Pendientes</option>
-        <option value="aprobado">Aprobados</option>
-        <option value="desaprobado">Desaprobados</option>
+        <option value="academica">Académicas</option>
+        <option value="personal">Personales</option>
       </select>
 
       <button class="btn-cargar-fechas-gt" id="cargarDashboard">Generar</button>
@@ -450,12 +449,12 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
   document.getElementById(idTexto).textContent = `${valor} ${etiqueta}`;
 }
 
-// Al obtener datos (ejemplo simulado con setTimeout)
+
 setTimeout(() => {
   /*actualizarIndicador("total", "txt-total", indicadores.total, "Solicitudes");*/
-  actualizarIndicador("pendiente", "txt-pendiente", indicadores.pendiente, "Pendientes");
-  actualizarIndicador("aprobado", "txt-aprobadas", indicadores.aprobadas, "Aprobadas");
-  actualizarIndicador("desaprobado", "txt-rechazadas", indicadores.rechazadas, "Rechazadas");
+  actualizarIndicador("pendiente", "txt-pendiente", "indicadores.pendiente", "Pendientes");
+  actualizarIndicador("aprobado", "txt-aprobadas", "indicadores.aprobadas", "Aprobadas");
+  actualizarIndicador("desaprobado", "txt-rechazadas", "indicadores.rechazadas", "Rechazadas");
 }, 2000); // simula carga en 2s
 
 </script>
@@ -757,10 +756,11 @@ function cerrarModalVisor() {
         cerrarModal();
         Swal.fire({
             icon: "success",
-            title: "Correcto",
-            text: "Se envio correctamente tu respuesta"
+            title: "Se envio correctamente la respuesta",
+            text: `Id solicitud:${idSolicitudGt}, respuesta: ${respuesta}`
           
         });
+        respuesta.value.innerText = "";
       }else{
         cerrarModal();
         Swal.fire({
@@ -950,20 +950,32 @@ const cuerpoTabla = document.getElementById("mr-tbody");
 
   function cerrarModalInformeGT() {
   const modal = document.getElementById("modalInformeGT");
+  
   modal.classList.remove("mostrar");
   setTimeout(() => {
     modal.style.display = "none";
+    document.getElementById("descargarInforme").innerText = "Descargar"
   }, 300); 
+  
+ 
 }
 
 
   document.getElementById("descargarInforme").addEventListener("click",function(){
-
+   
     const fechaInicial = document.getElementById("fechaInicioGTX");
     const fechaFinal =  document.getElementById("fechaFinGTX");
     const opcionSeleccionada = document.getElementById("opcionEstado").value
 
-   
+  if(!fechaInicial.value && !fechaFinal.value){
+      Swal.fire({
+            icon: "error",
+            title: "Se detectaron campos vacios, debe llenar todos los campos",
+            text: `Datos ingresados, fecha inicial: ${fechaInicial.value} , fecha final: ${fechaFinal.value}`
+          
+        });
+        return;
+  }
     const fechaInicialFormateada = fechaInicial.value.replaceAll("-","/")
     const fechaFinalFormateada = fechaFinal.value.replaceAll("-","/")
 
@@ -987,9 +999,13 @@ const cuerpoTabla = document.getElementById("mr-tbody");
   if (!res.ok) {
     const msg = await res.text().catch(()=>'');
     throw new Error(`Error ${res.status}: ${msg}`);
+  }else{
+    const btn = document.getElementById("descargarInforme");
+    btn.innerText = "Descargado correctamente";
+    btn.classList.add('enviado');
   }
 
-  // tomar filename del header (si el backend lo expuso)
+
   const cd = res.headers.get('Content-Disposition') || '';
   const match = cd.match(/filename\*=UTF-8''([^;]+)|filename="([^"]+)"/);
   const filename = decodeURIComponent(match?.[1] || match?.[2] || 'reporte.xlsx');
@@ -1022,6 +1038,8 @@ const cuerpoTabla = document.getElementById("mr-tbody");
   modalDasboard.classList.remove("mostrar");
   setTimeout(() => {
     modalDasboard.style.display = "none";
+    document.getElementById("cargarDashboard").innerText = "Generar";
+
   }, 300); 
 }
 
@@ -1030,6 +1048,16 @@ document.getElementById("cargarDashboard").addEventListener("click", function(){
   const fechaInicial = document.getElementById("fechaInicioDash");
   const fechaFinal = document.getElementById("fechaFinDash");
   const peticion = document.getElementById("opcionEstadoDash").value;
+
+  if(!fechaInicial.value && !fechaFinal.value){
+      Swal.fire({
+            icon: "error",
+            title: "Se detectaron campos vacios, debe llenar todos los campos",
+            text: `Datos ingresados, fecha inicial: ${fechaInicial.value} , fecha final: ${fechaFinal.value} , petición: ${peticion}`
+          
+        });
+        return;
+  }
 
   const fechaInicialFormateada = fechaInicial.value.replaceAll("/","-");
   const fechaFinalFormateada = fechaFinal.value.replaceAll("/","-");
@@ -1041,13 +1069,18 @@ document.getElementById("cargarDashboard").addEventListener("click", function(){
     }
   )
 
-  alert(`Fecha inicial: ${fechaInicialFormateada}, fecha final: ${fechaFinalFormateada}, peticion: ${peticion}`)
+
   const url = `{% url 'vista_dashboard' %}?${parametros.toString()}`
   fetch(url,{
     "method": "GET"
   }).then(response => {
     if(response.ok){
-      window.open(url, '_blank')
+      const btn = document.getElementById("cargarDashboard")
+      btn.innerText = "Construyendo dashboard...";
+      btn.classList.add('enviado');
+      setTimeout(()=>{
+          window.open(url, '_blank')}, 2000)
+      
     }
   })
 })

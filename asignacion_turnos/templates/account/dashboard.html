@@ -67,12 +67,8 @@
   const meses = JSON.parse(document.getElementById("meses-data").textContent);
   const totales = JSON.parse(document.getElementById("totales-data").textContent);
 
-  alert(meses)
-
   const mesesFormateados = meses.map(item => item.mes);
   const totalesFormateados = totales.map(item => item.total);
-
-  alert(mesesFormateados)
 
 
  </script>
@@ -118,7 +114,7 @@ graficoCircular.setOption(option);
 graficoCircular = echarts.init(document.getElementById('graficoCircularPersonales'));
   option = {
   title: {
-    text: `Tipo personales`,
+    text: `Universidades`,
     subtext: `Aprobadas entre: ${fechaInicialAcademicas} - ${fechaFinalAcademicas}\n  \nTotal solicitudes: ${totalAcademicas}`,
     left: 'center'
   },

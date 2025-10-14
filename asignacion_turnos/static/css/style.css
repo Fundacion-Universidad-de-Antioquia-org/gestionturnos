@@ -1796,6 +1796,8 @@ label {
 }
 
 .btn-cargar-fechas-gt {
+  position: relative;
+  overflow: hidden;
   background-color: #1a8f3c;
   color: white;
   border: none;
@@ -1808,6 +1810,37 @@ label {
 
 .btn-cargar-fechas-gt:hover {
   background-color: #166c2f;
+}
+
+/* Añadir barrido visual al botón */
+.btn-cargar-fechas-gt::after {
+  content: '';
+  position: absolute;
+  left: -100%;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.2); /* Color del barrido */
+  transform: skewX(-20deg);
+  transition: none;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Activar animación una vez al hacer clic */
+.btn-cargar-fechas-gt.enviado::after {
+  animation: barrido-envio 0.8s ease-out forwards;
+}
+
+@keyframes barrido-envio {
+  0% {
+    left: -100%;
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
 }
 
 .modal-fechas-gt.mostrar {
@@ -1864,13 +1897,15 @@ label {
 .modal-descripcion-profesional .modal-dialog {
   max-width: 650px;
   margin: 2rem auto;
+  padding-top: 5%;
 }
 
 .modal-descripcion-profesional .modal-content {
-  background-color: #252424;
+  background-color: #0e1520;
   border-radius: 12px;
   border: none;
-  box-shadow: 0 8px 25px rgba(33, 4, 160, 0.553);
+  /* box-shadow: 0 8px 25px rgba(33, 4, 160, 0.553); */
+  box-shadow: 0 12px 36px rgb(31 111 55 / 65%);
   padding: 1.8rem;
   animation: modalFadeIn 0.3s ease-in-out;
   overflow-y: auto;
@@ -1902,7 +1937,7 @@ label {
 .modal-descripcion-profesional .modal-header-custom-dos {
   font-size: 1.4rem;
   font-weight: bold;
-  color: #4cc530;
+  color: #356eb7;
   margin-bottom: 1rem;
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 0.5rem;
@@ -1916,13 +1951,13 @@ label {
 }
 
 .modal-descripcion-profesional p strong {
-  color: #52ab1d;
+  color: #356eb7;
 }
 
 /* Texto destacado */
 .modal-descripcion-profesional .modal-texto {
   padding: 0.3rem 0.6rem;
-  background-color: #2f3640;
+  background-color: #152e51;
   border-radius: 6px;
   font-size: 0.95rem;
   color: #ffffff;
@@ -1942,11 +1977,11 @@ label {
 }
 
 .modal-descripcion-profesional #btnVerAdjunto {
-  background-color: #0984e3;
+  background-color: #0984e3a3;
   color: white;
 }
 .modal-descripcion-profesional #btnVerAdjunto:hover {
-  background-color: #076bb3;
+  background-color: #0984e3a3;
 }
 
 .modal-descripcion-profesional #respuestaSolicitud,
@@ -1956,7 +1991,7 @@ label {
 }
 .modal-descripcion-profesional #respuestaSolicitud:hover,
 .modal-descripcion-profesional #aprobarSolicitud:hover {
-  background-color: #019170;
+  background-color: #1d6655;
 }
 
 .modal-descripcion-profesional #desaprobarSolicitud {

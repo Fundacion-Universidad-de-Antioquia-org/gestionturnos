@@ -76,7 +76,7 @@ def vista_dashboard(request,*, context):
 
         if fechaInicial is not None and fechaFinal is not None and peticion is not None:
             print("Enoraadasdadasda")
-            if peticion == "aprobado":
+            if peticion == "academica":
                 
                 numSolicitudesApro =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "aprobado").count()
                 numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "desaprobado").count()
@@ -98,7 +98,40 @@ def vista_dashboard(request,*, context):
                     solicitudesXtotales.append({
                         "total": s.get("total")
                     })
-                
+
+                return render(request,"account/dashboard.html",{
+                    'usuarioLogeado': usuarioLogeado,
+                    'porcentajeAprobacion': porcentajeAprobacion,
+                    'porcentajeDesaprobadas': porcentajeDesaprobadas,
+                    'porcentajePendientes':porcentajePendientes,
+                    'numSolicitudesTotal':numSolicitudesTotal,
+                    'fechaIni':fechaInicial,
+                    'fechaFin': fechaFinal,
+                    'solicitudesXmes': solicitudesXmes,
+                    'solicitudesXtotales': solicitudesXtotales
+
+                })
+            else:
+
+                numSolicitudesApro =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "aprobado").count()
+                numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "desaprobado").count()
+                numSolicitudesPend =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "pendiente").count()
+                numSolicitudesTotal =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO").count()
+
+                porcentajeAprobacion = 100* (numSolicitudesApro/numSolicitudesTotal)
+                porcentajeDesaprobadas = 100* (numSolicitudesDesa/numSolicitudesTotal)
+                porcentajePendientes = 100* (numSolicitudesPend/numSolicitudesTotal)
+
+                solicitudesXmes = []
+                solicitudesXtotales = []
+                solicitudesPorMes = Solicitudes_Gt.objects.filter(tipo_solicitud = "PERMISO ACADEMICO").annotate(mes = TruncMonth('fecha_solicitud')).values('mes').annotate(total = Count('id')).order_by('mes')
+                for s in solicitudesPorMes:
+                    solicitudesXmes.append({
+                        "mes":s["mes"].strftime('%B %Y').capitalize()
+                    })
+                    solicitudesXtotales.append({
+                        "total": s.get("total")
+                    })
 
                 print(f"Solicitudes por meses: {solicitudesXmes}")
                 print(f"Solicitudes por totales: {solicitudesXtotales}")
@@ -1058,36 +1091,31 @@ def solicitar_cambio_turno(request):
     errores = []
 
     if Cambios_de_turnos.objects.filter(codigo_solicitante=codigoSolicitante, fecha_solicitud_cambio=fechaCambio).exists():
-        errores.append({
-            "success": False,
-            "mensaje": f"El empleado {solicitante.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
-        })
-
-    if Cambios_de_turnos.objects.filter(codigo_receptor = codigoSolicitante, fecha_solicitud_cambio=fechaCambio).exists():
-        errores.append({
-            "success": False,
-            "mensaje": f"El empleado {solicitante.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
-        })
-
-    if Cambios_de_turnos.objects.filter(codigo_solicitante=codigoReceptor, fecha_solicitud_cambio=fechaCambio).exists():
-        errores.append({
-            "success": False,
-            "mensaje": f"El empleado {receptor.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
-        })
-
-    if Cambios_de_turnos.objects.filter(codigo_receptor = codigoReceptor, fecha_solicitud_cambio=fechaCambio).exists():
-        errores.append({
-            "success": False,
-            "mensaje": f"El empleado {receptor.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
-        })
-
-    if errores:
         return Response({
             "success": False,
-            "errores": errores
+            "mensaje": f"El empleado {solicitante.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
+
         })
-
-
+    
+      
+    if Cambios_de_turnos.objects.filter(codigo_receptor = codigoSolicitante, fecha_solicitud_cambio=fechaCambio).exists():
+        return Response({
+             "success": False,
+            "mensaje": f"El empleado {solicitante.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
+        })
+       
+    if Cambios_de_turnos.objects.filter(codigo_solicitante=codigoReceptor, fecha_solicitud_cambio=fechaCambio).exists():
+        return Response({
+             "success": False,
+            "mensaje": f"El empleado {receptor.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
+        })
+       
+    if Cambios_de_turnos.objects.filter(codigo_receptor = codigoReceptor, fecha_solicitud_cambio=fechaCambio).exists():
+        return Response({
+             "success": False,
+            "mensaje": f"El empleado {receptor.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
+        })
+       
     solicitante_siguiente = None
     receptor_siguiente = None
     comentarios = ""
@@ -1165,7 +1193,7 @@ def solicitar_cambio_turno(request):
     madrugadaPatio = ["PBE"]
     
    
-    t = time.fromisoformat("03:59")
+    t = time.fromisoformat("05:00")
     limiteMadrugada = datetime.combine(fechaCambio,t)
 
     if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) <= limiteMadrugada and  datetime.combine(fechaCambio,receptor_dia.hora_inicio) <= limiteMadrugada:
@@ -1226,6 +1254,8 @@ def aprobar_solicitudes_cambios_turnos(request):
 
     solicitudesAprobadas = []
     contadorSolicitudes = 0
+    peticion = None
+    
     
     solicitudes = request.data.get('solicitudes')
 
