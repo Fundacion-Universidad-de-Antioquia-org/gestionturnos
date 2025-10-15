@@ -1889,11 +1889,7 @@ def descargarInformeGt(request):
                 resp["Access-Control-Expose-Headers"] = "Content-Disposition"
             
             return resp
-
-<<<<<<< Updated upstream
-    
-=======
->>>>>>> Stashed changes
+        
 @api_view(["GET"])
 def misSolicitudesGT(request):
     codigo = request.GET.get("codigo")
