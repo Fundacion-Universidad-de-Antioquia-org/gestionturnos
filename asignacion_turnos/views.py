@@ -1213,7 +1213,7 @@ def solicitar_cambio_turno(request):
         transportable = False
         estadoCambio = "pendiente"
 
-    # Crear solicitud de cambio
+    #Crear solicitud de cambio
     Cambios_de_turnos.objects.create(
 
         codigo_solicitante=codigoSolicitante,
@@ -1232,6 +1232,8 @@ def solicitar_cambio_turno(request):
         estado_cambio_emp="pendiente",
         estado_cambio_admin = estadoCambio,
         comentarios = comentarios,
+        zonaSolicitante = solicitante.zona,
+        zonaReceptor = receptor.zona, 
         transportable = transportable
     )
 
@@ -1433,11 +1435,10 @@ def aprobar_solicitudes_cambios_turnos(request):
 def desaprobar_solicitudes_cambios(request):
     solicitudes = request.data.get('solicitudes') 
     print("Entro al endpoint")
-
-    if solicitudes: 
-        print("Hay solicitudes")
+    if solicitudes is not None: 
         for solicitud in solicitudes:
             if solicitud.get('codigoSolicitante') and solicitud.get('codigoReceptor'):
+                
                 empleadoSolicitante = Empleado_Oddo.objects.filter(codigo = solicitud['codigoSolicitante'], estado = "Activo").first()
                 empleadoReceptor = Empleado_Oddo.objects.filter(codigo = solicitud['codigoReceptor'] , estado = "Activo").first()
 
@@ -1446,11 +1447,16 @@ def desaprobar_solicitudes_cambios(request):
                                                 codigo_receptor = solicitud['codigoReceptor'],
                                                 )
                 
-                Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
-                                                codigo_solicitante = solicitud['codigoSolicitante'], 
-                                                codigo_receptor = solicitud['codigoReceptor'],
-                                                ).update(estado_cambio_admin = "desaprobado")
-                
+                if solicitud['peticicion'] == "intranet":
+                    Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
+                                                    codigo_solicitante = solicitud['codigoSolicitante'], 
+                                                    codigo_receptor = solicitud['codigoReceptor'],
+                                                    ).update(estado_cambio_emp = "desaprobado")
+                elif solicitud['peticion'] == "admin":
+                    Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
+                                                    codigo_solicitante = solicitud['codigoSolicitante'], 
+                                                    codigo_receptor = solicitud['codigoReceptor'],
+                                                    ).update(estado_cambio_admin = "desaprobado")
                 print(empleadoReceptor.nombre)
                 send_log(empleadoSolicitante.cedula, datetime.today(), "Rechazar solicitud",
                         f"Se rechazo la solicitud de cambio entre: {empleadoSolicitante.nombre}, cod: {empleadoSolicitante.codigo} y {empleadoReceptor.nombre}, cod: {empleadoReceptor.codigo}, para la fecha: {solicitud['fechaCambio']}",

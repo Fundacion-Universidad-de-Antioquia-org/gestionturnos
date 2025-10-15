@@ -90,6 +90,7 @@
 
 </style>
 
+<!--Modal descripcion-->
 <style>
   /* Backdrop con blur */
   .modal-backdrop{
@@ -466,21 +467,12 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
   document.getElementById(idTexto).textContent = `${valor} ${etiqueta}`;
 }
 
-
-setTimeout(() => {
-  /*actualizarIndicador("total", "txt-total", indicadores.total, "Solicitudes");*/
-  actualizarIndicador("pendiente", "txt-pendiente", "indicadores.pendiente", "Pendientes");
-  actualizarIndicador("aprobado", "txt-aprobadas", "indicadores.aprobadas", "Aprobadas");
-  actualizarIndicador("desaprobado", "txt-rechazadas", "indicadores.rechazadas", "Rechazadas");
-}, 2000); // simula carga en 2s
-
 </script>
 
 <!--Script del DOM-->
 <script>
   document.addEventListener("DOMContentLoaded",function(){
-    // Ejemplo con valores desde backend
-
+    
     const solicitudAnual = "{{ solicitudAnual }}"
     const solicitudAnualAprobadas = "{{ solicitudAnualAprobadas }}"
     const solicitudAnualPendientes = "{{ solicitudAnualPendientes }}"
@@ -1111,6 +1103,8 @@ document.getElementById("cargarDashboard").addEventListener("click", function(){
       
     }
   })
+
+})
 
   document.getElementById("btnBuscarSolicitud").addEventListener("click",function(){
 

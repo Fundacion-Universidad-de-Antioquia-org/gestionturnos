@@ -2,6 +2,72 @@
 {% load static %}
 {% block content %}
 
+{% block styles %}
+<!--Estilos indicadores-->
+<style>
+.indicadores {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-right: 15px;
+}
+
+.indicador-card.small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: white;
+  background: rgb(40, 36, 36);
+  border-radius: 10px;
+  padding: 5px 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
+  white-space: nowrap;
+}
+
+.indicador-card.small:hover {
+  transform: scale(1.05);
+}
+
+/* Spinner inicial */
+.indicador-card.small .spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid #1d5031;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Estado final (sin animación, relleno sólido) */
+.indicador-card.small .spinner.done {
+  animation: none;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+}
+
+/* Colores */
+.total .spinner.done {
+  background-color: #007bff;   /* azul */
+}
+.pendiente .spinner.done {
+  background-color: #ffc107;   /* amarillo */
+}
+.aprobado .spinner.done {
+  background-color: #28a745;   /* verde */
+}
+.desaprobado .spinner.done {
+  background-color: #dc3545;   /* rojo */
+}
+</style>
+{% endblock %}
 
 <section class="usuario-bar-section">
 <div class="usuario-bar position-relative">
@@ -18,6 +84,34 @@
     <div class="saludo" style="color: #5a9138; font-size: 11px;" >Pre-carga </div>
 </div>
   </div>
+
+    <div class="indicadores">
+  <div class="indicador-card small total">
+    <div class="spinner"></div>
+    <span id="txt-total">Cargando...</span>
+  </div>
+
+  <div class="indicador-card small pendiente">
+    <div class="spinner"></div>
+    <span id="txt-pendiente">Cargando...</span>
+  </div>
+
+  <div class="indicador-card small aprobado">
+    <div class="spinner"></div>
+    <span id="txt-aprobadas">Cargando...</span>
+  </div>
+
+  <div class="indicador-card small desaprobado">
+    <div class="spinner"></div>
+    <span id="txt-rechazadas">Cargando...</span>
+  </div>
+</div>
+
+ <!-- Derecha -->
+  <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+    {% csrf_token %}
+    <button class="btn btn-sm btn-danger" type="submit">Cerrar sesión</button>
+  </form>
 </div>
 </section>
 
@@ -316,9 +410,23 @@
 
 {% block scripts %}
 
+<script>
+// Función para actualizar un indicador
+function actualizarIndicador(clase, idTexto, valor, etiqueta) {
+  const spinner = document.querySelector(`.${clase} .spinner`);
+  spinner.classList.add("done"); // 🔹 detiene animación y aplica color
+  document.getElementById(idTexto).textContent = `${valor} ${etiqueta}`;
+}
+
+
+</script>
+
 <!--Script DOM-->
 <script>
     document.addEventListener("DOMContentLoaded",function(){
+
+   
+
          Swal.fire({
                 title: "¡Bienvenido!",
                 text: "RECUERDA EL ORDEN DE LOS ARCHIVOS PARA EVITAR ERRORES",
@@ -326,6 +434,18 @@
               })
               serviciosFaltantes();
     })
+
+     const solicitudAnual = "{{ solicitudAnual }}" || "0"
+    const solicitudAnualAprobadas = "{{ solicitudAnualAprobadas }}" || "0"
+    const solicitudAnualPendientes = "{{ solicitudAnualPendientes }}" || "0"
+    const solicitudAnualDesaprobadas = "{{ solicitudAnualDesaprobadas }}" || "0"
+
+    setTimeout(()=>{
+      actualizarIndicador("total", "txt-total", solicitudAnual, "Solicitudes");
+      actualizarIndicador("aprobado", "txt-aprobadas", solicitudAnualAprobadas, "Aprobadas");
+      actualizarIndicador("pendiente", "txt-pendiente", solicitudAnualPendientes, "Pendientes");
+      actualizarIndicador("desaprobado", "txt-rechazadas", solicitudAnualDesaprobadas, "Rechazadas");
+    }, 2000);
 </script>
 
 <script>

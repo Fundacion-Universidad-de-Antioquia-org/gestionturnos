@@ -113,12 +113,10 @@ class Cambios_de_turnos(models.Model):
     estado_cambio_admin = models.CharField(max_length=30, default='pendiente')
     fecha_solicitud_cambio = models.DateField(default=timezone.localdate, editable=True)
     comentarios = models.CharField(max_length=300, null=True)
-    transportable = models.CharField(max_length=20, null=True)
-    terminos = models.BooleanField(default=False)
+    zonaSolicitante = models.CharField(max_length=20, null=True)
+    zonaReceptor = models.CharField(max_length=20, null=True)
+    transportable = models.BooleanField(default=False)
     
-
-    
-
 class Solicitudes_Gt(models.Model):
     foto = models.URLField(max_length=500, null = True)
     nombre = models.CharField(max_length=50)

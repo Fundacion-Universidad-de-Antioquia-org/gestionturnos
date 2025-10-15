@@ -133,20 +133,34 @@
       {% for data in resultadosCambiosTurnos %}
       <tr>
         <td>{{ data.nombre_solicitante }}</td>
-        <td class="codigoSolicitante">{{ data.codigo_solicitante }} <span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_solicitante }}</span> </td>
+        <td class="codigoSolicitante">{{ data.codigo_solicitante }} <br><br>
+          <span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_solicitante }}</span><br><br>
+          {% if data.zonaSolicitante %}
+          <span>{{ data.zonaSolicitante }}</span>
+          {% else %}
+          <span>NO TRANSPORTABLE</span> 
+          {% endif %}
+        </td>
         <td>{{ data.cargo_solicitante }}</td>
         <td>{{ data.turno_solicitante_original }}</td>
         <td class="turnoSolicitanteDiaDeseado">{{ data.turno_solicitante_nuevo}}</td>
         <td class="fechaCambio">{{ data.fecha_solicitud_cambio|date:"d/m/Y" }}</td>
-        <td>{{ data.nombre_receptor }}</td>
-        <td class="codigoReceptor">{{ data.codigo_receptor }} <span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor }}</span> </td>
+        <td>{{ data.nombre_receptor }}</td><br>
+        <td class="codigoReceptor">{{ data.codigo_receptor }}<br><br>
+          <span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor }}</span><br><br>
+          {% if data.zonaReceptor %}
+          <span>{{ data.zonaReceptor }}</span>
+          {% else %}
+          <span>NO TRANSPORTABLE</span> 
+          {% endif %}
+        </td>
         <td>{{ data.cargo_receptor }} </td>
         <td>{{ data.turno_receptor_original }}</td>
         <td class="turnoReceptorDiaDeseado">{{ data.turno_receptor_nuevo }}</td>
         <td class="aprobadoEmp">{{ data.estado_cambio_emp }}</td>
         <td class="aprobadoAdm">{{ data.estado_cambio_admin }}</td>
         <td>{% if data.comentarios %}
-          <button type="button" class="btn-icon ver-msg" data-title="Comentarios"
+          <button type="button" class="btn-icon ver-msg" data-title="Sistema"
             data-msg="{{ data.comentarios|escapejs }}" aria-label="Ver comentarios">
             <span class="material-symbols-outlined" style="color: #2d6fe9; font-size: 35px;">info</span>
           </button>
@@ -246,12 +260,15 @@
           })()
           : fechaCambioTexto;
 
+          const peticion = "admin";
+
         datos.push({
           fechaCambio,
           codigoSolicitante,
           codigoReceptor,
           turnoSolicitanteDiaDeseado,
-          turnoReceptorDiaDeseado
+          turnoReceptorDiaDeseado,
+          peticion
         });
 
         fetch("{% url 'aprobar_solicitudes_cambios_turnos' %}", {
