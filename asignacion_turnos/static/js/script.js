@@ -105,7 +105,7 @@ function cargarFechasGT() {
      Swal.fire({
                     icon: "warning",
                     title: "Fechas vacias",
-                    text: "Debes cargar una fecha valida",
+                    text: "Debes cargar un rengo valido de fechas",
                     width: '',
                     });
   }else{

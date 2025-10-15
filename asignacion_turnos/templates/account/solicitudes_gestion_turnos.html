@@ -162,7 +162,7 @@
     
   </div>
    <div class="usuario-bar-centro">
-    <button title="Buscar sucesión por codigo | fecha" id="btnBuscarSucesion" ><span class="material-symbols-outlined">search</span></button>
+    <button title="Buscar solicitud por codigo | fecha" id="btnBuscarSolicitud" ><span class="material-symbols-outlined">search</span></button>
     <button id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined">convert_to_text</span></button>
     <button id="generarDashboard"><span class="material-symbols-outlined">bar_chart_4_bars</span></button>
     
@@ -391,7 +391,11 @@
 <div id="modalInformeGT" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
     <span class="cerrar-fechas-gt" onclick="cerrarModalInformeGT()">&times;</span>
+<<<<<<< Updated upstream
     <div class="icon-title"><span class="material-symbols-outlined">download</span><h3 class="titulo-fechas-gt">Descarga de datos</h3></div>
+=======
+    <div class="icon-title"><span class="material-symbols-outlined">convert_to_text</span><h3 class="titulo-fechas-gt">Descargar datos </h3></div>
+>>>>>>> Stashed changes
 
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha inicial:</label>
@@ -413,6 +417,7 @@
   </div>
 </div>
 
+<<<<<<< Updated upstream
 <!--Modal dashboard -->
 <div id="modalDashboard" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
@@ -434,6 +439,22 @@
       </select>
 
       <button class="btn-cargar-fechas-gt" id="cargarDashboard">Generar</button>
+=======
+<div class="modal-buscarSucesion" id="modalBuscarSolicitud">
+  <div class="modal-buscarSucesion-contenido">
+    <span class="cerrar-buscarSucesion" onclick="cerrarModalBuscarSolicitud()">&times;</span>
+    <div class="icon-title"><span class="material-symbols-outlined">search</span><h3 class="titulo-buscarSucesion">Buscar solicitud</h3></div>
+
+    <div class="formulario-buscarSucesion">
+      <label for="codigo">Código:</label>
+      <input type="text" id="buscarCodigoSolicitud" class="input-buscarSucesion">
+
+      <label for="codigo">Id solicitud:</label>
+      <input type="text" id="buscarIdSolicitud" class="input-buscarSucesion">
+
+
+      <button class="btn-cargar-buscarSucesion" id="btnCargarSolicitud">Buscar</button>
+>>>>>>> Stashed changes
     </div>
   </div>
 </div>
@@ -986,9 +1007,19 @@ const cuerpoTabla = document.getElementById("mr-tbody");
       opcionSeleccionada,     
   });
   
-  const url = `{% url 'descargarInformeGt' %}?${params.toString()}`;
-  descargarExcel(url);
+  if(fechaInicialFormateada !== "" && fechaFinalFormateada !== "" && opcionSeleccionada !== ""){
+      const url = `{% url 'descargarInformeGt' %}?${params.toString()}`;
+      descargarExcel(url);
 
+  }else{
+     Swal.fire({
+            icon: "error",
+            title: "Se detectaron campos vacios",
+            text: "Todos los campos son obligatorios"
+          
+        });
+  }  
+    
   })
 
   async function descargarExcel(url) {
@@ -1025,6 +1056,7 @@ const cuerpoTabla = document.getElementById("mr-tbody");
 </script>
 
 <script>
+<<<<<<< Updated upstream
   document.getElementById("generarDashboard").addEventListener("click", function(){
     const modalDasboard = document.getElementById("modalDashboard")
     modalDasboard.style.display = "block";
@@ -1083,6 +1115,41 @@ document.getElementById("cargarDashboard").addEventListener("click", function(){
       
     }
   })
+=======
+  document.getElementById("btnBuscarSolicitud").addEventListener("click",function(){
+
+    const modalSolicitudGt =  document.getElementById("modalBuscarSolicitud")
+    modalSolicitudGt.style.display = "block";
+     setTimeout(() => {
+    modalSolicitudGt.classList.add("mostrar");
+  }, 10);
+
+  })
+
+  function cerrarModalBuscarSolicitud() {
+  const modalSolicitudGt = document.getElementById("modalBuscarSolicitud");
+  modalSolicitudGt.classList.remove("mostrar");
+  setTimeout(() => {
+    modalSolicitudGt.style.display = "none";
+  }, 300); // coincide con el tiempo de transition
+}
+
+document.getElementById('btnCargarSolicitud').addEventListener("click", function(){
+  const codigo = document.getElementById("buscarCodigoSolicitud").value
+  const id = document.getElementById("buscarIdSolicitud").value
+
+  if(codigo === "" && id === ""){
+    
+     Swal.fire({
+            icon: "error",
+            title: "Se detectaron codigo e id vacios",
+            text: "Debes ingresar ó un codigo ó un  id valido"
+          
+        });
+  }else{
+      
+  }
+>>>>>>> Stashed changes
 })
 </script>
 

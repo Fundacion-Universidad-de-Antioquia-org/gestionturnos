@@ -1890,13 +1890,18 @@ def descargarInformeGt(request):
             
             return resp
 
+<<<<<<< Updated upstream
     
+=======
+>>>>>>> Stashed changes
 @api_view(["GET"])
 def misSolicitudesGT(request):
     codigo = request.GET.get("codigo")
+    idSolicitud = request.GET.get("id")
+
     print(codigo)
     data = []
-    if codigo is not None:
+    if codigo is not None and idSolicitud is None:
         solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo = codigo).select_related('empleado')
         for s in solicitudes:
             data.append({
@@ -1912,7 +1917,24 @@ def misSolicitudesGT(request):
                 "urlArchivo": s.urlArchivo,
             })
         return Response(data)
-
+    elif idSolicitud is not None and codigo is None:
+        solicitudes =  Solicitudes_Gt.objects.filter(id = idSolicitud)
+        for s in solicitudes:
+            data.append({
+                "nombre": s.nombre,
+                "codigo":s.codigo,
+                "cargo": s.cargo,
+                "tipo_solicitud": s.tipo_solicitud,
+                "fecha_solicitud": s.fecha_solicitud,
+                "fecha_inicial": s.fecha_inicial,
+                "fecha_final": s.fecha_final,
+                "estado": s.estado,
+                "descripcion": s.descripcion
+            })
+        return Response(data)
+    else:
+        return Response({"success":True, "message":f"Codigo: {codigo} Y id: {idSolicitud} vacios"})
+    
 
 @api_view(["GET"])
 def getTodosComunicados(request):

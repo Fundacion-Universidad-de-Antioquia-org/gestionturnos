@@ -256,7 +256,7 @@
                 <td>{{ s.usuario_carga}}</td>
                 <td>
                     <!-- Botones-->
-                     <button class="btn-editar" id="editarTablaDatos">Editar</button>
+                     <button class="btn-editar" id="editarTablaDatos"><span class="material-symbols-outlined">edit_document</span></button>
                 </td>
             </tr>
             {% empty %}
@@ -315,15 +315,11 @@
     
     <label>Particularidades</label>
     <textarea name="" id="editParticularidades" class="campo-textarea" rows="7"></textarea>
-    
 
     <div style="text-align: right; margin-top: 15px;">
-      
-        
         <button id="cerrarBotonManual">Cerrar</button>
         <button id="guardarCambios" type="submit">Guardar</button>
        
-        
     </div>
 
     
@@ -448,7 +444,7 @@
             <td>${emp.particularidades ?? ""}</td>
             <td>${emp.estado_sucesion ?? ""}</td>
             <td>${emp.usuario_carga ?? ""}</td>
-            <td><button class="btn-editar" id="editarTablaDatos">Editar</button></td>
+            <td><button class="btn-editar" id="editarTablaDatos"><span class="material-symbols-outlined">edit_document</span></button></td>
           </tr>
         `).join("");
 

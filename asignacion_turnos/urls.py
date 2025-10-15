@@ -21,7 +21,6 @@ urlpatterns = [
     path('api/sucesion/',views.get_sucesion_cargo,name="get_sucesion_cargo"),
     path('api/actualizar_turno/',views.actualizar_turno, name="actualizar_turno"),
     path('api/consultar_turno/',views.consultar_turno, name="consultar_turno"),
-    # urls - > Confg
     path('api/traer_horarios/',views.traer_horarios, name = "traer_horarios"),
     path('api/eliminar_horario/',views.eliminar_horario, name="eliminar_horario"),
     path('api/insertar_horario/', views.insertar_horario, name="insertar_horario"),
@@ -45,5 +44,5 @@ urlpatterns = [
     path('api/getRespuesta/', views.getRespuesta, name = "getRespuesta"),
     path('api/descargarInformeGt/', views.descargarInformeGt, name = "descargarInformeGt"),
     path('api/misSolicitudesGT/', views.misSolicitudesGT, name= 'misSolicitudesGT'),
-    
+
     ]
