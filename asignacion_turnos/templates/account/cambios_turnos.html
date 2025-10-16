@@ -145,11 +145,11 @@
         <td>{{ data.turno_solicitante_original }}</td>
         <td class="turnoSolicitanteDiaDeseado">{{ data.turno_solicitante_nuevo}}</td>
         <td class="fechaCambio">{{ data.fecha_solicitud_cambio|date:"d/m/Y" }}</td>
-        <td>{{ data.nombre_receptor }}</td><br>
-        <td class="codigoReceptor">{{ data.codigo_receptor }}<br><br>
+        <td>{{ data.nombre_receptor }}</td>
+        <td class="codigoReceptor">{{ data.codigo_receptor }} <br> <br>
           <span style="border-radius: 8px; background-color: #efad21; padding: 4px;">{{ data.formacion_receptor }}</span><br><br>
           {% if data.zonaReceptor %}
-          <span>{{ data.zonaReceptor }}</span>
+          <span>{{ data.zonaReceptor }}</span>  
           {% else %}
           <span>NO TRANSPORTABLE</span> 
           {% endif %}

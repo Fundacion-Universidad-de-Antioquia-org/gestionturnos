@@ -459,6 +459,7 @@ def vista_precarga(request, *, context):
         "faltantes_lunes_viernesTranvia": faltantes_lunes_viernesTranvia,
         "faltantes_sabado_jsonTranvia": faltantes_sabado_jsonTranvia,
         "faltantes_domingo_jsonTranvia": faltantes_domingo_jsonTranvia,
+        
     })
 
 # [ ------ API ------]
@@ -1438,7 +1439,7 @@ def desaprobar_solicitudes_cambios(request):
     if solicitudes is not None: 
         for solicitud in solicitudes:
             if solicitud.get('codigoSolicitante') and solicitud.get('codigoReceptor'):
-                
+
                 empleadoSolicitante = Empleado_Oddo.objects.filter(codigo = solicitud['codigoSolicitante'], estado = "Activo").first()
                 empleadoReceptor = Empleado_Oddo.objects.filter(codigo = solicitud['codigoReceptor'] , estado = "Activo").first()
 
@@ -1953,4 +1954,33 @@ def getTodosComunicados(request):
                 "tipoArchivo":a.tipoArchivo
             })
         return Response({"success":True, "data":data})
+    
+def getSolicitudesCambiosTurnos(request):
+    codigoSolicitante = request.GET.get("codigoSolicitante")
+
+    solicitudes = Cambios_de_turnos.objects.filter(codigo_solicitante = codigoSolicitante)
+    datos = []
+    for s in solicitudes:
+        datos.append({
+            "codigo_solicitante": s.codigo_solicitante,
+            "nombre_solicitante": s.nombre_solicitante,
+            "cargo_solicitante": s.cargo_solicitante,
+            "formacion_solicitante": s.formacion_solicitante,
+            "turno_solicitante_original": s.turno_solicitante_original,
+            "turno_solicitante_nuevo": s.turno_solicitante_nuevo,
+            "codigo_receptor": s.codigo_receptor,
+            "nombre_receptor": s.nombre_receptor,
+            "cargo_receptor": s.cargo_receptor,
+            "formacion_receptor": s.formacion_receptor,
+            "turno_receptor_original": s.turno_receptor_original,
+            "turno_receptor_nuevo": s.turno_receptor_nuevo,
+            "estado_cambio_emp": s.estado_cambio_emp,
+            "estado_cambio_admin": s.estado_cambio_admin,
+            "fecha_solicitud_cambio": s.fecha_solicitud_cambio,
+            "comentarios": s.comentarios,
+            "zonaSolicitante": s.zonaSolicitante,
+            "zonaReceptor": s.zonaReceptor
+        })
+        
+    return Response(datos)
     

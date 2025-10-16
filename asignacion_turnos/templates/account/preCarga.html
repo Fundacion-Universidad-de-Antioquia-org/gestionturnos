@@ -57,15 +57,63 @@
 .total .spinner.done {
   background-color: #007bff;   /* azul */
 }
-.pendiente .spinner.done {
-  background-color: #ffc107;   /* amarillo */
+.sinAsignar .spinner.done {
+  background-color: #28a745;   /* amarillo */
 }
-.aprobado .spinner.done {
+.repetidos .spinner.done {
   background-color: #28a745;   /* verde */
 }
-.desaprobado .spinner.done {
-  background-color: #dc3545;   /* rojo */
+.faltantes .spinner.done {
+  background-color: #28a745;   /* rojo  dc3545*/
 }
+</style>
+
+<style>
+ :root{
+    --bg-app:#0d1117; --surface:#222121; --text:#e6edf3; --muted:#9aa4af;
+    --border:#30363d; --accent:#2f81f7; --accent-2:#1f6feb;
+  }
+  .overlay{
+    position:fixed; inset:0; display:grid; place-items:center;
+    background:rgba(0,0,0,.6);
+    opacity:0; pointer-events:none; transition:opacity .22s ease; z-index:1000;
+  }
+  .overlay.is-open{ opacity:1; pointer-events:auto; }
+  .dialog{
+    width:min(480px,92vw); background:var(--surface); color:var(--text);
+    border:1px solid var(--border); border-radius:12px; overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    transform:scale(.98) translateY(6px); opacity:.96;
+    transition:transform .22s ease, opacity .22s ease;
+    font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  }
+  .overlay.is-open .dialog{ transform:scale(1) translateY(0); opacity:1; }
+  .header,.footer{ background:var(--bg-app); padding:14px 16px; }
+  .header{
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .title{ margin:0; font-size:1rem }
+  .close{
+    background:transparent; border:none; color:var(--muted);
+    font-size:1.2rem; line-height:1; cursor:pointer;
+  }
+  .body{ padding:16px; background:var(--surface); }
+  .label{ display:block; margin-bottom:.35rem }
+  .file{
+    width:100%; display:block; padding:.6rem .7rem;
+    color:var(--text); background:#1a1f24;
+    border:1px solid var(--border); border-radius:.5rem;
+  }
+  .hint{ margin:.5rem 0 0; color:var(--muted); font-size:.85rem }
+  .actions{ display:flex; gap:.6rem; justify-content:flex-end; margin-top:12px }
+  .btn{
+    border:1px solid var(--border); background:transparent;
+    color:var(--text); padding:.6rem .9rem; border-radius:.6rem; cursor:pointer;
+  }
+  .btn.primary{ background:var(--accent); border:none; color:#fff; }
+  .btn.primary:hover{ background:var(--accent-2); }
+  @media (prefers-reduced-motion: reduce){ .overlay,.dialog{ transition:none !important; } }
 </style>
 {% endblock %}
 
@@ -83,27 +131,26 @@
     <!-- Título de la página -->
     <div class="saludo" style="color: #5a9138; font-size: 11px;" >Pre-carga </div>
 </div>
+<div class="usuario-bar-centro">  
+    <button title="Activar o desactivar filtros" onclick="openUploadModal()" ><span class="material-symbols-outlined" for="upload-modal-toggle">upload</span></button>
+  </div>
   </div>
 
     <div class="indicadores">
-  <div class="indicador-card small total">
+ 
+  <div class="indicador-card small sinAsignar">
     <div class="spinner"></div>
-    <span id="txt-total">Cargando...</span>
+    <span id="txt-sinAsignar">Cargando...</span>
   </div>
 
-  <div class="indicador-card small pendiente">
+  <div class="indicador-card small repetidos">
     <div class="spinner"></div>
-    <span id="txt-pendiente">Cargando...</span>
+    <span id="txt-repetidos">Cargando...</span>
   </div>
 
-  <div class="indicador-card small aprobado">
+  <div class="indicador-card small faltantes">
     <div class="spinner"></div>
-    <span id="txt-aprobadas">Cargando...</span>
-  </div>
-
-  <div class="indicador-card small desaprobado">
-    <div class="spinner"></div>
-    <span id="txt-rechazadas">Cargando...</span>
+    <span id="txt-faltantes">Cargando...</span>
   </div>
 </div>
 
@@ -115,30 +162,32 @@
 </div>
 </section>
 
-<!-- Acordeon carga de archivos-->
- <section class="acordion-section">
-<div class="accordion-container"  style="margin-top: 14px;">
-  <div class="accordion-header"><span class="material-symbols-outlined">upload</span>Carga de Archivos | Pre-carga</div>
-  <div class="accordion-body" id="acordeonCarga">
-   
-    <form action="{% url 'preCarga' %}" method="POST" id="formCargaDatos" enctype="multipart/form-data">
-      {% csrf_token %}  
-      <div class="filtros-horizontal">
-        <div class="filtros-horizontal">
-  <div class="filtro-item filtro">
-    <label for="file_cargarDatosProno">Datos de revisión - PRONO</label>
-    <input type="file" name="file_cargarDatosProno" id="archivoRevision" class="input-archivo">
-  </div>
-  
-</div>
-      </div>
-      <div style="margin-top: 15px;">
-        <button type="submit" class="btn btn-primary" name="action" value="cargar" id="btnCargar">Cargar archivos</button>
+<div id="uploadOverlay" class="overlay" aria-hidden="true">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="um-title">
+    <div class="header">
+      <h2 id="um-title" class="title">Subir archivo</h2>
+      <button id="closeModalBtn" class="close" aria-label="Cerrar">×</button>
+    </div>
+
+    <form id="uploadForm"
+          class="body"
+          action="{% url 'preCarga' %}"
+          method="POST"
+          enctype="multipart/form-data">
+          {% csrf_token %}
+      <label for="um-file" class="label">Selecciona un archivo</label>
+      <input id="um-file" class="file" name="file_cargarDatosProno" type="file" required />
+      <p class="hint">Selecciona y presiona “Subir”.</p>
+
+      <div class="footer">
+        <div class="actions">
+          <button type="button" id="cancelBtn" class="btn">Cancelar</button>
+          <button type="submit" id="uploadBtn" class="btn primary">Subir</button>
+        </div>
       </div>
     </form>
   </div>
 </div>
-</section>
 
 <section class="panelControl-section">
 <div id="panelControl">
@@ -414,46 +463,46 @@
 // Función para actualizar un indicador
 function actualizarIndicador(clase, idTexto, valor, etiqueta) {
   const spinner = document.querySelector(`.${clase} .spinner`);
-  spinner.classList.add("done"); // 🔹 detiene animación y aplica color
+  spinner.classList.add("done"); 
   document.getElementById(idTexto).textContent = `${valor} ${etiqueta}`;
 }
-
-
 </script>
 
 <!--Script DOM-->
 <script>
     document.addEventListener("DOMContentLoaded",function(){
 
-   
-
          Swal.fire({
                 title: "¡Bienvenido!",
-                text: "RECUERDA EL ORDEN DE LOS ARCHIVOS PARA EVITAR ERRORES",
+                text: "¡Importante! Recuerda el orden de las hojas en el archivo de excel",
                 icon: "success"
               })
               serviciosFaltantes();
     })
 
-     const solicitudAnual = "{{ solicitudAnual }}" || "0"
+    const solicitudAnual = "{{ solicitudAnual }}" || "0"
     const solicitudAnualAprobadas = "{{ solicitudAnualAprobadas }}" || "0"
     const solicitudAnualPendientes = "{{ solicitudAnualPendientes }}" || "0"
     const solicitudAnualDesaprobadas = "{{ solicitudAnualDesaprobadas }}" || "0"
 
+    const serviciosFaltantesSabados = "{{cantidadSabados}}"
+    
     setTimeout(()=>{
-      actualizarIndicador("total", "txt-total", solicitudAnual, "Solicitudes");
-      actualizarIndicador("aprobado", "txt-aprobadas", solicitudAnualAprobadas, "Aprobadas");
-      actualizarIndicador("pendiente", "txt-pendiente", solicitudAnualPendientes, "Pendientes");
-      actualizarIndicador("desaprobado", "txt-rechazadas", solicitudAnualDesaprobadas, "Rechazadas");
+      
+      actualizarIndicador("sinAsignar", "txt-sinAsignar", 0, "Servicios sin asignar");
+      actualizarIndicador("repetidos", "txt-repetidos", 0, "Servicios repetidos");
+      actualizarIndicador("faltantes", "txt-faltantes",  0, "Servicios Faltantes");
     }, 2000);
 </script>
 
 <script>
   function serviciosFaltantes(){
 
-    const faltantesLv = JSON.parse(document.getElementById("faltantesLv").textContent)
-    const faltantesSa = JSON.parse(document.getElementById("faltantesSa").textContent)
+    const faltantesLv = JSON.parse(document.getElementById("faltantesLv"))
+    const faltantesSa = JSON.parse(document.getElementById("faltantesSa"))
     const faltantesDo = "{{ faltantes_domingo_json }}"
+
+    alert(faltantesSa.cantidad.value)
 
   if( faltantesLv != "" ){
      Swal.fire({
@@ -579,6 +628,45 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
   }
 }
 
+</script>
+
+<script>
+  (function(){
+    const overlay   = document.getElementById('uploadOverlay');
+    const closeBtn  = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const form      = document.getElementById('uploadForm');
+    const submitBtn = document.getElementById('uploadBtn');
+
+    function onEsc(e){ if(e.key === 'Escape') closeModal(); }
+    function openModal(){
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden','false');
+      closeBtn?.focus();
+      document.addEventListener('keydown', onEsc);
+    }
+    function closeModal(){
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden','true');
+      document.removeEventListener('keydown', onEsc);
+    }
+
+    // Cerrar por UI
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
+
+    // Evitar doble submit y mostrar estado
+    form?.addEventListener('submit', () => {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Subiendo…';
+      // No prevenimos el submit: dejamos que el navegador navegue y renderice la respuesta
+    });
+
+    // API pública para abrir/cerrar desde tu botón externo
+    window.openUploadModal  = openModal;
+    window.closeUploadModal = closeModal;
+  })();
 </script>
 
 
