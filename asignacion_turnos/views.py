@@ -1192,7 +1192,8 @@ def solicitar_cambio_turno(request):
     
     comentarios = "✅ Cumplen con el descanso minimo de 10 ó 8hrs antes y despues del dia de cambio"
 
-    transportable = None
+    transportable_solicitante = False
+    transportable_receptor =  False
     estadoCambio = ""
     madrugadaLinea = ["ORIENTE","OCCIDENTE","SUR"]
     madrugadaPatio = ["PBE"]
@@ -1203,19 +1204,23 @@ def solicitar_cambio_turno(request):
     if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) <= limiteMadrugada and  datetime.combine(fechaCambio,receptor_dia.hora_inicio) <= limiteMadrugada:
         if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
             comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
-            transportable = True
+            transportable_solicitante = True
+            transportable_receptor = True
             estadoCambio = "aprobado"
         elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
             comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
-            transportable = True
+            transportable_solicitante = True
+            transportable_receptor = True
             estadoCambio = "aprobado"
     elif solicitante.zona ==  receptor.zona:
         comentarios = f"{comentarios}\n✅ Ambos cumplen, zona: No son transportables"
-        transportable = True
+        transportable_solicitante = True
+        transportable_receptor = True
         estadoCambio = "aprobado"
     else:
         comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos, comunicarse con el area Gestión de Turnos"
-        transportable = False
+        transportable_solicitante = True
+        transportable_receptor = True
         estadoCambio = "pendiente"
 
     #Crear solicitud de cambio
@@ -1239,7 +1244,8 @@ def solicitar_cambio_turno(request):
         comentarios = comentarios,
         zonaSolicitante = solicitante.zona,
         zonaReceptor = receptor.zona, 
-        transportable = transportable
+        transportable_solicitante = transportable_solicitante,
+        transportable_receptor = transportable_receptor
     )
 
     
@@ -1996,7 +2002,8 @@ def getSolicitudesCambiosTurnos(request):
             "fecha_solicitud_cambio": s.fecha_solicitud_cambio,
             "comentarios": s.comentarios,
             "zonaSolicitante": s.zonaSolicitante,
-            "zonaReceptor": s.zonaReceptor
+            "zonaReceptor": s.zonaReceptor,
+            "transportable":s.transportable
         })
         
     return Response({"success":True, "data":datos, "rol":rol})
