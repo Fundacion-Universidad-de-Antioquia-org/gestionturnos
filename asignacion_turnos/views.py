@@ -74,6 +74,10 @@ def vista_dashboard(request,*, context):
         porcentajePendientes = None
         total = None
 
+        MESES_ES = [
+        "", "enero","febrero","marzo","abril","mayo","junio",
+        "julio","agosto","septiembre","octubre","noviembre","diciembre"]
+
         if fechaInicial is not None and fechaFinal is not None and peticion is not None:
             print("Enoraadasdadasda")
             if peticion == "academica":
@@ -90,10 +94,11 @@ def vista_dashboard(request,*, context):
 
                 solicitudesXmes = []
                 solicitudesXtotales = []
-                solicitudesPorMes = Solicitudes_Gt.objects.filter(tipo_solicitud = "PERMISO ACADEMICO").annotate(mes = TruncMonth('fecha_solicitud')).values('mes').annotate(total = Count('id')).order_by('mes')
+                solicitudesPorMes = Solicitudes_Gt.objects.filter(tipo_solicitud = "PERMISO ACADEMICO", fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).annotate(mes = TruncMonth('fecha_solicitud')).values('mes').annotate(total = Count('id')).order_by('mes')
                 for s in solicitudesPorMes:
+                    texto = f"{MESES_ES[s['mes'].month]} {s['mes'].year}"  # "octubre 2025"
                     solicitudesXmes.append({
-                        "mes":s["mes"].strftime('%B %Y').capitalize()
+                        "mes": texto.capitalize()
                     })
                     solicitudesXtotales.append({
                         "total": s.get("total")
@@ -118,9 +123,9 @@ def vista_dashboard(request,*, context):
                 numSolicitudesPend =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "pendiente").count()
                 numSolicitudesTotal =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO").count()
 
-                porcentajeAprobacion = 100* (numSolicitudesApro/numSolicitudesTotal)
-                porcentajeDesaprobadas = 100* (numSolicitudesDesa/numSolicitudesTotal)
-                porcentajePendientes = 100* (numSolicitudesPend/numSolicitudesTotal)
+                porcentajeAprobacion = int(100* (numSolicitudesApro/numSolicitudesTotal))
+                porcentajeDesaprobadas = int(100* (numSolicitudesDesa/numSolicitudesTotal))
+                porcentajePendientes = int(100* (numSolicitudesPend/numSolicitudesTotal))
 
                 solicitudesXmes = []
                 solicitudesXtotales = []
@@ -755,7 +760,7 @@ def buscar_cambio_turno(request):
     fechaCambio = datetime.strptime(request.GET.get('fechaCambio'),"%Y/%m/%d")
 
     
-    if not Sucesion.objects.filter(codigo = codigoSolicitante, fecha = fechaCambio).exists():
+    if not Sucesion.objects.filter(codigo = codigoSolicitante, fecha = fechaCambio, estado_sucesion = "publicado").exists():
         return Response({"success":False, "message": f"Para esta fecha: {fechaCambio} no hay sucesión cargada"})
 
     #horaActual = datetime.now().time()
@@ -1192,7 +1197,6 @@ def solicitar_cambio_turno(request):
     madrugadaLinea = ["ORIENTE","OCCIDENTE","SUR"]
     madrugadaPatio = ["PBE"]
     
-   
     t = time.fromisoformat("05:00")
     limiteMadrugada = datetime.combine(fechaCambio,t)
 
@@ -1956,10 +1960,23 @@ def getTodosComunicados(request):
         return Response({"success":True, "data":data})
     
 def getSolicitudesCambiosTurnos(request):
-    codigoSolicitante = request.GET.get("codigoSolicitante")
 
-    solicitudes = Cambios_de_turnos.objects.filter(codigo_solicitante = codigoSolicitante)
+    codigo = request.GET.get("codigo")
+    fecha_solicitud_cambio = request.GET.get("fechaCambio")
+    rol = None
+    solicitudes = None
+    
+    if Cambios_de_turnos.objects.filter(codigo_solicitante = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio).exists():
+        rol = "solicitante"
+        solicitudes = Cambios_de_turnos.objects.filter(codigo_solicitante = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio)
+    elif Cambios_de_turnos.objects.filter(codigo_receptor = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio).exists():
+        rol ="receptor"
+        solicitudes = Cambios_de_turnos.objects.filter(codigo_receptor = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio)
+    else:
+        rol = None
+
     datos = []
+
     for s in solicitudes:
         datos.append({
             "codigo_solicitante": s.codigo_solicitante,
@@ -1982,5 +1999,5 @@ def getSolicitudesCambiosTurnos(request):
             "zonaReceptor": s.zonaReceptor
         })
         
-    return Response(datos)
+    return Response({"success":True, "data":datos, "rol":rol})
     
