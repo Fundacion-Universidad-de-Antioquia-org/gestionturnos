@@ -558,7 +558,7 @@ def get_mis_turnos(request):
     if not codigo and fechaInicial and fechaFinal:
         return Response({"success":True, "message": f"Error de parametros, codigo: {codigo}, fecha incial: {fechaInicial}, fecha final {fechaFinal}"})
     
-    turnos  = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)), codigo = codigo ).order_by('fecha')
+    turnos  = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)), codigo = codigo, estado_sucesion = "publicado" ).order_by('fecha')
     data = []
     for t in turnos:
         data.append({
@@ -584,7 +584,7 @@ def get_sucesion_cargo(request):
     if not cargo:
         return Response({"Error":"Parametro cargo es requerido"}, status=400)
     
-    turnos = Sucesion.objects.filter(empleado__cargo=cargo, empleado__estado = "Activo")
+    turnos = Sucesion.objects.filter(empleado__cargo=cargo, empleado__estado = "Activo", estado_sucesion = "publicado")
     data = []
     for t in turnos:
         data.append({
@@ -1702,7 +1702,7 @@ def cabeceras_turnos(request):
     wk_end       = Cast(ExpressionWrapper(wk_start_dt + plus_6d, output_field=DateTimeField()), DateField())
 
     qs = (Sucesion.objects
-          .filter(codigo=codigo)
+          .filter(codigo=codigo, estado_sucesion = "publicado")
           .annotate(week_start=wk_start, week_end=wk_end)
           .values("week_start", "week_end")
           .distinct()
