@@ -1967,6 +1967,7 @@ def getTodosComunicados(request):
     
 @api_view(["GET"])   
 def getSolicitudesCambiosTurnos(request):
+
     codigo = request.GET.get("codigo")
     fecha_solicitud_cambio = request.GET.get("fechaCambio")
     rol = None
@@ -2003,7 +2004,6 @@ def getSolicitudesCambiosTurnos(request):
             "comentarios": s.comentarios,
             "zonaSolicitante": s.zonaSolicitante,
             "zonaReceptor": s.zonaReceptor,
-            "transportable":s.transportable
         })
         
     return Response({"success":True, "data":datos, "rol":rol})

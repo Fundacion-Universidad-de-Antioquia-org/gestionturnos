@@ -104,9 +104,16 @@
   </div>
 </div>
 </section>
+
+<section class="panelControl-cambiosTurnos">
+  <button class="checkbox-cell" id="seleccionarTodos">Seleccionar todos</button>
+<div class="acciones-finales">
+  
+</div>
+</section>
+
 <!--Tabla de datos-->
 <section class="table-section">
-
   <table class="table styled-table display" id="tablaDatos">
     <thead>
       <tr>
@@ -124,9 +131,7 @@
         <th>Estado EMP</th>
         <th>Estado ADM</th>
         <th>Sistema</th>
-        <th class="checkbox-cell">
-          <button type="button" id="seleccionarTodos">check</button>
-        </th>
+        <th>Check</th>
       </tr>
     </thead>
     <tbody id="tablaBody">
@@ -169,7 +174,7 @@
           {% endif %}
 
         </td>
-        <td class="checkbox-cell"><input type="checkbox" class="checkbox-item"></td>
+        <td class="checkbox-cell"><input type="checkbox" class="checkbox-item" style="justify-items: center;"></td>
 
       </tr>
       {% empty %}
