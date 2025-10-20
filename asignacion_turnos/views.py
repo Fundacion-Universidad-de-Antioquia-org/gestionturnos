@@ -1444,7 +1444,7 @@ def aprobar_solicitudes_cambios_turnos(request):
 
 @api_view(["POST"])
 def desaprobar_solicitudes_cambios(request):
-    solicitudes = request.data.get('solicitudes') 
+    solicitudes = request.data.get('solicitudes')
     print("Entro al endpoint")
     if solicitudes is not None: 
         for solicitud in solicitudes:
@@ -1485,7 +1485,7 @@ def desaprobar_solicitudes_cambios(request):
     else:
         return Response({
             "success":False,
-            "message":"Solicitudes vacias"
+            "message": f"Solicitudes vacias, contenido enviado:  {solicitudes}"
         })
 
 
