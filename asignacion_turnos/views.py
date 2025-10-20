@@ -1266,8 +1266,8 @@ def aprobar_solicitudes_cambios_turnos(request):
 
     solicitudesAprobadas = []
     contadorSolicitudes = 0
-    peticion = None
     
+    peticion = request.data.get('peticion')
     solicitudes = request.data.get('solicitudes')
 
     if solicitudes is not None:
