@@ -1266,15 +1266,17 @@ def aprobar_solicitudes_cambios_turnos(request):
 
     solicitudesAprobadas = []
     contadorSolicitudes = 0
+
     
-    peticion = request.data.get('peticion')
     solicitudes = request.data.get('solicitudes')
 
     if solicitudes is not None:
 
         for solicitud in solicitudes:
+            
             print(f"Solicitudes: fecha cambio : {solicitud['fechaCambio']} , codigo solicitante: {solicitud['codigoSolicitante']} , codigo receptor: {solicitud['codigoReceptor']}")
-            print(f"Turno que el  solicitande necesita : {solicitud['turnoSolicitanteDiaDeseado']}, Turno que el receptor necesita: {solicitud['turnoReceptorDiaDeseado']} " )
+            print(f"Turno que el  solicitande necesita : {solicitud['turnoSolicitanteDiaDeseado']}, Turno que el receptor necesita: {solicitud['turnoReceptorDiaDeseado']} ")
+            peticion = request.data.get('peticion')
             solicitudCambio =  Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
                 codigo_receptor = solicitud['codigoReceptor']).first()
             if peticion == "intranet":
