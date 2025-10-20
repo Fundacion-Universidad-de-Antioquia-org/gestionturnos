@@ -74,8 +74,9 @@ class Empleado_Oddo(models.Model):
     direccion = models.CharField(max_length=100, null=True)
     barrio = models.CharField(max_length=50, null= True)
     formacion =models.CharField(max_length= 100, null=True)
-
-    
+    fechaIngreso = models.DateField(null= True)
+    universidad = models.CharField(max_length=70, null=True)
+    carrera = models.CharField(max_length=70, null = True)
 
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"
@@ -133,9 +134,6 @@ class Solicitudes_Gt(models.Model):
     tipoArchivo = models.CharField(max_length= 20, null=True)
     empleado = models.ForeignKey('Empleado_Oddo', on_delete=models.SET_NULL,null=True,blank=True)
 
-    def __str__(self):
-        return f"{self.fecha} - {self.codigo_solicitante} - {self.codigo_receptor}"
-    
 
 class Respuesta_Solicitudes_Gt(models.Model):
     respuesta = models.CharField(max_length=200, default='Sin respuesta por ahora', null=True)

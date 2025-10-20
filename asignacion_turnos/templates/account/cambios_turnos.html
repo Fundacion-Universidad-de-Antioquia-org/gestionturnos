@@ -257,14 +257,11 @@
         const turnoReceptorDiaDeseado = fila.querySelector('.turnoReceptorDiaDeseado')?.textContent.trim();
 
         const fechaCambioTexto = fila.querySelector('.fechaCambio')?.textContent.trim();
-
         const fechaCambio = /^\d{2}\/\d{2}\/\d{4}$/.test(fechaCambioTexto)
           ? (() => {
             const [d, m, y] = fechaCambioTexto.split('/');
             return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-          })()
-          : fechaCambioTexto;
-
+          })(): fechaCambioTexto;
           const peticion = "admin";
 
         datos.push({

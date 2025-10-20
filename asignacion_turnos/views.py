@@ -23,7 +23,7 @@ from io import BytesIO
 
 from datetime import datetime, timedelta, date, time
 from django.utils import timezone
-from django.db.models.functions import TruncMinute
+from django.db.models.functions import TruncMinute, Upper, Trim, Coalesce
 
 
 from django.db.models import Count
@@ -37,7 +37,6 @@ from .resources.cargarArchivosBlob import upload_to_azure_blob
 from .resources.enviarCorreoGmail import enviarCorreoGmail, enviarCorreoGmailHTML
 from .resources.buscarErrores import sobreCargaLaboral,asignacionServicios, asignacionServiciosTranvia, sobreCargaLaboralTranvia
 from .resources.peticion_Oddo import sincronizarDbEmpleados
-
 
 
 
@@ -81,6 +80,9 @@ def vista_dashboard(request,*, context):
         if fechaInicial is not None and fechaFinal is not None and peticion is not None:
             print("Enoraadasdadasda")
             if peticion == "academica":
+
+                solicitudesXmes = []
+                solicitudesXtotales = []
                 
                 numSolicitudesApro =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "aprobado").count()
                 numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "desaprobado").count()
@@ -88,12 +90,11 @@ def vista_dashboard(request,*, context):
                 numSolicitudesTotal =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO").count()
 
                 print(f"# aprobadas: {numSolicitudesApro}, desaprobadas: {numSolicitudesDesa}, pendientes: {numSolicitudesPend}, total: {numSolicitudesTotal}")
-                porcentajeAprobacion = 100* (numSolicitudesApro/numSolicitudesTotal)
-                porcentajeDesaprobadas = 100* (numSolicitudesDesa/numSolicitudesTotal)
-                porcentajePendientes = 100* (numSolicitudesPend/numSolicitudesTotal)
+                porcentajeAprobacion = int(100* (numSolicitudesApro/numSolicitudesTotal))
+                porcentajeDesaprobadas = int( 100* (numSolicitudesDesa/numSolicitudesTotal))
+                porcentajePendientes = int (100* (numSolicitudesPend/numSolicitudesTotal))
 
-                solicitudesXmes = []
-                solicitudesXtotales = []
+               
                 solicitudesPorMes = Solicitudes_Gt.objects.filter(tipo_solicitud = "PERMISO ACADEMICO", fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).annotate(mes = TruncMonth('fecha_solicitud')).values('mes').annotate(total = Count('id')).order_by('mes')
                 for s in solicitudesPorMes:
                     texto = f"{MESES_ES[s['mes'].month]} {s['mes'].year}"  # "octubre 2025"
@@ -104,6 +105,12 @@ def vista_dashboard(request,*, context):
                         "total": s.get("total")
                     })
 
+
+                solicitudesPorUni = Solicitudes_Gt.objects.filter(tipo_solicitud = "PERMISO ACADEMICO", fecha_inicial__gte = fechaInicial, 
+                                              fecha_final__lte = fechaFinal).annotate(u_norm=Upper(Trim('empleado__universidad'))).annotate(universidad=Coalesce('u_norm', 
+                                                Value('SIN UNIVERSIDAD'))).values('universidad').annotate(total=Count('id')).order_by('-total', 'universidad')
+                print(solicitudesPorUni)
+             
                 return render(request,"account/dashboard.html",{
                     'usuarioLogeado': usuarioLogeado,
                     'porcentajeAprobacion': porcentajeAprobacion,
@@ -1356,7 +1363,7 @@ def aprobar_solicitudes_cambios_turnos(request):
                     return Response({
                             "success":True, "message": "El cambio de turno fue rechazado. Si consideras que debes discutir la solicitud, contacta al OC-SAA ó Gestión de turnos"
                             })
-            elif peticion == "admin": # Pagina web Gestion Turnos
+            elif peticion == "admin": 
                 if solicitudCambio.estado_cambio_emp == "aprobado":
                     horario_relacion_solicitante = Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).first()
                     if solicitud['turnoSolicitanteDiaDeseado'] == "DISPO": #RECEPTOR TIENE DISPO

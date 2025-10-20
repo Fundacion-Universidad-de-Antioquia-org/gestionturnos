@@ -28,12 +28,7 @@ def _s(v):  # str seguro
     return "" if v is None else str(v).strip()
 
 def sincronizarDbEmpleados():
-    """
-    Sincroniza la tabla Empleado_Oddo contra el ERP:
-    - Crea nuevos
-    - Actualiza existentes (por cedula)
-    Requiere: Django>=5 y PostgreSQL (ON CONFLICT).
-    """
+   
     url_erp = os.getenv("URLERP")
     if not url_erp:
         return {"ok": False, "error": "Falta URLERP"}
@@ -53,16 +48,16 @@ def sincronizarDbEmpleados():
         return {"ok": False, "error": "La clave 'empleados' no es lista."}
 
     # Preparar objetos / update
-    campos_upd = ["foto","nombre", "codigo", "estado", "cargo", "correo", "formacion","direccion","barrio","zona"]
+    campos_upd = ["foto","nombre", "codigo", "estado", "cargo", "correo", "formacion","direccion","barrio","zona","fechaIngreso","universidad","carrera"]
     objs = []
     sin_cedula = 0
     for e in empleados:
+      
         ced = _s(e.get("cedula"))
         if not ced:
             sin_cedula += 1
             continue
         objs.append(Empleado_Oddo(
-            
             cedula=ced,
             foto = _s(e.get("foto_url")),
             nombre=_s(e.get("nombre")),
@@ -74,7 +69,10 @@ def sincronizarDbEmpleados():
             direccion = _s(e.get("address_home_id")),
             barrio = _s(e.get("Barrio")),
             municipio = _s(e.get("Municipio")),
-            zona =_s(e.get("zona"))
+            zona =_s(e.get("zona")),
+            fechaIngreso = _s(e.get("x_studio_fecha_de_ingreso_1")),
+            universidad = get_universidad(e),
+            carrera = get_carrera(e)
         ))
 
     if not objs:
@@ -97,7 +95,7 @@ def sincronizarDbEmpleados():
                 unique_fields=["cedula"],       # campo único para conflicto
                 update_fields=campos_upd,       # qué actualizar si existe
             )
-            # log discreto (opcional)
+            
             # print(f"[UPSERT] {min(i+batch, len(objs))}/{len(objs)}")
 
     dt = (datetime.now() - t0).total_seconds()
@@ -152,3 +150,42 @@ def getOddo_traerCargo_Estado(codigo):
         print(f'Excepción: {e}')
 
     return empleado
+
+
+
+def get_universidad(e, sanitizer=_s):
+   
+    estudios = e.get("estudios")
+
+    # Normalizar: permitir dict o lista; cualquier otra cosa => sin datos
+    if estudios is None:
+        return None
+    if isinstance(estudios, dict):
+        estudios = [estudios]
+    if not isinstance(estudios, list):
+        return None
+
+    for item in estudios:
+        if isinstance(item, dict):
+            uni = item.get("universidad")
+            if uni:
+                return sanitizer(uni) if sanitizer else uni
+    return None
+
+def get_carrera(e, sanitizer=_s):
+    estudios = e.get("estudios")
+
+    if estudios is None:
+        return None
+    if isinstance(estudios, dict):
+        estudios = [estudios]
+    if not isinstance(estudios, list):
+        return None
+
+    for item in estudios:
+        if isinstance(item, dict):
+            carrera = item.get("carrera")
+            if carrera:
+                return sanitizer(carrera) if sanitizer else carrera
+    return None
+
