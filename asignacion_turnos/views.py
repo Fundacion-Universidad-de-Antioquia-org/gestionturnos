@@ -1444,34 +1444,36 @@ def aprobar_solicitudes_cambios_turnos(request):
 
 @api_view(["POST"])
 def desaprobar_solicitudes_cambios(request):
+
     solicitudes = request.data.get('solicitudes')
-    print("Entro al endpoint")
+    
     if solicitudes is not None: 
         for solicitud in solicitudes:
+
             if solicitud.get('codigoSolicitante') and solicitud.get('codigoReceptor'):
 
                 empleadoSolicitante = Empleado_Oddo.objects.filter(codigo = solicitud['codigoSolicitante'], estado = "Activo").first()
                 empleadoReceptor = Empleado_Oddo.objects.filter(codigo = solicitud['codigoReceptor'] , estado = "Activo").first()
 
-                solicitud = Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
+                solicitudCambiosTurnos = get_object_or_404(Cambios_de_turnos, fecha_solicitud_cambio = solicitud['fechaCambio'], 
                                                 codigo_solicitante = solicitud['codigoSolicitante'], 
-                                                codigo_receptor = solicitud['codigoReceptor'],
-                                                )
+                                                codigo_receptor = solicitud['codigoReceptor'])
                 
-                if solicitud['peticicion'] == "intranet":
+                Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
+                                                codigo_solicitante = solicitud['codigoSolicitante'], 
+                                                codigo_receptor = solicitud['codigoReceptor']).update(estado_cambio_emp = "desaprobado")
+                if solicitud['peticion'] == "intranet":
                     Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
-                                                    codigo_solicitante = solicitud['codigoSolicitante'], 
-                                                    codigo_receptor = solicitud['codigoReceptor'],
-                                                    ).update(estado_cambio_emp = "desaprobado")
+                                                codigo_solicitante = solicitud['codigoSolicitante'], 
+                                                codigo_receptor = solicitud['codigoReceptor']).update(estado_cambio_emp = "desaprobado")
                 elif solicitud['peticion'] == "admin":
                     Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], 
-                                                    codigo_solicitante = solicitud['codigoSolicitante'], 
-                                                    codigo_receptor = solicitud['codigoReceptor'],
-                                                    ).update(estado_cambio_admin = "desaprobado")
-                print(empleadoReceptor.nombre)
+                                                codigo_solicitante = solicitud['codigoSolicitante'], 
+                                                codigo_receptor = solicitud['codigoReceptor']).update(estado_cambio_admin = "desaprobado")
+                    
                 send_log(empleadoSolicitante.cedula, datetime.today(), "Rechazar solicitud",
                         f"Se rechazo la solicitud de cambio entre: {empleadoSolicitante.nombre}, cod: {empleadoSolicitante.codigo} y {empleadoReceptor.nombre}, cod: {empleadoReceptor.codigo}, para la fecha: {solicitud['fechaCambio']}",
-                        "AppGestionTurnos","Update:estadoSolicitud", solicitud.id)
+                        "AppGestionTurnos","Update:estadoSolicitud", solicitudCambiosTurnos.id)
                 
                 return Response({
                     "success":True,
@@ -1485,7 +1487,7 @@ def desaprobar_solicitudes_cambios(request):
     else:
         return Response({
             "success":False,
-            "message": f"Solicitudes vacias, contenido enviado:  {solicitudes}"
+            "message": f"Solicitudes vacias, contenido {solicitudes}"
         })
 
 
