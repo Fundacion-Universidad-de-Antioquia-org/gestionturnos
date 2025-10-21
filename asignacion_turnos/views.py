@@ -83,6 +83,9 @@ def vista_dashboard(request,*, context):
 
                 solicitudesXmes = []
                 solicitudesXtotales = []
+
+                solicitudesXuni = []
+                cantidadXuni = []
                 
                 numSolicitudesApro =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "aprobado").count()
                 numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "desaprobado").count()
@@ -105,11 +108,19 @@ def vista_dashboard(request,*, context):
                         "total": s.get("total")
                     })
 
-
                 solicitudesPorUni = Solicitudes_Gt.objects.filter(tipo_solicitud = "PERMISO ACADEMICO", fecha_inicial__gte = fechaInicial, 
                                               fecha_final__lte = fechaFinal).annotate(u_norm=Upper(Trim('empleado__universidad'))).annotate(universidad=Coalesce('u_norm', 
                                                 Value('SIN UNIVERSIDAD'))).values('universidad').annotate(total=Count('id')).order_by('-total', 'universidad')
-                print(solicitudesPorUni)
+                
+                for s in solicitudesPorUni:
+                    solicitudesXuni.append({
+                        "nombre": s.get('universidad')
+                    })
+
+                    cantidadXuni.append({
+                        "cantidad": s.get("total")
+                    })
+              
              
                 return render(request,"account/dashboard.html",{
                     'usuarioLogeado': usuarioLogeado,
@@ -120,7 +131,9 @@ def vista_dashboard(request,*, context):
                     'fechaIni':fechaInicial,
                     'fechaFin': fechaFinal,
                     'solicitudesXmes': solicitudesXmes,
-                    'solicitudesXtotales': solicitudesXtotales
+                    'solicitudesXtotales': solicitudesXtotales,
+                    'solicitudesXuni': solicitudesXuni,
+                    'cantidadXuni':cantidadXuni
 
                 })
             else:
@@ -1282,8 +1295,10 @@ def aprobar_solicitudes_cambios_turnos(request):
         for solicitud in solicitudes:
             
             print(f"Solicitudes: fecha cambio : {solicitud['fechaCambio']} , codigo solicitante: {solicitud['codigoSolicitante']} , codigo receptor: {solicitud['codigoReceptor']}")
-            print(f"Turno que el  solicitande necesita : {solicitud['turnoSolicitanteDiaDeseado']}, Turno que el receptor necesita: {solicitud['turnoReceptorDiaDeseado']} ")
-            peticion = solicitud.peticion
+            print(f"Turno que el  solicitande necesita : {solicitud['turnoSolicitanteDiaDeseado']}, Turno que el receptor necesita: {solicitud['turnoReceptorDiaDeseado']}")
+
+            peticion = solicitud.get("peticion")
+            
             solicitudCambio =  Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
                 codigo_receptor = solicitud['codigoReceptor']).first()
             if peticion == "intranet":
