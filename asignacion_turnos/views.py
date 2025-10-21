@@ -136,7 +136,7 @@ def vista_dashboard(request,*, context):
                     'cantidadXuni':cantidadXuni
 
                 })
-            else:
+            elif peticion == "personal":
 
                 numSolicitudesApro =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "aprobado").count()
                 numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "desaprobado").count()
@@ -161,7 +161,7 @@ def vista_dashboard(request,*, context):
                 print(f"Solicitudes por meses: {solicitudesXmes}")
                 print(f"Solicitudes por totales: {solicitudesXtotales}")
                 
-                return render(request,"account/dashboard.html",{
+                return render(request,"account/dashboard_personales.html",{
                     'usuarioLogeado': usuarioLogeado,
                     'porcentajeAprobacion': porcentajeAprobacion,
                     'porcentajeDesaprobadas': porcentajeDesaprobadas,
@@ -1294,13 +1294,16 @@ def aprobar_solicitudes_cambios_turnos(request):
 
         for solicitud in solicitudes:
             
-            print(f"Solicitudes: fecha cambio : {solicitud['fechaCambio']} , codigo solicitante: {solicitud['codigoSolicitante']} , codigo receptor: {solicitud['codigoReceptor']}")
+            print(f"Solicitudes: fecha cambio : {solicitud['fechaCambio']} , codigo solicitante: {solicitud.get('codigoSolicitante')} , codigo receptor: {solicitud['codigoReceptor']}")
             print(f"Turno que el  solicitande necesita : {solicitud['turnoSolicitanteDiaDeseado']}, Turno que el receptor necesita: {solicitud['turnoReceptorDiaDeseado']}")
 
             peticion = solicitud.get("peticion")
             
-            solicitudCambio =  Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
-                codigo_receptor = solicitud['codigoReceptor']).first()
+            solicitudCambio =  Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud.get('fechaCambio'), codigo_solicitante = solicitud.get('codigoSolicitante'), 
+                codigo_receptor = solicitud.get('codigoReceptor')).first()
+            
+            print(solicitudCambio)
+
             if peticion == "intranet":
                 if solicitudCambio.estado_cambio_admin == "aprobado":
                     horario_relacion_solicitante = Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).first()
@@ -1368,6 +1371,7 @@ def aprobar_solicitudes_cambios_turnos(request):
                         send_log(empleadoSolicitante.cedula, datetime.today(), "Aprobar solicitud",
                             f"Se aprobo la solicitud de cambio de turno entre: {empleadoSolicitante.nombre}, cod: {empleadoSolicitante.codigo} y {empleadoReceptor.nombre}, cod: {empleadoReceptor.codigo}, para la fecha: {solicitud['fechaCambio']}",
                             "AppGestionTurnos","Aprobar cambios", solicitudCambioTurno.id)      
+                        
                 elif solicitudCambio.estado_cambio_admin == "pendiente":
                         Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
                         codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_emp = "aprobado")
@@ -1882,20 +1886,22 @@ def descargarInformeGt(request):
     fechaInicial  = request.GET.get("fechaInicialFormateada")
     fechaFinal = request.GET.get("fechaFinalFormateada")
     estado = request.GET.get("opcionSeleccionada")
-    print(f"Fecha inicial: {fechaInicial}, fecha final: {fechaFinal}, estado: {estado}")
+    tipoSolicitud = request.GET.get("opcionTipoSolicitud")
+
+    print(f"Fecha inicial: {fechaInicial}, fecha final: {fechaFinal}, estado: {estado}, tipo solicitud: {tipoSolicitud}")
     data = []
 
-    if fechaFinal and fechaFinal and estado:
+    if fechaFinal and fechaFinal and estado and tipoSolicitud:
 
         fechaInicialFormateada = datetime.strptime(fechaInicial,"%Y/%m/%d").date()
         fechaFinalFormateada = datetime.strptime(fechaFinal, "%Y/%m/%d").date()
         
         solicitudes = None
 
-        if estado in ["aprobado","desaprobado","pendiente"]:
-            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado).values('nombre','codigo','cargo',                                                                                                 
+        if estado in ["aprobado","desaprobado","pendiente"] and tipoSolicitud in ["PERMISO ACADEMICO","PERMISO PERSONAL"]:
+            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado, tipo_solicitud = tipoSolicitud).values('nombre','codigo','cargo',                                                                                                 
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
-        elif estado == "todo":
+        elif estado == "todo" or tipoSolicitud == "TODO":
             solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada).values('nombre','codigo','cargo',
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
 
@@ -1932,6 +1938,9 @@ def descargarInformeGt(request):
                 resp["Access-Control-Expose-Headers"] = "Content-Disposition"
             
             return resp
+    else:
+        return Response({"success":False})
+
         
 @api_view(["GET"])
 def misSolicitudesGT(request):

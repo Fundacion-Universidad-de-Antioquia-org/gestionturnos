@@ -164,7 +164,7 @@
   </div>
    <div class="usuario-bar-centro">
     <button title="Buscar solicitud por codigo | fecha" id="btnBuscarSolicitud" ><span class="material-symbols-outlined">search</span></button>
-    <button id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined">convert_to_text</span></button>
+    <button id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined">download</span></button>
     <button id="generarDashboard"><span class="material-symbols-outlined">bar_chart_4_bars</span></button>
     
   </div>
@@ -394,13 +394,19 @@
     <span class="cerrar-fechas-gt" onclick="cerrarModalInformeGT()">&times;</span>
 
     <div class="icon-title"><span class="material-symbols-outlined">download</span><h3 class="titulo-fechas-gt">Descarga de datos</h3></div>
-    <div class="icon-title"><span class="material-symbols-outlined">convert_to_text</span><h3 class="titulo-fechas-gt">Descargar datos </h3></div>
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha inicial:</label>
       <input type="date" id="fechaInicioGTX" class="input-fechas-gt">
 
       <label for="fechaFinGT">Fecha final:</label>
       <input type="date" id="fechaFinGTX" class="input-fechas-gt">
+
+       <label for="">Tipo de solicitud</label>
+      <select name="" id="opcionTipoSolicitud" class="input-fechas-gt">
+        <option value="todo">Todas</option>
+        <option value="academicas">Academicas</option>
+        <option value="personales">Personales</option>
+      </select>
 
       <label for="">Estado de la solicitud</label>
       <select name="" id="opcionEstado" class="input-fechas-gt">
@@ -430,7 +436,6 @@
 
       <label for="">Generar dashboard por:</label>
       <select name="" id="opcionEstadoDash" class="input-fechas-gt">
-        <option value="todo">Todas</option>
         <option value="academica">Académicas</option>
         <option value="personal">Personales</option>
       </select>
@@ -448,7 +453,6 @@
 
       <label for="codigo">Id solicitud:</label>
       <input type="text" id="buscarIdSolicitud" class="input-buscarSucesion">
-
 
       <button class="btn-cargar-buscarSucesion" id="btnCargarSolicitud">Buscar</button>
 
@@ -501,7 +505,7 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
     if(cargaSolicitudes !== ""){
         Swal.fire({
             icon: "success",
-            title: "Se cargaron correctamente los resultados",
+            title: "Solicitudes cargadas correctamente",
             text: cargaSolicitudes
         });
     }else{
@@ -550,9 +554,29 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
   })
 
   document.getElementById("desaprobarSolicitud").addEventListener("click",function(){
+    const modal = document.getElementById("modalDescripcion");
     const idSolicitud = document.getElementById("idSolicitud").textContent
     const estado = "desaprobado" 
-    gestionarSolicitud(idSolicitud, estado)
+    const respuesta = document.getElementById("respuesta").textContent
+    const tipoSolicitud = document.getElementById("tipoSolicitud").textContent
+    alert(tipoSolicitud)
+
+    if(tipoSolicitud === "PERMISO ACADEMICO"){
+      if(respuesta !== ""){
+        gestionarSolicitud(idSolicitud, estado)
+      }else{
+        modal.classList.remove("show");
+        Swal.fire({
+                    icon: "warning",
+                    title: "Indique motivo de rechazo",
+                    text: "Las solicitudes academicas deben tener motivo para ser rechazadas",
+                      })
+      }
+    }else{
+      gestionarSolicitud(idSolicitud, estado)
+    }
+    
+    
   })
 
   function gestionarSolicitud(idSolicitud, estado){
@@ -573,7 +597,7 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
               modal.classList.remove("show");
               Swal.fire({
                     icon: "success",
-                    title: "Correcto",
+                    title: "Se rechazo la solicitud correctamente",
                     text: data.message,
                       }).then(()=>{
                         window.location.reload();
@@ -975,24 +999,29 @@ const cuerpoTabla = document.getElementById("mr-tbody");
     const fechaInicial = document.getElementById("fechaInicioGTX");
     const fechaFinal =  document.getElementById("fechaFinGTX");
     const opcionSeleccionada = document.getElementById("opcionEstado").value
+    const opcionTipoSolicitud = document.getElementById("opcionTipoSolicitud").value
 
   if(!fechaInicial.value && !fechaFinal.value){
       Swal.fire({
             icon: "error",
-            title: "Se detectaron campos vacios, debe llenar todos los campos",
+            title: "Se detectaron fechas vacis, debe llenar todos los campos",
             text: `Datos ingresados, fecha inicial: ${fechaInicial.value} , fecha final: ${fechaFinal.value}`
           
         });
         return;
   }
+
     const fechaInicialFormateada = fechaInicial.value.replaceAll("-","/")
     const fechaFinalFormateada = fechaFinal.value.replaceAll("-","/")
+
+    alert(opcionTipoSolicitud)
 
     /* alert(`Fecha inicial ${fechaInicialFormateada} fecha final: ${fechaFinalFormateada}, estado: ${opcionSeleccionada}`) */
      const params = new URLSearchParams({
       fechaInicialFormateada,    
       fechaFinalFormateada,             
-      opcionSeleccionada,     
+      opcionSeleccionada,
+      opcionTipoSolicitud
   });
   
   if(fechaInicialFormateada !== "" && fechaFinalFormateada !== "" && opcionSeleccionada !== ""){

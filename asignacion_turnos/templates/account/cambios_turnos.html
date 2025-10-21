@@ -246,14 +246,17 @@
       const fila = checkbox.closest('tr');
 
       const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
-      const estadoEmp = fila.querySelector('.aproboEmp')?.textContent.trim().toLocaleLowerCase();
+      const estadoEmp = fila.querySelector('.aprobadoEmp')?.textContent.trim().toLocaleLowerCase();
 
       if (estadoAdmin === "pendiente" && estadoEmp === "aprobado") {
-        const codigoSolicitante = fila.querySelector('.codigoSolicitante')?.textContent.trim();
-        codigoSolicitante = codigoSolicitante.match(/\d+/g)
+
+        alert("entro al if")
+        const codigoSoliSinFormato = fila.querySelector('.codigoSolicitante')?.textContent.trim();
+        const codigoSolicitante = codigoSoliSinFormato.replace(/\D/g, "");
         const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
 
-        const codigoReceptor = fila.querySelector('.codigoReceptor')?.textContent.trim();
+        const codigoReceSinFormato = fila.querySelector('.codigoReceptor')?.textContent.trim();
+        const codigoReceptor = codigoReceSinFormato.replace(/\D/g, "");
         const turnoReceptorDiaDeseado = fila.querySelector('.turnoReceptorDiaDeseado')?.textContent.trim();
 
         const fechaCambioTexto = fila.querySelector('.fechaCambio')?.textContent.trim();
@@ -263,6 +266,8 @@
             return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
           })(): fechaCambioTexto;
           const peticion = "admin";
+
+          alert(`codigoSolicitante: ${codigoSolicitante}, codigoReceptor: ${codigoReceptor}, fechaCmabio: ${fechaCambio}, peticion:${peticion}`)
 
         datos.push({
           fechaCambio,
@@ -311,14 +316,15 @@
             Swal.fire({
               icon: "error",
               title: "Error en la solicitud",
-              text: "Error:", error
+              text: "Error en la conexión con el backend :", error
             });
           });
 
       } else {
         Swal.fire({
           icon: "error",
-          title: "Solo se pueden aprobar solicitudes de cambios de turnos cuando estadoAdm: pendiente y estadoEmp: aprobado",
+          title:'Error de aprobación',
+          text: "Solo se pueden aprobar solicitudes de cambios de turnos cuando estadoAdm: pendiente y estadoEmp: aprobado",
 
         });
 
@@ -351,7 +357,6 @@
       if (estadoAdmin === "pendiente") {
         const codigoSolicitanteTabla = fila.querySelector('.codigoSolicitante')?.textContent.trim();
         codigoSolicitante = codigoSolicitanteTabla.replace(/\D/g, "");
-        alert(codigoSolicitante)
         const turnoSolicitanteDiaDeseado = fila.querySelector('.turnoSolicitanteDiaDeseado')?.textContent.trim();
         const codigoReceptorTabla = fila.querySelector('.codigoReceptor')?.textContent.trim();
         const codigoReceptor = codigoReceptorTabla.replace(/\D/g, "");
