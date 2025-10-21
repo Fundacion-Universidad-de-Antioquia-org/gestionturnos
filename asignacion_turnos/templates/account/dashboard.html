@@ -28,13 +28,16 @@
 </section>
 
 <!--Variables que llegan con el render -->
-
 {{ solicitudesXmes|json_script:"meses-data" }}
 {{ solicitudesXtotales|json_script:"totales-data" }}
+{{ solicitudesXuni|json_script:"uni-data" }}
+{{ cantidadXuni|json_script:"cant-data"}}
+
 
 <section class="contenedorGraficos">
 <div id="graficoCircularAcademicas" style="width: 500px;height:400px;"></div>
-<div id="graficoCircularPersonales" style="width: 500px;height:400px;"></div>
+<div id="graficoBarraUniversidad" style="width: 700px;height:400px;"></div>
+
 </section>
 
 <section class="contenedorGraficos">
@@ -48,6 +51,7 @@
 
 {% block scripts %}
 
+<!--DOM-->
 <script>
   document.addEventListener("DOMContentLoaded", function (){
     const content = document.getElementById("mainContent");
@@ -64,18 +68,25 @@
   const fechaInicialAcademicas = "{{ fechaIni }}"
   const fechaFinalAcademicas = "{{ fechaFin }}"
 
+
   const meses = JSON.parse(document.getElementById("meses-data").textContent);
   const totales = JSON.parse(document.getElementById("totales-data").textContent);
+
+  const universidades = JSON.parse(document.getElementById("uni-data").textContent);
+  const cantidadXuni = JSON.parse(document.getElementById("cant-data").textContent);
+
 
   const mesesFormateados = meses.map(item => item.mes);
   const totalesFormateados = totales.map(item => item.total);
 
+  const uniFormateadas = universidades.map(item => item.nombre);
+  const cantFormateadas = cantidadXuni.map(item => item.cantidad);
 
  </script>
 
 <!--Graficos circulares-->
 <script>
-graficoCircular = echarts.init(document.getElementById('graficoCircularAcademicas'));
+const graficoCircular = echarts.init(document.getElementById('graficoCircularAcademicas'));
   option = {
   title: {
     text: `Tipo académicas `,
@@ -111,44 +122,10 @@ graficoCircular = echarts.init(document.getElementById('graficoCircularAcademica
 };
 graficoCircular.setOption(option);
 
-graficoCircular = echarts.init(document.getElementById('graficoCircularPersonales'));
-  option = {
-  title: {
-    text: `Universidades`,
-    subtext: `Aprobadas entre: ${fechaInicialAcademicas} - ${fechaFinalAcademicas}\n  \nTotal solicitudes: ${totalAcademicas}`,
-    left: 'center'
-  },
-  tooltip: {
-    trigger: 'item'
-  },
-  legend: {
-    orient: 'vertical',
-    left: 'left'
-  },
-  series: [
-    {
-      name: 'Porcentajes',
-      type: 'pie',
-      radius: '50%',
-      data: [
-        { value: aprobadasAcademicas, name: 'Aprobadas' },
-        { value: desaprobadasAcademicas, name: 'Desaparobadas' },
-        { value: pendientesAcademicas, name: 'Pendientes' },
-      ],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      }
-    }
-  ]
-};
-graficoCircular.setOption(option);
+
 </script>
 
-<!--Grafico barras-->
+<!--Grafico barras de abajo -->
 <script>
 const graficoBarras = echarts.init(document.getElementById('graficoBarras'));
 option = {
@@ -194,4 +171,72 @@ option = {
 graficoBarras.setOption(option)
 </script>
 
+<!--Grafico barras horizontal animado-->
+<script>
+const graficoBarraUniversidad = echarts.init(document.getElementById("graficoBarraUniversidad"));
+
+option = {
+  title: {
+    text: 'Universidades',
+    subtext: 'Solicitudes por universidades',
+    left: 'center'
+  },
+  xAxis: {
+    max: 'dataMax'
+  },
+  yAxis: {
+    type: 'category',
+    data: uniFormateadas,
+    inverse: true,
+    animationDuration: 6000,
+    animationDurationUpdate: 6000,
+    max: 2 // only the largest 3 bars will be displayed
+  },
+  series: [
+    {
+      realtimeSort: true,
+      name: 'Universidades',
+      type: 'bar',
+      data: cantFormateadas,
+      label: {
+        show: true,
+        position: 'right',
+        valueAnimation: true
+      }
+    }
+  ],
+  legend: {
+    show: true
+  },
+  animationDuration: 2000,
+  animationDurationUpdate: 2000,
+  animationEasing: 'linear',
+  animationEasingUpdate: 'linear'
+};
+
+function run() {
+ 
+  graficoBarraUniversidad.setOption({
+    series: [
+      {
+        type: 'bar',
+        data
+      }
+    ]
+  });
+}
+
+
+graficoBarraUniversidad.setOption(option)
+
+setTimeout(function () {
+  run();
+}, 0);
+setInterval(function () {
+  run();
+}, 1000);
+
+
+
+</script>
 {% endblock %}
