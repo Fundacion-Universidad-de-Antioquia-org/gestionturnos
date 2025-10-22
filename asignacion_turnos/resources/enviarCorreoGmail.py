@@ -30,7 +30,7 @@ def enviarCorreoGmail(destinatario, mensaje, asunto):
     except Exception as e:
         print("Error al enviar el correo:", e)
 
-def enviarCorreoGmailHTML(destinatario, nombre, solicitud, fecha_registro, asunto):
+def enviarCorreoGmailHTML(destinatario, nombre, solicitud, fecha_registro, asunto, estado):
     remitente = "noreply@fundacionudea.co"
     password = os.getenv("PASSWORD_GMAIL_APP")
 
@@ -77,9 +77,9 @@ def enviarCorreoGmailHTML(destinatario, nombre, solicitud, fecha_registro, asunt
             <img src="https://fundacionudea.net/web/image/website/1/logo?unique=4b2b0d3" alt="Logo Fundación UdeA" width="180">
         </div>
         <h2>Hola, {nombre}</h2>
-        <p>Te queremos informar que la solicitud: <b>{solicitud}</b>, con fecha de registro: <b>{fecha_registro}</b>.</p>
-        <p>Se registro de manera correcta en nuestro sistema, el area Gestión de turnos evaluara la viabilidad de la solicitud y si es necesario se contactara contigo.</p>
-        <p><b>Nota</b>: Tu solicitud está siendo gestionada. Si se cumple con la disponibilidad operacional se verá reflejada en la sucesión correspondiente a la solicitud.</p>
+        <p>Te queremos informar que la solicitud: <b>{solicitud}</b>, con fecha de registro: <b>{fecha_registro}</b> se encuentre en estado: <b>{estado.upper()}</b>.</p>
+        <p>Se registro correctamente en nuestro sistema, el area Gestión de turnos evaluara la viabilidad de la solicitud y si es necesario se contactara contigo.</p>
+        <p><b>Nota</b>¡Recuerda! Que tu solitud sera gestionanda en las fechas para las cuales fueron solicitadas.</p>
         <p><b>Gracias por usar nuestros servicios.</b></p>
         <p><b>Sistema de notificaciones - Fundación Universidad de Antioquia </b></p>
     </div>

@@ -522,10 +522,24 @@ def consultar_turno(request):
 @api_view(["POST"])
 def gestionarSolicitudeGt(request):
     print("accedio a la vista")
+
+    hoy = datetime.now(ZoneInfo("America/Bogota"))
     idSolicitud = request.data.get("idSolicitud")
     estadoSolicitud = request.data.get("estadoSolicitud")
+    respuestaEstado = request.data.get("respuestaEstado")
+
     if idSolicitud and estadoSolicitud:
-        Solicitudes_Gt.objects.filter(id = idSolicitud).update(estado=estadoSolicitud)
+        print(respuestaEstado)
+        
+        solicitud = Solicitudes_Gt.objects.get(id = idSolicitud)
+        solicitud.estado = estadoSolicitud
+        solicitud.save(update_fields=["estado"])
+        Respuesta_Solicitudes_Gt.objects.create(solicitud_id = idSolicitud, respuesta = respuestaEstado, fechaRespuesta = hoy)
+
+        if estadoSolicitud in ["aprobado", "desaprobado"]:
+            asunto = f"Solicitud de Gestión de turnos - solicitud: {solicitud.tipo_solicitud}" #solicitud.empleado.correo
+            estadoEnvioCorreo = enviarCorreoGmailHTML("sbastianpp@gmail.com", solicitud.nombre, solicitud.tipo_solicitud, solicitud.fecha_solicitud, asunto, estado = estadoSolicitud)
+
         return Response({
             "success":True,
             "message": f"Se gestiono correctamente la solicitud con id: {idSolicitud} y su nuevo estado es: {estadoSolicitud}"
@@ -1571,7 +1585,7 @@ def solicitud_gt(request):
         #enviarCorreoGmail("sbastianpp@gmail.com",mensajeGmail, asunto)
         #def enviarCorreoGmailHTML(destinatario, nombre, solicitud, fecha_registro, asunto="Estado de tu solicitud"):
 
-        estadoEnvioCorreo = enviarCorreoGmailHTML("sbastianpp@gmail.com", empleado.nombre, tipo_solicitud, fecha_solicitud, asunto)
+        estadoEnvioCorreo = enviarCorreoGmailHTML("sbastianpp@gmail.com", empleado.nombre, tipo_solicitud, fecha_solicitud, asunto, estado ="pendiente")
         fecha_notificacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if estadoEnvioCorreo:
@@ -1888,22 +1902,23 @@ def descargarInformeGt(request):
     estado = request.GET.get("opcionSeleccionada")
     tipoSolicitud = request.GET.get("opcionTipoSolicitud")
 
-    print(f"Fecha inicial: {fechaInicial}, fecha final: {fechaFinal}, tipo solicitud: {tipoSolicitud}, estado: {estado}, ")
+    print(f"Fecha inicial:{fechaInicial}, fecha final:{fechaFinal}, tipo solicitud:{tipoSolicitud}, estado:{estado}")
     data = []
 
-    if fechaFinal and fechaFinal and estado and tipoSolicitud:
+    if fechaInicial and fechaFinal and estado and tipoSolicitud:
 
         fechaInicialFormateada = datetime.strptime(fechaInicial,"%Y/%m/%d").date()
         fechaFinalFormateada = datetime.strptime(fechaFinal, "%Y/%m/%d").date()
-        
         solicitudes = None
+        
 
         if estado in ["aprobado","desaprobado","pendiente"] and tipoSolicitud in ["PERMISO ACADEMICO","PERMISO PERSONAL"]:
             print("caso 1")
             solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado, tipo_solicitud = tipoSolicitud).values('nombre','codigo','cargo',                                                                                                 
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
+            print(solicitudes)
         elif tipoSolicitud in ["PERMISO ACADEMICO","PERMISO PERSONAL"] and estado == "todo":
-            solicitudes =  solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, tipo_solicitud = tipoSolicitud).values('nombre','codigo','cargo',                                                                                                 
+            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, tipo_solicitud = tipoSolicitud).values('nombre','codigo','cargo',                                                                                                 
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
         elif estado == "todo" and tipoSolicitud == "todo":
             solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada).values('nombre','codigo','cargo',
@@ -1911,7 +1926,8 @@ def descargarInformeGt(request):
         elif tipoSolicitud == "todo" and estado in ["aprobado","desaprobado","pendiente"]:
             solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado).values('nombre','codigo','cargo',
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
-
+        else:
+            return Response({"success":False})
 
         if solicitudes is not None:
             for s in solicitudes:
@@ -1944,8 +1960,12 @@ def descargarInformeGt(request):
                 resp["Content-Disposition"] = f'attachment; filename="solicitudesGT-{fechaInicial}-{fechaFinal}.xlsx"'
                 # Para que el front pueda leer el nombre de archivo vía JS en CORS:
                 resp["Access-Control-Expose-Headers"] = "Content-Disposition"
-            
-            return resp
+                
+                return resp
+            else:
+                return Response({"success": False, "detail": "Sin datos para el rango/estado/tipo."})
+        else:
+            return Response({"success":False})
     else:
         return Response({"success":False})
 

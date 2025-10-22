@@ -2,6 +2,10 @@
 {% load static %}
 
 {% block styles %}
+
+<style>
+  .swal2-container { z-index: 100000 !important; }
+</style>
 <!--Estilos indicadores-->
 <style>
 .indicadores {
@@ -166,6 +170,7 @@
     <button title="Buscar solicitud por codigo | fecha" id="btnBuscarSolicitud" ><span class="material-symbols-outlined">search</span></button>
     <button id="generarInformeGestion" title="Generar informe GT-Solicitudes"><span class="material-symbols-outlined">download</span></button>
     <button id="generarDashboard"><span class="material-symbols-outlined">bar_chart_4_bars</span></button>
+    <button id="informeVacaciones" title="Reporte de vacaciones"><span class="material-symbols-outlined">chair_umbrella</span></button>
     
   </div>
   </div>
@@ -549,45 +554,91 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
 
   document.getElementById("aprobarSolicitud").addEventListener("click",function(){
       const idSolicitud = document.getElementById("idSolicitud").textContent
-      const estado = "aprobado" 
-      gestionarSolicitud(idSolicitud, estado)
+      const estadoActual = document.getElementById("estadoSolicitud").textContent
+      const estado = "aprobado" ;
+      const respuestaEstado = "";
+
+      if(estadoActual !== "pendiente"){
+         Swal.fire({
+                    icon: "warning",
+                    title: "Modificación no permitida",
+                    text: "No puedes cambiar el estado de una solicitud ya gestionada",
+                      })
+                      return;
+      }
+
+      gestionarSolicitud(idSolicitud, estado , respuestaEstado)
   })
 
   document.getElementById("desaprobarSolicitud").addEventListener("click",function(){
+
     const modal = document.getElementById("modalDescripcion");
     const idSolicitud = document.getElementById("idSolicitud").textContent
     const estado = "desaprobado" 
-    const respuesta = document.getElementById("respuesta").textContent
-    const tipoSolicitud = document.getElementById("tipoSolicitud").textContent
-    alert(tipoSolicitud)
+    const respuesta = document.getElementById("respuesta").value.trim();
+    const tipoSolicitud = document.getElementById("tipoSolicitud").textContent;
+    const campoRespuesta = document.getElementById("campoRespuesta")
+    const guardarRespuesta = document.getElementById("guardarRespuesta")
+    let respuestaEstado = "";
+    const estadoActual = document.getElementById("estadoSolicitud").textContent
+
+     if(estadoActual !== "pendiente"){
+         Swal.fire({
+                    icon: "warning",
+                    title: "Modificación no permitida",
+                    text: "No puedes cambiar el estado de una solicitud ya gestionada",
+                      })
+                      return;
+      }
 
     if(tipoSolicitud === "PERMISO ACADEMICO"){
-      if(respuesta !== ""){
-        gestionarSolicitud(idSolicitud, estado)
-      }else{
-        modal.classList.remove("show");
-        Swal.fire({
+      if(respuesta === ""){
+        
+           Swal.fire({
                     icon: "warning",
-                    title: "Indique motivo de rechazo",
+                    title: "Indique motivo para desaprobar la solicitud",
                     text: "Las solicitudes academicas deben tener motivo para ser rechazadas",
                       })
+
+        guardarRespuesta.style.display = "none";
+        campoRespuesta.style.display = "block";
+      }else{
+        respuestaEstado = respuesta;
+
+       gestionarSolicitud(idSolicitud, estado , respuestaEstado) 
+      document.getElementById("respuesta").value = "";
       }
     }else{
-      gestionarSolicitud(idSolicitud, estado)
+          Swal.fire({
+            title: "¿Estas seguro?",
+            text: "Luego de desaprobar la solicitud no es posible revertir esto",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Si, estoy seguro"
+    }).then((result) => {
+      if (result.isConfirmed) {
+           gestionarSolicitud(idSolicitud, estado, respuestaEstado)
+        
+      }
+    });
+     
     }
     
     
   })
 
-  function gestionarSolicitud(idSolicitud, estado){
-       
+  function gestionarSolicitud(idSolicitud, estado, respuestaEstado){
+        
         fetch("{% url 'gestionarSolicitudeGt' %}",{
           method: "POST",
           headers:{"Content-Type": "application/json",
                   "X-CSRFToken": getCookie("csrftoken")},
           body: JSON.stringify({
             "idSolicitud": idSolicitud,
-            "estadoSolicitud": estado
+            "estadoSolicitud": estado,
+            "respuestaEstado": respuestaEstado
           })
           })
           .then(response => response.json())
@@ -786,16 +837,14 @@ function cerrarModalVisor() {
     .then(response => response.json())
     .then(data => {
       if(data.success){
-        cerrarModal();
         Swal.fire({
             icon: "success",
             title: "Se envio correctamente la respuesta",
             text: `Id solicitud:${idSolicitudGt}, respuesta: ${respuesta}`
-          
-        });
-        respuesta.value.innerText = "";
+        }); 
+        document.getElementById("respuesta").value = "";
       }else{
-        cerrarModal();
+        
         Swal.fire({
             icon: "error",
             title: "Se detectaron un error al enviar la respuesta",
@@ -1003,9 +1052,9 @@ const cuerpoTabla = document.getElementById("mr-tbody");
 
   if(!fechaInicial.value && !fechaFinal.value){
       Swal.fire({
-            icon: "error",
-            title: "Se detectaron fechas vacis, debe llenar todos los campos",
-            text: `Datos ingresados, fecha inicial: ${fechaInicial.value} , fecha final: ${fechaFinal.value}`
+            icon: "warning",
+            title: "Campos vacios detectados",
+            text: `Datos ingresados, fecha inicial: ${fechaInicial.value}, fecha final: ${fechaFinal.value}`
           
         });
         return;
@@ -1013,8 +1062,6 @@ const cuerpoTabla = document.getElementById("mr-tbody");
 
     const fechaInicialFormateada = fechaInicial.value.replaceAll("-","/")
     const fechaFinalFormateada = fechaFinal.value.replaceAll("-","/")
-
-    alert(opcionTipoSolicitud)
 
     /* alert(`Fecha inicial ${fechaInicialFormateada} fecha final: ${fechaFinalFormateada}, estado: ${opcionSeleccionada}`) */
      const params = new URLSearchParams({
@@ -1052,7 +1099,6 @@ const cuerpoTabla = document.getElementById("mr-tbody");
     btn.innerText = "Descargado correctamente";
     btn.classList.add('enviado');
   }
-
 
   const cd = res.headers.get('Content-Disposition') || '';
   const match = cd.match(/filename\*=UTF-8''([^;]+)|filename="([^"]+)"/);
@@ -1100,8 +1146,8 @@ document.getElementById("cargarDashboard").addEventListener("click", function(){
 
   if(!fechaInicial.value && !fechaFinal.value){
       Swal.fire({
-            icon: "error",
-            title: "Se detectaron campos vacios, debe llenar todos los campos",
+            icon: "warning",
+            title: "Se detectaron campos vacios",
             text: `Datos ingresados, fecha inicial: ${fechaInicial.value} , fecha final: ${fechaFinal.value} , petición: ${peticion}`
           
         });
