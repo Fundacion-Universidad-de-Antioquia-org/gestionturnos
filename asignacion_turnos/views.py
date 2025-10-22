@@ -1888,7 +1888,7 @@ def descargarInformeGt(request):
     estado = request.GET.get("opcionSeleccionada")
     tipoSolicitud = request.GET.get("opcionTipoSolicitud")
 
-    print(f"Fecha inicial: {fechaInicial}, fecha final: {fechaFinal}, estado: {estado}, tipo solicitud: {tipoSolicitud}")
+    print(f"Fecha inicial: {fechaInicial}, fecha final: {fechaFinal}, tipo solicitud: {tipoSolicitud}, estado: {estado}, ")
     data = []
 
     if fechaFinal and fechaFinal and estado and tipoSolicitud:
@@ -1899,11 +1899,19 @@ def descargarInformeGt(request):
         solicitudes = None
 
         if estado in ["aprobado","desaprobado","pendiente"] and tipoSolicitud in ["PERMISO ACADEMICO","PERMISO PERSONAL"]:
+            print("caso 1")
             solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado, tipo_solicitud = tipoSolicitud).values('nombre','codigo','cargo',                                                                                                 
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
-        elif estado == "todo" or tipoSolicitud == "TODO":
+        elif tipoSolicitud in ["PERMISO ACADEMICO","PERMISO PERSONAL"] and estado == "todo":
+            solicitudes =  solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, tipo_solicitud = tipoSolicitud).values('nombre','codigo','cargo',                                                                                                 
+                'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
+        elif estado == "todo" and tipoSolicitud == "todo":
             solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada).values('nombre','codigo','cargo',
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
+        elif tipoSolicitud == "todo" and estado in ["aprobado","desaprobado","pendiente"]:
+            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado).values('nombre','codigo','cargo',
+                'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
+
 
         if solicitudes is not None:
             for s in solicitudes:

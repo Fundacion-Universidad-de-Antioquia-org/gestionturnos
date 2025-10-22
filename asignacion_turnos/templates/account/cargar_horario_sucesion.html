@@ -1043,7 +1043,6 @@ document.getElementById("editTurno").addEventListener("input", function () {
   mostrarDatosProcesados(); 
   setTimeout(mostrarDatosProcesados, 3000); 
 
-
   document.getElementById("btnCargar").addEventListener("click", function(){
   showLoader();
   setTimeout(mostrarDatosProcesados, 5000);
@@ -1066,8 +1065,8 @@ document.getElementById("editTurno").addEventListener("input", function () {
     }
 
     ocultarBotonesCarga();
-    aplicarFiltros(); 
-    mostrarPagina(1);
+    aplicarFiltros();
+    /*mostrarPagina(1);*/
     mostrarBotonesCargaTrenes();
     capturarErroresCargaSucesion();
   });

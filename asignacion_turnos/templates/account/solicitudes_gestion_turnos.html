@@ -404,8 +404,8 @@
        <label for="">Tipo de solicitud</label>
       <select name="" id="opcionTipoSolicitud" class="input-fechas-gt">
         <option value="todo">Todas</option>
-        <option value="academicas">Academicas</option>
-        <option value="personales">Personales</option>
+        <option value="PERMISO ACADEMICO">Academicas</option>
+        <option value="PERMISO PERSONAL">Personales</option>
       </select>
 
       <label for="">Estado de la solicitud</label>
@@ -597,7 +597,7 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
               modal.classList.remove("show");
               Swal.fire({
                     icon: "success",
-                    title: "Se rechazo la solicitud correctamente",
+                    title: "Solicitud gestionada",
                     text: data.message,
                       }).then(()=>{
                         window.location.reload();
