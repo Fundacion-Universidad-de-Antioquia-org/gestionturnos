@@ -141,7 +141,7 @@
 <div id="loader-overlay" class="hidden">
   <div class="loader-container">
     <div class="loader"></div>
-    <h2 class="loader-title">Sincronizando empleados...</h2>
+    <h2 class="loader-title" id="tituloSincronizacion">Sincronizando empleados...</h2>
   </div>
 </div>
 
@@ -192,13 +192,14 @@
       const creados = "{{ creados }}"
       const actualizados = "{{ actualizados }}"
       const tiempo = "{{ tiempo_s }}"
+      const mensajeDesatendidas = "{{ mensajeDesatendidas }}"
 
       if(procesados){
-        hideLoader()
+        hideLoader();
          Swal.fire({
                     icon: "success",
-                    title: "Se realizo correctamente la sincronizaciÓn con la base de datos",
-                    text: "Nuevos empleados: "+creados+", empleados actualizados: "+actualizados ,
+                    title: "Se realizo correctamente la sincronización con la base de datos",
+                    text: `Nuevos empleados: ${creados}, empleados actualizados: ${actualizados}, ${mensajeDesatendidas}`,
                       })
       }
   }    

@@ -42,9 +42,20 @@ from .resources.peticion_Oddo import sincronizarDbEmpleados
 
 @settings.AUTH.login_required
 def vista_home(request,*, context):
+
     usuarioLogeado = str(request.user).upper()
     print(usuarioLogeado)
+
+    hoy = datetime.now(ZoneInfo("America/Bogota"))
+    mensajeDesatendidas = "Sin solicitudes desatendidas"
+
     data = sincronizarDbEmpleados()
+
+    if Solicitudes_Gt.objects.filter(fecha_inicial__lt = hoy , estado = "pendiente").exists():
+        solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__lt = hoy , estado = "pendiente").count()
+        Solicitudes_Gt.objects.filter(fecha_inicial__lt = hoy , estado = "pendiente").update(estado = "desatendida")
+        mensajeDesatendidas = f"Se detectaron {solicitudes} solicitudes sin atender y serán reasignadas a desatendida"
+
     return render(request,'account/home.html',{
         
         "success": data.get('success'),
@@ -55,6 +66,7 @@ def vista_home(request,*, context):
         "actualizados": data.get('creados'),
         "tiempo_s": data.get('tiempo'),
         "usuarioLogeado": usuarioLogeado,
+        "mensajeDesatendidas": mensajeDesatendidas
     })
 
 @settings.AUTH.login_required
@@ -1917,17 +1929,17 @@ def descargarInformeGt(request):
 
         if estado in ["aprobado","desaprobado","pendiente"] and tipoSolicitud in ["PERMISO ACADEMICO","PERMISO PERSONAL"]:
             print("caso 1")
-            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado, tipo_solicitud = tipoSolicitud).values('nombre','codigo','cargo',                                                                                                 
+            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado, tipo_solicitud = tipoSolicitud).values('empleado__nombre','empleado__codigo','cargo',                                                                                                 
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
             print(solicitudes)
         elif tipoSolicitud in ["PERMISO ACADEMICO","PERMISO PERSONAL"] and estado == "todo":
-            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, tipo_solicitud = tipoSolicitud).values('nombre','codigo','cargo',                                                                                                 
+            solicitudes = Solicitudes_Gt.objects.select_related("empleado").filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, tipo_solicitud = tipoSolicitud).values('empleado__nombre','empleado__codigo','cargo',                                                                                                 
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
         elif estado == "todo" and tipoSolicitud == "todo":
-            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada).values('nombre','codigo','cargo',
+            solicitudes = Solicitudes_Gt.objects.select_related("empleado").filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada).values('empleado__nombre','empleado__codigo','cargo',
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
         elif tipoSolicitud == "todo" and estado in ["aprobado","desaprobado","pendiente"]:
-            solicitudes = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado).values('nombre','codigo','cargo',
+            solicitudes = Solicitudes_Gt.objects.select_related("empleado").filter(fecha_inicial__gte = fechaInicialFormateada, fecha_final__lte = fechaFinalFormateada, estado = estado).values('empleado__nombre','empleado__codigo','cargo',
                 'tipo_solicitud','fecha_solicitud','fecha_inicial','fecha_final','estado','descripcion')
         else:
             return Response({"success":False})
@@ -1935,8 +1947,8 @@ def descargarInformeGt(request):
         if solicitudes is not None:
             for s in solicitudes:
                 data.append({
-                    "nombre": s.get("nombre"),
-                    "codigo":s.get("codigo"),
+                    "nombre": s.get("empleado__nombre"),
+                    "codigo":s.get("empleado__codigo"),
                     "cargo":s.get("cargo"),
                     "tipo_solicitud": s.get("tipo_solicitud"),
                     "fecha_solicitud":s.get("fecha_solicitud"),
@@ -1977,11 +1989,12 @@ def descargarInformeGt(request):
 def misSolicitudesGT(request):
     codigo = request.GET.get("codigo")
     idSolicitud = request.GET.get("id")
+    cedula = request.GET.get("cedula")
 
     print(codigo)
     data = []
-    if codigo is not None and idSolicitud is None:
-        solicitudes =  Solicitudes_Gt.objects.select_related('empleado').filter(empleado__codigo = codigo)
+    if codigo is not None and cedula is not None and idSolicitud is None:
+        solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo = codigo, empleado__cedula = cedula)
         for s in solicitudes:
             data.append({
                 "nombre": s.nombre,

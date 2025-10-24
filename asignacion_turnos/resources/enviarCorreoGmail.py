@@ -80,6 +80,7 @@ def enviarCorreoGmailHTML(destinatario, nombre, solicitud, fecha_registro, asunt
         <p>Te queremos informar que la solicitud: <b>{solicitud}</b>, con fecha de registro: <b>{fecha_registro}</b> se encuentre en estado: <b>{estado.upper()}</b>.</p>
         <p>Se registro correctamente en nuestro sistema, el area Gestión de turnos evaluara la viabilidad de la solicitud y si es necesario se contactara contigo.</p>
         <p><b>Nota</b>¡Recuerda! Que tu solitud sera gestionanda en las fechas para las cuales fueron solicitadas.</p>
+        <p>Para mayor información consulta el portal de empelados https://empleados.fundacionudea.org/ </p>
         <p><b>Gracias por usar nuestros servicios.</b></p>
         <p><b>Sistema de notificaciones - Fundación Universidad de Antioquia </b></p>
     </div>

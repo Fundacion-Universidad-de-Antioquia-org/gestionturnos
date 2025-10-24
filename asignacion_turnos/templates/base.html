@@ -23,7 +23,7 @@
 <div id="modalFechasGT" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
     <span class="cerrar-fechas-gt" onclick="cerrarModalFechasGT()">&times;</span>
-    <div class="icon-title"><span class="material-symbols-outlined">assignment</span><h3 class="titulo-fechas-gt">Rango de fechas</h3></div>
+    <div class="icon-title"><span class="material-symbols-outlined">assignment</span><h3 class="titulo-fechas-gt">Solicitudes GT</h3></div>
 
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha inicial:</label>
@@ -168,11 +168,14 @@
         <script>
         const baseUrlSolicitudesGT = "{% url 'solicitudesGt' %}";
         </script>
-   
+    
     <script src="https://cdnfuadesarrollo.blob.core.windows.net/gestionturnos/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
+   
+   
    {% block scripts %}
+    
    {% endblock %}
 
 </body>
