@@ -82,11 +82,11 @@
     <tbody id="">
         <tr>
         {% for s in notificaciones %}
-            <td>{{s.nombre}}</td>
-            <td>{{s.codigo}}</td>
+            <td>{{s.empleado.nombre}}</td>
+            <td>{{s.empleado.codigo}}</td>
             <td>{{s.cargo}}</td>
-            <td>{{s.tipo_solicitud}}</td>
-            <td>{{s.fecha_solicitud|date:"d/m/Y"}}</td>
+            <td>{{s.solicitudes_Gt.tipo_solicitud}}</td>
+            <td>{{s.solicitudes_Gt.fecha_solicitud|date:"d/m/Y"}}</td>
             <td>{{s.fecha_notificacion|date:"d/m/Y H:i"}}</td>
             <td><span style="border-radius: 8px; background-color: #2493c7; color:aliceblue; padding: 7px;">{{s.correo}}</span></td>
             <td><span style="border-radius: 8px; background-color: #2493c7; color:aliceblue; padding: 7px;">{{s.medio}}</span></td>

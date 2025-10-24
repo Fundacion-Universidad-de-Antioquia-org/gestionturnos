@@ -36,6 +36,31 @@
     </div>
   </div>
 </div>
+
+      <!-- Modal de fechas GT -->
+<div id="modalVerificacion" class="modal-fechas-gt">
+  <div class="modal-fechas-gt-contenido">
+    <span class="cerrar-fechas-gt" onclick="cerrarModalVerificacion()">&times;</span>
+    <div class="icon-title"><span class="material-symbols-outlined">assignment</span><h3 class="titulo-fechas-gt">Verificación</h3></div>
+
+    <div class="formulario-fechas-gt">
+      <label for="fechaInicioGT">Fecha:</label>
+      <input type="date" id="fechaInicioGT" class="input-fechas-gt">
+
+      <label for="cargoVerificacion">Cargo:</label>
+      <input type="text" id="cargoVerificacion" class="input-fechas-gt">
+      <select name="" id="cargoVerificacion">
+            <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO" selected>CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+            <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+            <option value="OPERADOR(A) DE CONDUCCION" >OPERADOR DE CONDUCCION</option>
+            <option value="MANIOBRISTA TRENES" >MANIOBRISTA TRENES</option>
+            <option value="MANIOBRISTA TRANVIA" >MANIOBRISTA TRANVIA</option>
+      </select>
+
+      <button class="btn-cargar-fechas-gt" onclick="cargarFechasGT()">Cargar</button>
+    </div>
+  </div>
+</div>
     <!-- === Barra superior fija === -->
     <section class="usuario-bar-section">
     <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
@@ -102,17 +127,10 @@
                     </a>
                 </li>
                 <li class="nav-item dropdown-container">
-                    <a href="#" class="nav-link dropdown-toggle">
+                    <a href="#" class="nav-link" title="Verificación" onclick="abrirModalVerificacion()">
                         <span class="material-symbols-rounded">dashboard</span>
                         <span class="nav-label">Verificación</span>
-                        <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
                     </a>
-                    <ul class="dropdown-menu">
-                        <li class="nav-item"><a href="#" class="nav-link dropdown-link">Trenes</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link dropdown-link">Tranvía</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link dropdown-link">Maniobras</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link dropdown-link">Operadores</a></li>
-                    </ul>
                 </li>
                 <li class="nav-item">
                     <a href="{% url 'notificaciones' %}" title="Notificaciones" class="nav-link">

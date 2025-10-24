@@ -355,8 +355,6 @@ def vista_solicitudes_gestion_turnos(request,*, context):
     
     if request.method == "GET":
 
-        print("GET completo:", request.GET)
-
         fechaInicial_peticion = request.GET.get('fecha_inicio')
         fechaFinal_peticion = request.GET.get('fecha_fin')
 
@@ -364,24 +362,24 @@ def vista_solicitudes_gestion_turnos(request,*, context):
         fechaFinal = None
     
         if fechaInicial_peticion and fechaFinal_peticion:
-
             #Formateamos las fechas para que evitar error de formato ---> Datetime
             fechaInicial = datetime.strptime(fechaInicial_peticion, "%Y-%m-%d").date()
             fechaFinal = datetime.strptime(fechaFinal_peticion, "%Y-%m-%d").date()
 
-            print(f"fecha inicial {fechaInicial} fecha final: {fechaFinal}") 
+            #print(f"fecha inicial {fechaInicial} fecha final: {fechaFinal}") 
+            
+            if Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).exists():
 
-            solicitudesGt = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).prefetch_related('respuestas').order_by('-id')
+                solicitudesGt = Solicitudes_Gt.objects.select_related('empleado').filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).order_by('fecha_inicial')
+                #print(f"solicitudes sin relacion ::: {Solicitudes_Gt.objects.filter(empleado__isnull=False).count()}")
+                indicadorTotal = solicitudesGt.count()
+                indicadorPendiente = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "pendiente").count()
+                indicadorAprobada = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "aprobado").count()
+                indicadorDesaprobado = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "desaprobado").count()
 
-            indicadorTotal = solicitudesGt.count()
-            indicadorPendiente = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "pendiente").count()
-            indicadorAprobada = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "aprobado").count()
-            indicadorDesaprobado = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "desaprobado").count()
-         
-            if solicitudesGt.exists():
-                print("Si existen solicitudes entre estas fechas")
+                #print("Si existen solicitudes entre estas fechas")
                 return render(request,"account/solicitudes_gestion_turnos.html",{
-                    "mensaje":f"Se cargaron {solicitudesGt.count()} solicitudes entre: {fechaInicial} , {fechaFinal} \n Solicitudes totales: {indicadorTotal} - Pendientes: {indicadorPendiente} - Aprobadas: {indicadorAprobada} - Desaprobadas: {indicadorDesaprobado} ",
+                    "mensaje":f"Se cargaron: {indicadorTotal} solicitudes entre: {fechaInicial} , {fechaFinal} \nPendientes: {indicadorPendiente} - Aprobadas: {indicadorAprobada} - Desaprobadas: {indicadorDesaprobado} ",
                     "solicitudesGt":solicitudesGt,
                     "usuarioLogeado":usuarioLogeado,
                     "solicitudAnual": indicadorTotal,
@@ -389,12 +387,13 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                     "solicitudAnualPendientes":indicadorPendiente,
                     "solicitudAnualDesaprobadas":indicadorDesaprobado
                 })
-            else: # Si no ingresa un rango de fechas donde existan solicitudes, se devuelven todas las solicitudes pendientes
-                print("No existen solicitudes entre estas fechas")
-                solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente", fecha_final__lte = fechaFinal).order_by('-id')
+            else: # Si no ingresa un rango de fechas donde existan solicitudes, no se devuelve nada
+                solicitudAnual = 0
+                solicitudAnualAprobadas = 0
+                solicitudAnualPendientes = 0
+                solicitudAnualDesaprobadas = 0
                 return render(request, "account/solicitudes_gestion_turnos.html",{
                     "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
-                    "solicitudesGt": solicitudesGt,
                      "usuarioLogeado":usuarioLogeado,
                      "solicitudAnual": solicitudAnual,
                      "solicitudAnualAprobadas": solicitudAnualAprobadas,
@@ -403,7 +402,10 @@ def vista_solicitudes_gestion_turnos(request,*, context):
 
                 })
         else:
-            solicitudesGt = Solicitudes_Gt.objects.filter(estado = "pendiente").order_by('-id')
+            solicitudAnual = 0
+            solicitudAnualAprobadas = 0
+            solicitudAnualPendientes = 0
+            solicitudAnualDesaprobadas = 0
             return render(request,"account/solicitudes_gestion_turnos.html",{
                 "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
                 "solicitudesGt":solicitudesGt,
@@ -425,7 +427,7 @@ def vista_notificaciones(request,*, context):
     if request.method == "GET":
         user_claims = context["user"]               
         usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
-        notificaciones = Notificaciones.objects.all()
+        notificaciones = Notificaciones.objects.select_related('empleado','solicitudes_Gt').order_by('id')
         return render(request,"account/notificaciones.html",{
             "notificaciones": notificaciones,
             "usuarioLogeado": usuarioLogeado
@@ -491,6 +493,7 @@ def vista_precarga(request, *, context):
 
 @api_view(["GET"])
 def get_archivos_solicitudesgt(request):
+
     idSolicitud = request.GET.get("idSolicitud")
     print(idSolicitud)
     solicitud = Solicitudes_Gt.objects.get(id =idSolicitud)
@@ -522,8 +525,8 @@ def consultar_turno(request):
 @api_view(["POST"])
 def gestionarSolicitudeGt(request):
     print("accedio a la vista")
-
     hoy = datetime.now(ZoneInfo("America/Bogota"))
+
     idSolicitud = request.data.get("idSolicitud")
     estadoSolicitud = request.data.get("estadoSolicitud")
     respuestaEstado = request.data.get("respuestaEstado")
@@ -534,11 +537,11 @@ def gestionarSolicitudeGt(request):
         solicitud = Solicitudes_Gt.objects.get(id = idSolicitud)
         solicitud.estado = estadoSolicitud
         solicitud.save(update_fields=["estado"])
-        Respuesta_Solicitudes_Gt.objects.create(solicitud_id = idSolicitud, respuesta = respuestaEstado, fechaRespuesta = hoy)
+        Respuesta_Solicitudes_Gt.objects.create(solicitud = solicitud, respuesta = respuestaEstado, fechaRespuesta = hoy)
 
         if estadoSolicitud in ["aprobado", "desaprobado"]:
             asunto = f"Solicitud de Gestión de turnos - solicitud: {solicitud.tipo_solicitud}" #solicitud.empleado.correo
-            estadoEnvioCorreo = enviarCorreoGmailHTML("sbastianpp@gmail.com", solicitud.nombre, solicitud.tipo_solicitud, solicitud.fecha_solicitud, asunto, estado = estadoSolicitud)
+            estadoEnvioCorreo = enviarCorreoGmailHTML("sbastianpp@gmail.com", solicitud.empleado.nombre, solicitud.tipo_solicitud, solicitud.fecha_solicitud, asunto, estado = estadoSolicitud)
 
         return Response({
             "success":True,
@@ -593,11 +596,12 @@ def get_mis_turnos(request):
     codigo = request.GET.get('codigo')
     fechaInicial = request.GET.get("fechaInicial")
     fechaFinal = request.GET.get('fechaFinal')
+    cedula = request.GET.get('cedula')
 
-    if not codigo and fechaInicial and fechaFinal:
-        return Response({"success":True, "message": f"Error de parametros, codigo: {codigo}, fecha incial: {fechaInicial}, fecha final {fechaFinal}"})
+    if not codigo and fechaInicial and fechaFinal and cedula:
+        return Response({"success":True, "message": f"Error de parametros, codigo: {codigo}, fecha incial: {fechaInicial}, fecha final {fechaFinal}, cedula: {'cedula'}"})
     
-    turnos  = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)), codigo = codigo, estado_sucesion = "publicado" ).order_by('fecha')
+    turnos  = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)), codigo = codigo, cedula = cedula, estado_sucesion = "publicado" ).order_by('fecha')
     data = []
     for t in turnos:
         data.append({
@@ -1541,6 +1545,7 @@ def solicitud_gt(request):
     print("DATA  keys:", list(request.data.keys()))
 
     codigoSolicitante = request.data.get('codigoSolicitante')
+    cedulaSolicitante = request.data.get('cedulaSolicitante')
     tipo_solicitud = request.data.get('tipoSolicitud')
     fecha_solicitud = request.data.get('fechaSolicitud')
     fecha_inicial = request.data.get('fechaInicial')
@@ -1548,27 +1553,25 @@ def solicitud_gt(request):
     descripcion = request.data.get('descripcion')
     archivo = request.FILES.get('archivo')
 
-    validarSolicitudExistente = Solicitudes_Gt.objects.filter(codigo = codigoSolicitante, tipo_solicitud = tipo_solicitud, fecha_inicial = fecha_inicial, fecha_final = fecha_final).exists()
-
-    #Aca validamos que no tenga solicitudes exactamente iguales
-    if validarSolicitudExistente:
-        return Response({"success":False, "message":f"Error, ya tienes un solicitud de: {tipo_solicitud}, entre estas fechas, inicial: {fecha_inicial}, fecha final: {fecha_final}"})
-    
-    #ACa validamos que el empleado este activo para generar la solicitud
-    if not Empleado_Oddo.objects.filter(codigo = codigoSolicitante,  estado = "Activo").exists():
+    if not Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante, estado = "Activo").exists():
         return Response({
             "success":False,
             "message":f"Usted no se encuentra activo para realizar este tipo de peticiones"})
+
+    validarSolicitudExistente = Solicitudes_Gt.objects.filter(empleado__codigo = codigoSolicitante, empleado__cedula = cedulaSolicitante, tipo_solicitud = tipo_solicitud, fecha_inicial = fecha_inicial, fecha_final = fecha_final).exists()
+
+    if validarSolicitudExistente:
+        return Response({
+            "success":False, 
+            "message":f"Error, ya tienes un solicitud de: {tipo_solicitud}, entre estas fechas, fecha inicial: {fecha_inicial}, fecha final: {fecha_final}"})
     
-    if codigoSolicitante is not None:
+    if codigoSolicitante is not None and cedulaSolicitante is not None:
         
-        empleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante,  estado = "Activo").first()
-        
-        solicitud_gt = Solicitudes_Gt.objects.create(foto = empleado.foto, nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, 
+        empleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante,  estado = "Activo").first()
+        solicitud_gt = Solicitudes_Gt.objects.create( cargo = empleado.cargo, 
                                       tipo_solicitud = tipo_solicitud, fecha_solicitud = fecha_solicitud, 
                                       fecha_inicial = fecha_inicial , fecha_final = fecha_final, descripcion = descripcion, empleado = empleado)
         
-    
         if archivo:
             nombreArchivo = archivo.name
             ext = Path(nombreArchivo).suffix.lower()
@@ -1579,7 +1582,7 @@ def solicitud_gt(request):
             solicitud_gt.save()
             
 
-        mensajeGmail = f"Te queremos informar que la solicitud {tipo_solicitud} con fecha de registro: {fecha_solicitud}, quedo registrada de manera correcta en nuestro sistema, el area de Gestión de turnos evaluara la solicitud, muchas gracias"
+        #mensajeGmail = f"Te queremos informar que la solicitud {tipo_solicitud} con fecha de registro: {fecha_solicitud}, quedo registrada de manera correcta en nuestro sistema, el area de Gestión de turnos evaluara la solicitud, muchas gracias"
         asunto = f"Solicitud de Gestión de turnos - solicitud: {tipo_solicitud}"
 
         #enviarCorreoGmail("sbastianpp@gmail.com",mensajeGmail, asunto)
@@ -1589,12 +1592,12 @@ def solicitud_gt(request):
         fecha_notificacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if estadoEnvioCorreo:
-            Notificaciones.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, tipo_solicitud = tipo_solicitud,
-                                      fecha_solicitud = fecha_solicitud, fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "Correo Electronico", estado = "Notificado")
+            Notificaciones.objects.create(empleado = empleado, cargo = empleado.cargo, solicitudes_Gt = solicitud_gt,
+                fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "E-mail", estado = "Notificado")
             return Response({"success":True, "message":f"Se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de registro: {fecha_solicitud}"})
         else:
-            Notificaciones.objects.create(nombre = empleado.nombre, codigo = empleado.codigo, cargo = empleado.cargo, tipo_solicitud = tipo_solicitud,
-                                      fecha_solicitud = fecha_solicitud, fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "Correo Electronico", estado = "No notificado")
+            Notificaciones.objects.create(empleado = empleado, cargo = empleado.cargo, solicitudes_Gt = solicitud_gt,
+                fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "E-mail", estado = "No notificado")
             return Response({"success":False, "message":f"No se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de reigstro:{fecha_solicitud}"}) 
     else:
         return Response({"success":False, "message":"Parametros de solicitud vacios"})
@@ -1978,7 +1981,7 @@ def misSolicitudesGT(request):
     print(codigo)
     data = []
     if codigo is not None and idSolicitud is None:
-        solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo = codigo).select_related('empleado')
+        solicitudes =  Solicitudes_Gt.objects.select_related('empleado').filter(empleado__codigo = codigo)
         for s in solicitudes:
             data.append({
                 "nombre": s.nombre,

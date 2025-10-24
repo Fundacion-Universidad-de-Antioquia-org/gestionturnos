@@ -117,3 +117,19 @@ function cargarFechasGT() {
   cerrarModalFechasGT();
 }
 
+ 
+function abrirModalVerificacion() {
+  const modal = document.getElementById("modalVerificacion");
+  modal.style.display = "block";
+  setTimeout(() => {
+    modal.classList.add("mostrar");
+  }, 10);
+}
+
+function cerrarModalVerificacion() {
+  const modal = document.getElementById("modalVerificacion");
+  modal.classList.remove("mostrar");
+  setTimeout(() => {
+    modal.style.display = "none";
+  }, 300);
+}

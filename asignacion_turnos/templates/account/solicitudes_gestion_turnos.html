@@ -5,6 +5,36 @@
 
 <style>
   .swal2-container { z-index: 100000 !important; }
+
+  /* transición elegante al retirar una fila */
+#tablaDatos tbody tr {
+  will-change: transform, opacity, filter;
+}
+
+#tablaDatos tbody tr.fade-out {
+  animation: row-leave .34s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+/* colabora para que no “salte” la altura visual mientras se va */
+#tablaDatos tbody tr.fade-out td {
+  transition: padding .22s ease, border-color .22s ease;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  border-color: rgba(255,255,255,.08) !important;
+}
+
+@keyframes row-leave {
+  0%   { opacity: 1; transform: translateY(0) scale(1);    filter: blur(0); }
+  60%  { opacity: .45; transform: translateY(-2px) scale(.995); filter: blur(.4px); }
+  100% { opacity: 0; transform: translateY(-6px) scale(.985);  filter: blur(.8px); }
+}
+
+/* respeto a accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  #tablaDatos tbody tr.fade-out { animation: none; opacity: 0; }
+}
+
+
 </style>
 <!--Estilos indicadores-->
 <style>
@@ -286,14 +316,12 @@
         </tr>
     </thead>
     <tbody id="tablaBody">
-        <tr>
         {% for s in solicitudesGt %}
-            <!--<td><img src="{{ s.foto }}" alt="50px" width="50px" style="border-radius: 20px;"></td> -->
-          
-              <td><img src="{{ s.foto }}" alt="50px" width="60px" style="border-radius: 5px;"></td>
+          <tr>
+            <td><img src="{{ s.empleado.foto }}" alt="50px" width="60px" style="border-radius: 5px;"></td>
             <td>{{s.id}}</td> 
-            <td>{{s.nombre}}</td>
-            <td>{{s.codigo}}</td>
+            <td>{{s.empleado.nombre}}</td>
+            <td>{{s.empleado.codigo}}</td>
             <td>{{s.cargo}}</td>
             <td>{{s.tipo_solicitud}}</td>
             <td>{{s.fecha_solicitud|date:"d/m/Y"}}</td>
@@ -301,14 +329,14 @@
             <td>{{s.fecha_final|date:"d/m/Y"}}</td>
             <td><span>{{ s.estado }}</span></td>
              <td>
-               <button class="btn-ver-respuesta btn-icon" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.nombre|escapejs }}', '{{ s.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')"><span class="material-symbols-outlined">content_paste_search</span></button>
+               <button class="btn-ver-respuesta btn-icon" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.empleado.nombre|escapejs }}', '{{ s.empleado.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')"><span class="material-symbols-outlined">content_paste_search</span></button>
              </td> 
              
              <td>
                 <button type="button" class="btn-ver-respuesta btn-icon" data-id="{{ s.id }}"> <span class="material-symbols-outlined">sms</span></button>
              </td>
         </tr>
-        {% empty %}s
+        {% empty %}
         <tr>
             <td colspan="12">No hay registros de solicitudes GT</td>
         </tr>
@@ -486,6 +514,7 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
     const solicitudAnualAprobadas = "{{ solicitudAnualAprobadas }}"
     const solicitudAnualPendientes = "{{ solicitudAnualPendientes }}"
     const solicitudAnualDesaprobadas = "{{ solicitudAnualDesaprobadas }}"
+    const cargaSolicitudes = JSON.parse(document.getElementById('mensaje-json').textContent)
 
     setTimeout(()=>{
       actualizarIndicador("total", "txt-total", solicitudAnual, "Solicitudes");
@@ -494,34 +523,25 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
       actualizarIndicador("desaprobado", "txt-rechazadas", solicitudAnualDesaprobadas, "Rechazadas");
     }, 2000);
     
-    
-    /*animateValue("solicitudesAnuales", 0, solicitudAnual, 1500);
-    animateValue("solicitudesAprobadas", 0, solicitudAnualAprobadas, 1500);
-    animateValue("solicitudesDesaprobadas", 0, solicitudAnualDesaprobadas, 1500);*/
 
-    aplicarFiltros();
-
-    function verRespuesta(id){
-      alert(id)
-    }
-
-    const cargaSolicitudes = JSON.parse(document.getElementById('mensaje-json').textContent)
-    
     if(cargaSolicitudes !== ""){
         Swal.fire({
             icon: "success",
             title: "Solicitudes cargadas correctamente",
             text: cargaSolicitudes
         });
+         aplicarFiltros();
     }else{
       Swal.fire({
-            icon: "success",
-            title: "No encontraron resultados para la busqueda",
-            text: cargaSolicitudes
+            icon: "warning",
+            title: "Ingrese un rango de fechas validos",
+            text: cargaSolicitudes || "No se encontraron resultados"
         });
     }
   
   })
+
+ 
 
 </script>
 
@@ -651,7 +671,7 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
                     title: "Solicitud gestionada",
                     text: data.message,
                       }).then(()=>{
-                        window.location.reload();
+                        removeRowBySolicitudId(idSolicitud);
                       })
 
             }else{
@@ -823,6 +843,7 @@ function cerrarModalVisor() {
 
     const respuesta = document.getElementById("respuesta").value
     const idSolicitudGt = document.getElementById("idSolicitud").textContent
+    const modal = document.getElementById("modalDescripcion");
 
     if(respuesta !== ""){
       fetch("{% url 'insertarRespuesta' %}",{
@@ -843,6 +864,8 @@ function cerrarModalVisor() {
             text: `Id solicitud:${idSolicitudGt}, respuesta: ${respuesta}`
         }); 
         document.getElementById("respuesta").value = "";
+        
+              modal.classList.remove("show");
       }else{
         
         Swal.fire({
@@ -1218,7 +1241,45 @@ document.getElementById('btnCargarSolicitud').addEventListener("click", function
 })
 </script>
 
+<script>
+// Quita la fila cuyo ID (columna 2) coincide
+function removeRowBySolicitudId(id) {
+  id = String(id);
+  const rows = document.querySelectorAll('#tablaDatos tbody tr');
+  for (const tr of rows) {
+    const cellId = tr.cells?.[1]?.textContent?.trim();
+    if (cellId === id) {
+      tr.classList.add('fade-out');
+      setTimeout(() => {
+        tr.remove();
+        aplicarFiltros();            // recalcula visibilidad/empty state
+        actualizarIndicadoresLocal(); // ajusta contadores mostrados
+      }, 250);
+      break;
+    }
+  }
+}
 
+// Ajusta los indicadores de “total / pendientes / aprobadas / rechazadas” en la UI
+function actualizarIndicadoresLocal() {
+  // Lee los visibles actuales
+  const visibles = [...document.querySelectorAll('#tablaDatos tbody tr')]
+    .filter(tr => tr.style.display !== 'none');
+
+  // Si quieres solo “pendientes” visibles, puedes contarlos por estado:
+  const counts = { total: visibles.length, pendiente: 0, aprobado: 0, desaprobado: 0 };
+  visibles.forEach(tr => {
+    const estado = tr.cells?.[9]?.textContent?.trim()?.toLowerCase();
+    if (estado && counts.hasOwnProperty(estado)) counts[estado]++;
+  });
+
+  // Actualiza tarjetas (ya tienes actualizarIndicador)
+  actualizarIndicador("total", "txt-total", counts.total, "Solicitudes");
+  actualizarIndicador("pendiente", "txt-pendiente", counts.pendiente, "Pendientes");
+  actualizarIndicador("aprobado", "txt-aprobadas", counts.aprobado, "Aprobadas");
+  actualizarIndicador("desaprobado", "txt-rechazadas", counts.desaprobado, "Rechazadas");
+}
+</script>
 
 
 {% endblock %}

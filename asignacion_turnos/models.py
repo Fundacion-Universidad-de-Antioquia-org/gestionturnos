@@ -120,9 +120,6 @@ class Cambios_de_turnos(models.Model):
     transportable_receptor = models.BooleanField(default=False)
     
 class Solicitudes_Gt(models.Model):
-    foto = models.URLField(max_length=500, null = True)
-    nombre = models.CharField(max_length=50)
-    codigo = models.CharField(max_length=10)
     cargo = models.CharField(max_length=100)
     tipo_solicitud = models.CharField(max_length=50)
     fecha_solicitud = models.DateField(auto_now_add=True)
@@ -153,16 +150,14 @@ class Estados_servicios(models.Model):
     fecha_carga = models.DateField(max_length=20,default=timezone.localdate)
 
 class Notificaciones(models.Model):
-    nombre = models.CharField(max_length=50)
-    codigo = models.CharField(max_length=50)
     cargo = models.CharField(max_length=100)
-    tipo_solicitud = models.CharField(max_length=50, null=True)
-    fecha_solicitud = models.DateField(null=True)
+    correo = models.CharField(max_length=100, null=True)
     fecha_notificacion = models.DateTimeField()
-    correo = models.CharField(max_length=50)
     medio = models.CharField(max_length=50)
     estado = models.CharField(max_length=20,null=True)
-
+    empleado = models.ForeignKey("Empleado_Oddo", related_name="empleado",on_delete=models.PROTECT,null=True,blank=True)
+    solicitudes_Gt = models.ForeignKey("Solicitudes_Gt", related_name="solicitudes_Gt",on_delete=models.SET_NULL,null=True,blank=True)
+    
 
 class Archivos(models.Model):
     titulo = models.CharField(max_length=50)
