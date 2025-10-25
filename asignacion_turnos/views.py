@@ -1987,11 +1987,11 @@ def descargarInformeGt(request):
         
 @api_view(["GET"])
 def misSolicitudesGT(request):
+
     codigo = request.GET.get("codigo")
     idSolicitud = request.GET.get("id")
     cedula = request.GET.get("cedula")
 
-    print(codigo)
     data = []
     if codigo is not None and cedula is not None and idSolicitud is None:
         solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo = codigo, empleado__cedula = cedula)

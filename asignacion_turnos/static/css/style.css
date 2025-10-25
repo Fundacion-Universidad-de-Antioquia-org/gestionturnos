@@ -1905,7 +1905,7 @@ label {
   border-radius: 12px;
   border: none;
   /* box-shadow: 0 8px 25px rgba(33, 4, 160, 0.553); */
-  box-shadow: 0 12px 36px rgb(31 111 55 / 65%);
+  /* box-shadow: 0 12px 36px rgb(31 111 55 / 65%); */
   padding: 1.8rem;
   animation: modalFadeIn 0.3s ease-in-out;
   overflow-y: auto;
@@ -1967,7 +1967,7 @@ label {
 .modal-descripcion-profesional button {
   margin-top: 0.6rem;
   margin-right: 0.4rem;
-  padding: 0.45rem 0.9rem;
+  /* padding: 0.45rem 0.9rem; */
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;

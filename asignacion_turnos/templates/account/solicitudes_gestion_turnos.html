@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block styles %}
-
+<!--Correcion a swal y animacion a la tabla para sacar filas -->
 <style>
   .swal2-container { z-index: 100000 !important; }
 
@@ -36,6 +36,7 @@
 
 
 </style>
+
 <!--Estilos indicadores-->
 <style>
 .indicadores {
@@ -174,6 +175,61 @@
   .btn-secondary:hover{ background:#1e2a38; }
 </style>
 
+<!--Estilos del loader-->
+<style>
+  /* Fondo bloqueante */
+#loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  pointer-events: all;
+}
+
+/* Ocultar por defecto */
+#loader-overlay.hidden {
+  display: none;
+}
+
+/* Contenedor del loader */
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Loader circular */
+.loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #1d5031; /* verde institucional */
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 1s linear infinite;
+}
+
+/* Animación */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Texto debajo del loader */
+.loader-title {
+  margin-top: 20px;
+  font-size: 1.5rem;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+}
+
+</style>
 
 {% endblock%}
 {% block content %}
@@ -235,6 +291,13 @@
 </div>
 </section>
 
+<div id="loader-overlay" class="hidden">
+  <div class="loader-container">
+    <div class="loader"></div>
+    <h2 class="loader-title" id="tituloSincronizacion">Sincronizando empleados...</h2>
+  </div>
+</div>
+
 <!--Variables que llegan con el render -->
 {{ mensaje|json_script:"mensaje-json" }}
 
@@ -272,19 +335,20 @@
         <label for="filtroTipoSolicitud">Tipo solicitud:</label>
         <select name="select" id="filtroTipoSolicitud">
           <option value="">TODOS</option>
-            <option value="VACACIONES">VACACIONES</option>
             <option value="PERMISO ACADEMICO">PERMISO ACADEMICO</option>
+            <option value="PERMISO PERSONAL">PERMISO PERSONAL</option>
             <option value="OTRAS SOLICITUDES">OTRAS SOLICITUDES</option>
+            <option value="VACACIONES">VACACIONES</option>
         </select>
       </div>
-      <div class="filtro-item">
+      <!--<div class="filtro-item">
         <label for="filtroFecha">Fecha inicial:</label>
         <input type="date" id="filtroFechaInicial">
       </div>
       <div class="filtro-item">
         <label for="filtroFecha">Fecha final:</label>
         <input type="date" id="filtroFechaFinal">
-      </div>
+      </div> -->  
       <div class="filtro-item">
         <label for="filtroFecha">Estado de solicitud:</label>
         <select name="" id="filtroEstadoSolicitud">
@@ -576,7 +640,7 @@ function actualizarIndicador(clase, idTexto, valor, etiqueta) {
       const idSolicitud = document.getElementById("idSolicitud").textContent
       const estadoActual = document.getElementById("estadoSolicitud").textContent
       const estado = "aprobado" ;
-      const respuestaEstado = "";
+      const respuestaEstado = "¡Tu solicitud fue aprobada!";
 
       if(estadoActual !== "pendiente"){
          Swal.fire({
@@ -731,11 +795,10 @@ async function abrirVisorDesdeSolicitud() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const { success, url, tipoArchivo } = await res.json();
     if (!success || !url) { 
-      const modal = document.getElementById("modalDescripcion");
-      modal.classList.remove("show"); 
+
         Swal.fire({
-            icon: "error",
-            title: "No hay archivos cargados",
+            icon: "warning",
+            title: "No hay archivos cargados"
         })
     }
 
@@ -910,8 +973,8 @@ function cerrarModalVisor() {
     codigo: document.getElementById('filtroCodigo'),
     cargo: document.getElementById('filtroCargo'),
     tipoSolicitud : document.getElementById('filtroTipoSolicitud'),
-    fechaInicial: document.getElementById('filtroFechaInicial'),
-    fechaFinal: document.getElementById('filtroFechaFinal'),
+    /*fechaInicial: document.getElementById('filtroFechaInicial'),
+    fechaFinal: document.getElementById('filtroFechaFinal'),*/
     estado: document.getElementById('filtroEstadoSolicitud'),
   };
 
@@ -926,8 +989,8 @@ function aplicarFiltros() {
   const valorCodigo = filtros.codigo.value.toLowerCase().trim();
   const valorCargo = filtros.cargo.value.toLowerCase().trim(); 
   const valorTipoSolicitud = filtros.tipoSolicitud.value.toLowerCase().trim();
-  const valorFechaInicial = filtros.fechaInicial.value;
-  const valorFechaFinal = filtros.fechaFinal.value;
+  /*const valorFechaInicial = filtros.fechaInicial.value;*/
+  /*const valorFechaFinal = filtros.fechaFinal.value;*/
   const valorEstado = filtros.estado.value;
 
   document.querySelectorAll('#tablaDatos tbody tr').forEach(row => {
@@ -936,8 +999,8 @@ function aplicarFiltros() {
     const tCodigo = row.cells[3].textContent.toLowerCase().trim();
     const tCargo = row.cells[4].textContent.toLowerCase().trim(); 
     const tTipoSolicitud = row.cells[5].textContent.toLowerCase().trim();
-    const tFechaInicial = row.cells[7].textContent.trim();
-    const tFechaFinal = row.cells[8].textContent.trim();
+    /*const tFechaInicial = row.cells[7].textContent.trim();*/
+    /*const tFechaFinal = row.cells[8].textContent.trim();*/
     const tEstado = row.cells[9].textContent.toLowerCase().trim();
 
     const coincideId = !valorId || tId === valorId;
@@ -947,17 +1010,17 @@ function aplicarFiltros() {
     const coincideSolicitud = !valorTipoSolicitud || tTipoSolicitud === valorTipoSolicitud;
     
 
-    const fechaInicialFiltro = valorFechaInicial ? new Date(valorFechaInicial) : null;
+    /*const fechaInicialFiltro = valorFechaInicial ? new Date(valorFechaInicial) : null;
     const fechaFinalFiltro = valorFechaFinal ? new Date(valorFechaFinal) : null;
     const fechaInicialDato = new Date(formatoFechaDMYaISO(tFechaInicial));
-    const fechaFinalDato = new Date(formatoFechaDMYaISO(tFechaFinal));
+    const fechaFinalDato = new Date(formatoFechaDMYaISO(tFechaFinal));*/
 
     const coincideEstado = !valorEstado || tEstado === valorEstado;
 
-    const coincideRangoFechas = (!fechaInicialFiltro || fechaInicialDato >= fechaInicialFiltro) &&
-                                (!fechaFinalFiltro || fechaFinalDato <= fechaFinalFiltro);
+    /*const coincideRangoFechas = (!fechaInicialFiltro || fechaInicialDato >= fechaInicialFiltro) &&
+                                (!fechaFinalFiltro || fechaFinalDato <= fechaFinalFiltro); */
 
-    row.style.display = (coincideNombre && coincideCodigo && coincideCargo && coincideSolicitud && coincideRangoFechas && coincideEstado && coincideId) ? '' : 'none';
+    row.style.display = (coincideNombre && coincideCodigo && coincideCargo && coincideSolicitud  && coincideEstado && coincideId) ? '' : 'none';
   });
 }
 
