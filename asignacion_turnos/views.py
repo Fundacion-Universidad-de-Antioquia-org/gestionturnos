@@ -1567,20 +1567,23 @@ def solicitud_gt(request):
     descripcion = request.data.get('descripcion')
     archivo = request.FILES.get('archivo')
 
-    if Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante, estado = "Activo").exists() == False:
-        return Response({
+    
+
+    if codigoSolicitante is not None and cedulaSolicitante is not None:
+
+        if Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante, estado = "Activo").exists() == False:
+            return Response({
             "success":False,
             "message":f"Usted no se encuentra activo para realizar este tipo de peticiones"})
 
-    validarSolicitudExistente = Solicitudes_Gt.objects.filter(empleado__codigo = codigoSolicitante, empleado__cedula = cedulaSolicitante, tipo_solicitud = tipo_solicitud, fecha_inicial = fecha_inicial, fecha_final = fecha_final).exists()
+        validarSolicitudExistente = Solicitudes_Gt.objects.filter(empleado__codigo = codigoSolicitante, empleado__cedula = cedulaSolicitante, tipo_solicitud = tipo_solicitud, fecha_inicial = fecha_inicial, fecha_final = fecha_final).exists()
 
-    if validarSolicitudExistente:
-        return Response({
-            "success":False, 
-            "message":f"Error, ya tienes un solicitud de: {tipo_solicitud}, entre estas fechas, fecha inicial: {fecha_inicial}, fecha final: {fecha_final}"})
-    
-    if codigoSolicitante is not None and cedulaSolicitante is not None:
-        
+        if validarSolicitudExistente:
+            return Response({
+                "success":False, 
+                "message":f"Error, ya tienes un solicitud de: {tipo_solicitud}, entre estas fechas, fecha inicial: {fecha_inicial}, fecha final: {fecha_final}"})
+
+
         empleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante,  estado = "Activo").first()
         solicitud_gt = Solicitudes_Gt.objects.create( cargo = empleado.cargo, 
                                       tipo_solicitud = tipo_solicitud, fecha_solicitud = fecha_solicitud, 
@@ -2003,8 +2006,8 @@ def misSolicitudesGT(request):
         solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo = codigo, empleado__cedula = cedula)
         for s in solicitudes:
             data.append({
-                "nombre": s.nombre,
-                "codigo":s.codigo,
+                "nombre": s.empleado.nombre,
+                "codigo":s.empleado.codigo,
                 "cargo": s.cargo,
                 "tipo_solicitud": s.tipo_solicitud,
                 "fecha_solicitud": s.fecha_solicitud,
