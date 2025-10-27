@@ -1850,19 +1850,22 @@ def mis_solicitudes_cambios_turnos(request):
 
 @api_view(["POST"])
 def confirmacionLectura(request):
-
     codigo = request.data.get("codigo")
     idArchivo = request.data.get("idArchivo")
 
     hoy = datetime.now(ZoneInfo("America/Bogota"))
 
     if codigo and idArchivo :
-        empleado = Empleado_Oddo.objects.get(codigo = codigo,  estado = "Activo")
+        if Empleado_Oddo.objects.filter(codigo = codigo,  estado = "Activo").exists() and Archivos.objects.filter(id = idArchivo).exist():
+            empleado = Empleado_Oddo.objects.filter(codigo = codigo,  estado = "Activo")
+            comunicado = Archivos.objects.filter(id = idArchivo).exist()
 
-        ConfirmacionLectura.objects.create(fechaLectura = hoy , codigo = codigo, cedula =  empleado.cedula, nombre = 
-                                           empleado.nombre, archivos__id =  idArchivo, confirmacionLectura = "leido")
+            ConfirmacionLectura.objects.create(fechaLectura = hoy , codigo = codigo, cedula =  empleado.cedula, 
+                                               nombre = empleado.nombre, archivos = comunicado, empleado = empleado, confirmacionLectura = "leido")
+            return Response({"success":True, "message": f"Comunicado con id: {idArchivo}, leido por: { empleado.nombre }"})
+        else:
+            return Response({"success":False, "message": f"No existe comunicado: {idArchivo} ó empleado con estos datos: {codigo}"})    
         
-        return Response({"success":True, "message": f"Comunicado con id: {idArchivo}, leido por: { empleado.nombre }"})
     else:
         return Response({"success":False, "message":f"Error de parametros, codigo: {codigo} - {idArchivo} "})
     
