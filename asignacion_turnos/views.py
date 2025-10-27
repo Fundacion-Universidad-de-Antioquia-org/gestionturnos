@@ -2006,6 +2006,7 @@ def misSolicitudesGT(request):
         solicitudes =  Solicitudes_Gt.objects.filter(empleado__codigo = codigo, empleado__cedula = cedula)
         for s in solicitudes:
             data.append({
+                "idSolicitud": s.id,
                 "nombre": s.empleado.nombre,
                 "codigo":s.empleado.codigo,
                 "cargo": s.cargo,
@@ -2022,6 +2023,7 @@ def misSolicitudesGT(request):
         solicitudes =  Solicitudes_Gt.objects.filter(id = idSolicitud)
         for s in solicitudes:
             data.append({
+                "idSolicitud": s.id,
                 "nombre": s.empleado.nombre,
                 "codigo":s.empleado.codigo,
                 "cargo": s.cargo,
@@ -2106,4 +2108,14 @@ def getSolicitudesCambiosTurnos(request):
         })
         
     return Response({"success":True, "data":datos, "rol":rol})
+
+@api_view(["POST"])
+def cancelarSolicitudGt(request):
+    idSolicitud = request.data.get("idSolicitud")
+    if idSolicitud:
+        if Solicitudes_Gt.objects.filter(id = idSolicitud).exists():
+            solicitud = Solicitudes_Gt.objects.filter(id = idSolicitud).delete()
+        return Response({"success":True, "message": f"Se elimino correctamente la solicitud con id: {idSolicitud}"})
+    else:
+        return Response({"success":True, "message": f"El id de la solicitud es vacio: {idSolicitud}"})
     

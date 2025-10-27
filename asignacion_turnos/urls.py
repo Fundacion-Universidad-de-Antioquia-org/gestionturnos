@@ -45,5 +45,6 @@ urlpatterns = [
     path('api/descargarInformeGt/', views.descargarInformeGt, name = "descargarInformeGt"),
     path('api/misSolicitudesGT/', views.misSolicitudesGT, name= 'misSolicitudesGT'),
     path('api/getSolicitudesCambiosTurnos/',views.getSolicitudesCambiosTurnos, name="getSolicitudesCambiosTurnos"),
+    path('api/cancelarSolicitudGt/', views.cancelarSolicitudGt, name="cancelarSolicitudGt"),
 
     ]
