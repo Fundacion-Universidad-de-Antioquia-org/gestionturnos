@@ -1567,7 +1567,7 @@ def solicitud_gt(request):
     descripcion = request.data.get('descripcion')
     archivo = request.FILES.get('archivo')
 
-    if not Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante, estado = "Activo").exists():
+    if Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante, estado = "Activo").exists() == False:
         return Response({
             "success":False,
             "message":f"Usted no se encuentra activo para realizar este tipo de peticiones"})
@@ -1862,6 +1862,7 @@ def confirmacionLectura(request):
 
             ConfirmacionLectura.objects.create(fechaLectura = hoy , codigo = codigo, cedula =  empleado.cedula, 
                                                nombre = empleado.nombre, archivos = comunicado, empleado = empleado, confirmacionLectura = "leido")
+            
             return Response({"success":True, "message": f"Comunicado con id: {idArchivo}, leido por: { empleado.nombre }"})
         else:
             return Response({"success":False, "message": f"No existe comunicado: {idArchivo} ó empleado con estos datos: {codigo}"})    

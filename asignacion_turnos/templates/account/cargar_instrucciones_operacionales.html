@@ -252,14 +252,14 @@
 
 <style>
 
-
 .w-id  { width: 25px; }
 .w-titulo { width: 200px; }
 .w-fechaCarga {width: 85px;}
 .w-usuarioCarga { width: 150px;}
-.w-tipoArchivo { width: 80px;}
+/*.w-tipoArchivo { width: 80px;} */
 .w-fechaVigencia {width: 100px; }
 .w-tipoComunicado { width: 190px;}
+.w-cargoVisualizacion {width: 1000px;}
 
   .encabezado-modal {
   display: flex;
@@ -311,8 +311,8 @@
 
 /* Contenido del modal */
 .modal-comunicados .modal-contenido {
-  background: #111826;
-  border: 1px solid #00adb5;
+  background: #0c1118;
+  border: 1px solid #136332;
   border-radius: 14px;
   width: 85%;
   /* límite de alto para que quepa en pantalla con scroll interno */
@@ -379,10 +379,11 @@
 }
 
 .tabla-comunicados thead {
-  background-color: #00adb5;
-  color: #0c1118;
+  background-color: #1a6723;
+  color: #e8ebf3;
   position: sticky; top: 0;   /* encabezado pegajoso al hacer scroll Y */
   z-index: 1;
+  
 }
 
 .tabla-comunicados th,
@@ -979,8 +980,6 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
                     <th class = "w-usuarioCarga">Usuario carga</th>
                     <th class = "w-tipoComunicado">Tipo comunicado</th>
                     <th class = "w-fechaVigencia" >Fecha vigencia</th>
-                    
-                    <th class = "w-tipoArchivo" >Tipo archivo</th>
                     <th>Cargo visualización</th>  
                     </tr>
                   </thead>
@@ -993,9 +992,7 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
                     <td>${c.usuarioCarga}</td>
                     <td>${c.tipoComunicado}</td>
                     <td>${c.fechaVigencia}</td>
-                    
-                    <td>${c.tipoArchivo}</td>
-                    <td>${c.cargoVisualizacion}</td>
+                    <td>${ parseListString(c.cargoVisualizacion).length > 4 ? 'TODOS LOS CARGOS': c.cargoVisualizacion.replace("CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO", "CONDUCTOR")}</td>
                     </tr>
                   
                   `).join('')
@@ -1035,6 +1032,33 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
         }
         return cookieValue;
     }
+</script>
+
+
+<script>
+  function parseListString(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+
+  const s = String(value).trim();
+
+  // Caso ideal: viene como JSON válido
+  try {
+    const parsed = JSON.parse(s);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {}
+
+  // Respaldo: extraer elementos entre comillas
+  const quoted = [...s.matchAll(/"([^"]+)"/g)].map(m => m[1]);
+  if (quoted.length) return quoted;
+
+  // Último recurso: partir por comas y limpiar
+  return s.replace(/^\[|\]$/g, '')
+          .split(',')
+          .map(t => t.trim().replace(/^"|"$/g, ''))
+          .filter(Boolean);
+}
+
 </script>
 
 
