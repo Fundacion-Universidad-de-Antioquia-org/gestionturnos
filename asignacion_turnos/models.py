@@ -171,7 +171,7 @@ class Archivos(models.Model):
 
 
 class ConfirmacionLectura(models.Model):
-    fechaLectura = models.DateField
+    fechaLectura = models.DateField(null=True)
     confirmacionLectura = models.CharField(max_length=10, default="pendiente")
     cedula = models.CharField(max_length=20, null=True)
     nombre = models.CharField(max_length=50, null=True)

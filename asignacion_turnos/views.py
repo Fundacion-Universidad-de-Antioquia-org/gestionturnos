@@ -1856,9 +1856,9 @@ def confirmacionLectura(request):
     hoy = datetime.now(ZoneInfo("America/Bogota"))
 
     if codigo and idArchivo :
-        if Empleado_Oddo.objects.filter(codigo = codigo,  estado = "Activo").exists() and Archivos.objects.filter(id = idArchivo).exist():
-            empleado = Empleado_Oddo.objects.filter(codigo = codigo,  estado = "Activo")
-            comunicado = Archivos.objects.filter(id = idArchivo).exist()
+        if Empleado_Oddo.objects.filter(codigo = codigo,  estado = "Activo").exists() and Archivos.objects.filter(id = idArchivo).exists():
+            empleado = Empleado_Oddo.objects.filter(codigo = codigo,  estado = "Activo").first()
+            comunicado = Archivos.objects.filter(id = idArchivo).first()
 
             ConfirmacionLectura.objects.create(fechaLectura = hoy , codigo = codigo, cedula =  empleado.cedula, 
                                                nombre = empleado.nombre, archivos = comunicado, empleado = empleado, confirmacionLectura = "leido")
