@@ -251,6 +251,16 @@
 </style>
 
 <style>
+
+
+.w-id  { width: 25px; }
+.w-titulo { width: 200px; }
+.w-fechaCarga {width: 85px;}
+.w-usuarioCarga { width: 150px;}
+.w-tipoArchivo { width: 80px;}
+.w-fechaVigencia {width: 100px; }
+.w-tipoComunicado { width: 190px;}
+
   .encabezado-modal {
   display: flex;
   align-items: center; /* centra verticalmente */
@@ -278,19 +288,20 @@
 <!--Modal Comunicados cargados-->
 <style>
   .modal-comunicados {
+
+  margin-top: 5%;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0; /* top/left/right/bottom 0 */
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(12, 17, 24, 0.95); /* color base #0c1118 */
+  background: rgba(12, 17, 24, 0.95);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.35s ease;
   z-index: 999;
+  /* Evita scroll del body detrás del modal en algunos navegadores */
+  overscroll-behavior: contain;
 }
 
 .modal-comunicados.mostrar {
@@ -304,20 +315,26 @@
   border: 1px solid #00adb5;
   border-radius: 14px;
   width: 85%;
-  max-width: 750px;
+  /* límite de alto para que quepa en pantalla con scroll interno */
+  max-height: 90vh;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   padding: 24px 30px;
   position: relative;
   transform: translateY(-40px);
   animation: subirSuave 0.4s ease forwards;
   color: #e5e5e5;
+
+  /* Scroll vertical suave del contenido del modal */
+  overflow-y: auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  /* Evita que al hacer scroll dentro del modal arrastre el body */
+  overscroll-behavior: contain;
 }
 
 @keyframes subirSuave {
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 /* Botón cerrar */
@@ -330,11 +347,7 @@
   color: #ccc;
   transition: 0.3s ease;
 }
-
-.cerrar-modal:hover {
-  color: #00adb5;
-  transform: scale(1.2);
-}
+.cerrar-modal:hover { color: #00adb5; transform: scale(1.2); }
 
 /* Título */
 .modal-contenido h2 {
@@ -346,31 +359,47 @@
   letter-spacing: 0.5px;
 }
 
+/* ====== ENVOLTORIO SCROLL H (1 clase nueva) ====== */
+.tabla-scroller{
+  overflow-x: auto;           /* scroll horizontal solo si hace falta */
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
 /* Tabla */
 .tabla-comunicados {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
   color: #f1f1f1;
+
+  /* Para 9 columnas, evita que se compriman demasiado en pantallas chicas */
+  min-width: 1100px;          /* ajusta según densidad de tus columnas */
+  table-layout: fixed;        /* distribuye mejor el ancho */
 }
 
 .tabla-comunicados thead {
   background-color: #00adb5;
   color: #0c1118;
+  position: sticky; top: 0;   /* encabezado pegajoso al hacer scroll Y */
+  z-index: 1;
 }
 
 .tabla-comunicados th,
 .tabla-comunicados td {
-  padding: 10px 14px;
+  /* padding: 10px 14px; */
   text-align: left;
   border-bottom: 1px solid #1f2a38;
+  white-space: nowrap;        /* evita quiebres raros de texto */
+  overflow: hidden;
+  /*text-overflow: ellipsis;   */ /* si algo es muy largo, lo corta con … */
 }
 
 .tabla-comunicados tbody tr:hover {
   background-color: rgba(0, 173, 181, 0.15);
 }
 
-/* Botón abrir (solo ejemplo visual) */
+/* Botón abrir */
 .btn-abrir {
   background-color: #00adb5;
   color: #0c1118;
@@ -381,10 +410,13 @@
   font-weight: 600;
   transition: background 0.3s, transform 0.2s;
 }
+.btn-abrir:hover { background-color: #06c3cb; transform: scale(1.05); }
 
-.btn-abrir:hover {
-  background-color: #06c3cb;
-  transform: scale(1.05);
+/* Ajustes suaves en móviles: reduce tipografía/padding para ganar ancho */
+@media (max-width: 768px){
+  .modal-comunicados .modal-contenido{ width: 94%; padding: 16px; }
+  .tabla-comunicados{ font-size: 0.88rem; min-width: 980px; }
+  .tabla-comunicados th, .tabla-comunicados td{ padding: 8px 10px; }
 }
 </style>
 {% endblock %}
@@ -473,17 +505,16 @@
 <!--Modal comunicados cargados-->
 <!-- Modal de Comunicados -->
 <div id="modal-comunicados" class="modal-comunicados">
-  <div class="modal-contenido">
-    <span class="cerrar-modal" id="cerrarModalComunicados">&times;</span>
+  <div class="modal-contenido" id = "tablaComunicados">
+    <span class="cerrar-modal" id="">&times;</span>
     <h2>Lista de Comunicados</h2>
-    <div id="tablaComunicados">
-
+    <div class = "tabla-scroler">
+      <div id="cerrarModalComunicados"></div>
+    </div>
     </div>
     
   </div>
 </div>
-
-
 
 <!-- Modal cargos-->
 <div class="modal-overlay" id="modalAgregarCargos" style="display: none;">
@@ -941,15 +972,17 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
                 contenedor.innerHTML = `
                 <table class="tabla-comunicados"> 
                   <thead>
-                    <th>Id</th>
-                    <th>Titulo</th>
-                    <th>Fecha carga</th>
-                    <th>Usuario carga</th>
-                    <th>Tipo comunicado</th>
-                    <th>Fecha vigencia</th>
-                    <th>Url</th>
-                    <th>Tipo archivo</th>
-                    <th>Cargo visualización</th>
+                    <tr> 
+                    <th class = "w-id">Id</th>
+                    <th class = "w-titulo">Titulo</th>
+                    <th class = "w-fechaCarga">Fecha carga</th>
+                    <th class = "w-usuarioCarga">Usuario carga</th>
+                    <th class = "w-tipoComunicado">Tipo comunicado</th>
+                    <th class = "w-fechaVigencia" >Fecha vigencia</th>
+                    
+                    <th class = "w-tipoArchivo" >Tipo archivo</th>
+                    <th>Cargo visualización</th>  
+                    </tr>
                   </thead>
                   <tbody>
                   ${ data.comunicados.map(c => `
@@ -960,7 +993,7 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
                     <td>${c.usuarioCarga}</td>
                     <td>${c.tipoComunicado}</td>
                     <td>${c.fechaVigencia}</td>
-                    <td>${c.urlArchivo}</td>
+                    
                     <td>${c.tipoArchivo}</td>
                     <td>${c.cargoVisualizacion}</td>
                     </tr>

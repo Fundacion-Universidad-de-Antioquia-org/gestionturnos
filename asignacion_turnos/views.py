@@ -2043,7 +2043,9 @@ def getTodosComunicados(request):
         data = []
         for a in archivos:
             data.append({
+                "id": a.id,
                 "titulo": a.titulo,
+                "usuarioCarga": a.usuarioCarga,
                 "tipoComunicado": a.tipoComunicado,
                 "fechaVigencia":a.fechaVigencia,
                 "fechaCarga":a.fechaCarga,
