@@ -360,11 +360,6 @@ def vista_solicitudes_gestion_turnos(request,*, context):
     hoy = date.today()
     inicio = date(hoy.year, 1, 1) #Primer dia del año
 
-    solicitudAnual = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy)).count()
-    solicitudAnualAprobadas = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy), estado = "aprobado").count()
-    solicitudAnualPendientes = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy), estado = "pendiente").count()
-    solicitudAnualDesaprobadas = Solicitudes_Gt.objects.filter(Q(fecha_solicitud__gte = inicio, fecha_solicitud__lte = hoy), estado = "desaprobado").count()
-    
     if request.method == "GET":
 
         fechaInicial_peticion = request.GET.get('fecha_inicio')
@@ -388,6 +383,7 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                 indicadorPendiente = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "pendiente").count()
                 indicadorAprobada = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "aprobado").count()
                 indicadorDesaprobado = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "desaprobado").count()
+                indicadorDesatendida = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "desatendida").count()
 
                 #print("Si existen solicitudes entre estas fechas")
                 return render(request,"account/solicitudes_gestion_turnos.html",{
@@ -397,20 +393,23 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                     "solicitudAnual": indicadorTotal,
                     "solicitudAnualAprobadas":indicadorAprobada,
                     "solicitudAnualPendientes":indicadorPendiente,
-                    "solicitudAnualDesaprobadas":indicadorDesaprobado
+                    "solicitudAnualDesaprobadas":indicadorDesaprobado,
+                    "SolicitudDesatendida": indicadorDesatendida
                 })
             else: # Si no ingresa un rango de fechas donde existan solicitudes, no se devuelve nada
                 solicitudAnual = 0
                 solicitudAnualAprobadas = 0
                 solicitudAnualPendientes = 0
                 solicitudAnualDesaprobadas = 0
+                indicadorDesatendida = 0
                 return render(request, "account/solicitudes_gestion_turnos.html",{
                     "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
                      "usuarioLogeado":usuarioLogeado,
                      "solicitudAnual": solicitudAnual,
                      "solicitudAnualAprobadas": solicitudAnualAprobadas,
                      "solicitudAnualPendientes": solicitudAnualPendientes,
-                     "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
+                     "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas,
+                     "SolicitudDesatendida": indicadorDesatendida
 
                 })
         else:
@@ -418,6 +417,8 @@ def vista_solicitudes_gestion_turnos(request,*, context):
             solicitudAnualAprobadas = 0
             solicitudAnualPendientes = 0
             solicitudAnualDesaprobadas = 0
+            indicadorDesatendida = 0
+
             return render(request,"account/solicitudes_gestion_turnos.html",{
                 "mensaje:":f"No hay solicitudes para este rango de fechas: {fechaInicial} , {fechaFinal}",
                 "solicitudesGt":solicitudesGt,
@@ -425,7 +426,8 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                  "solicitudAnual": solicitudAnual,
                  "solicitudAnualAprobadas":solicitudAnualAprobadas,
                  "solicitudAnualPendientes": solicitudAnualPendientes,
-                 "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas
+                 "solicitudAnualDesaprobadas":solicitudAnualDesaprobadas,
+                 "SolicitudDesatendida": indicadorDesatendida
             })
     else:
         return Response({
@@ -2030,20 +2032,29 @@ def misSolicitudesGT(request):
 
 @api_view(["GET"])
 def getTodosComunicados(request):
+
     if request.method == "GET":
-        archivos = Archivos.objects.all()
+
+        try:
+            archivos = Archivos.objects.all().order_by('fechaCarga')
+        except:
+            return Response({"success":False, "message": "No existen comunicados"})
+
         data = []
         for a in archivos:
             data.append({
                 "titulo": a.titulo,
                 "tipoComunicado": a.tipoComunicado,
                 "fechaVigencia":a.fechaVigencia,
+                "fechaCarga":a.fechaCarga,
                 "cargoVisualizacion": a.cargoVisualizacion,
                 "urlArchivo":a.urlArchivo,
                 "tipoArchivo":a.tipoArchivo
             })
-        return Response({"success":True, "data":data})
-    
+        return Response({"success":True, "comunicados": data})
+    else:
+        return Response({"success":False, "comunicados": "error"})
+
 @api_view(["GET"])   
 def getSolicitudesCambiosTurnos(request):
 

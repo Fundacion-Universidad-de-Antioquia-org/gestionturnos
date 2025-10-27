@@ -3,7 +3,6 @@
 
 {% block styles %}
 <style>
-
   .main-container {
     display: flex;
     flex-wrap: wrap;
@@ -31,9 +30,6 @@
    
   }
 
-  .viewer-section {
-    background-color: #f9f9f9;
-  }
 
 .viewer-section iframe,
 .viewer-section img,
@@ -123,7 +119,7 @@
   width: 100%;
   height: 90vh;
   max-height: 100vh;
-  background-color: #f9f9f9;
+  background-color: #0c1118;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   overflow: hidden;
@@ -178,16 +174,6 @@
   z-index: 1000;
 }
 
-.modal-content {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
 /* Animación al abrir el modal */
 @keyframes slideFadeIn {
   from {
@@ -203,7 +189,8 @@
 /* Mejora del modal */
 .modal-content {
   animation: slideFadeIn 0.4s ease-in-out;
-  background-color: #fff;
+  background-color: #0b0f12;
+  color: White;
   padding: 30px 35px;
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
@@ -287,6 +274,119 @@
 }
 
 </style>
+
+<!--Modal Comunicados cargados-->
+<style>
+  .modal-comunicados {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 17, 24, 0.95); /* color base #0c1118 */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 999;
+}
+
+.modal-comunicados.mostrar {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Contenido del modal */
+.modal-comunicados .modal-contenido {
+  background: #111826;
+  border: 1px solid #00adb5;
+  border-radius: 14px;
+  width: 85%;
+  max-width: 750px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  padding: 24px 30px;
+  position: relative;
+  transform: translateY(-40px);
+  animation: subirSuave 0.4s ease forwards;
+  color: #e5e5e5;
+}
+
+@keyframes subirSuave {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Botón cerrar */
+.cerrar-modal {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #ccc;
+  transition: 0.3s ease;
+}
+
+.cerrar-modal:hover {
+  color: #00adb5;
+  transform: scale(1.2);
+}
+
+/* Título */
+.modal-contenido h2 {
+  font-size: 1.4rem;
+  color: #00adb5;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Tabla */
+.tabla-comunicados {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  color: #f1f1f1;
+}
+
+.tabla-comunicados thead {
+  background-color: #00adb5;
+  color: #0c1118;
+}
+
+.tabla-comunicados th,
+.tabla-comunicados td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #1f2a38;
+}
+
+.tabla-comunicados tbody tr:hover {
+  background-color: rgba(0, 173, 181, 0.15);
+}
+
+/* Botón abrir (solo ejemplo visual) */
+.btn-abrir {
+  background-color: #00adb5;
+  color: #0c1118;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.btn-abrir:hover {
+  background-color: #06c3cb;
+  transform: scale(1.05);
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -302,7 +402,7 @@
     </div>
 
     <!-- Título de la página -->
-    <div class="saludo" style="color: #ccc; font-size: 11px;">
+    <div class="saludo" style="color: #5a9138; font-size: 11px;">
       Comunicaciones e IO's
     </div>
 </div>
@@ -319,11 +419,11 @@
   <!-- Columna izquierda: Formulario -->
   <div class="form-section">
 
-    <label for="" class="form-label">Titulo comunicado</label>
+    <label for="" class="form-label">Titulo comunicado:</label>
     <input type="text" name="" id="tituloComunicado">
     
-      <label for="tipo" class="form-label">Tipo de comunicado</label>
-      <select name="tipo" id="tipo">
+      <label for="tipo" class="form-label">Tipo de comunicado:</label>
+      <select name="tipo" id="tipo">  
         <option value="SELECCIONE">SELECCIONE OPCIÓN</option>
         <option value="INSTRUCCION OPERACIONAL">INSTRUCCIÓN OPERACIONAL</option>
         <option value="PIPO">PIPO</option>
@@ -332,7 +432,11 @@
         <option value="LECCIONES APRENDIDAS">LECCIONES APRENDIDAS</option>
       </select>
 
-      <button class="btn-third" type="button" id="agregarCargos" onclick="botonAgregarCargos()">➕Agregar cargos </button>
+      <button class="btn-third" type="button" id="agregarCargos" title="Agregar cargos" onclick="botonAgregarCargos()">
+        <span class="material-symbols-outlined">
+          group_add
+          </span>
+      </button>
 
       <div id="listaCargosSeleccionados" style="margin-top: 15px;"></div>
       <input type="hidden" name="cargos_json" id="inputCargosSeleccionados">
@@ -344,10 +448,10 @@
       <input id="archivo" name="archivo" type="file" accept="application/pdf,image/*,video/*" onchange="previewArchivo(event)">
 
      <div class="botones-formulario">
-        <button class="btn-third" id="cargarArchivos">Cargar</button>
+        <button class="btn-third" id="cargarArchivos" title="Cargar comunicado"><span class="material-symbols-outlined">upload_file</span></button>
         <button type="button" id="cargarPipo" class="btn-third">Cargar PIPO</button>
-        <button class="btn-third" id="traerComunicados">Comunicados cargados</button>
-</div>
+        <button class="btn-third" id="traerComunicados" title="Comunicados cargados" ><span class="material-symbols-outlined">database</span></button>
+        </div>
 
   </div>
 
@@ -365,6 +469,20 @@
 </div>
 
 </div>
+
+<!--Modal comunicados cargados-->
+<!-- Modal de Comunicados -->
+<div id="modal-comunicados" class="modal-comunicados">
+  <div class="modal-contenido">
+    <span class="cerrar-modal" id="cerrarModalComunicados">&times;</span>
+    <h2>Lista de Comunicados</h2>
+    <div id="tablaComunicados">
+
+    </div>
+    
+  </div>
+</div>
+
 
 
 <!-- Modal cargos-->
@@ -801,6 +919,90 @@ function actualizarVistaCargos() {
 }
 </script>
 
+
+<script>
+const modalCom = document.getElementById("modal-comunicados");
+const btnAbrirCom = document.getElementById("traerComunicados");
+const btnCerrarCom = document.getElementById("cerrarModalComunicados");
+
+  btnAbrirCom.addEventListener("click", function(){
+    
+    const contenedor = document.getElementById('tablaComunicados')
+ 
+    fetch("{% url 'getTodosComunicados' %}",{
+          method: "GET",
+          headers:{/*"Content-Type": "application/json",*/
+                  "X-CSRFToken": getCookie("csrftoken")}
+          })
+          .then(response => response.json())
+          .then(data =>{
+            
+              if(data.success){
+                contenedor.innerHTML = `
+                <table class="tabla-comunicados"> 
+                  <thead>
+                    <th>Id</th>
+                    <th>Titulo</th>
+                    <th>Fecha carga</th>
+                    <th>Usuario carga</th>
+                    <th>Tipo comunicado</th>
+                    <th>Fecha vigencia</th>
+                    <th>Url</th>
+                    <th>Tipo archivo</th>
+                    <th>Cargo visualización</th>
+                  </thead>
+                  <tbody>
+                  ${ data.comunicados.map(c => `
+                    <tr>
+                    <td>${c.id}</td>
+                    <td>${c.titulo}</td>
+                    <td>${c.fechaCarga}</td>
+                    <td>${c.usuarioCarga}</td>
+                    <td>${c.tipoComunicado}</td>
+                    <td>${c.fechaVigencia}</td>
+                    <td>${c.urlArchivo}</td>
+                    <td>${c.tipoArchivo}</td>
+                    <td>${c.cargoVisualizacion}</td>
+                    </tr>
+                  
+                  `).join('')
+                  }
+                    </tbody>
+                  </table>
+                
+                `;
+                
+              modalCom.classList.add("mostrar");
+              }else{
+                alert("error")
+              }
+          })
+
+  })
+
+ 
+  btnCerrarCom.onclick = () => modalCom.classList.remove("mostrar");
+  window.onclick = (e) => {
+    if (e.target === modalCom) modalCom.classList.remove("mostrar");
+  };
+  </script>
+
+<script>
+  function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 
 
 {% endblock %}
