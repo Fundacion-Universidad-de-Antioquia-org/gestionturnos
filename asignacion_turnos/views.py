@@ -2022,8 +2022,8 @@ def misSolicitudesGT(request):
         solicitudes =  Solicitudes_Gt.objects.filter(id = idSolicitud)
         for s in solicitudes:
             data.append({
-                "nombre": s.nombre,
-                "codigo":s.codigo,
+                "nombre": s.empleado.nombre,
+                "codigo":s.empleado.codigo,
                 "cargo": s.cargo,
                 "tipo_solicitud": s.tipo_solicitud,
                 "fecha_solicitud": s.fecha_solicitud,
