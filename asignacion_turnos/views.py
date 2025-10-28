@@ -1249,9 +1249,43 @@ def solicitar_cambio_turno(request):
     estadoCambio = ""
     madrugadaLinea = ["ORIENTE","OCCIDENTE","SUR"]
     madrugadaPatio = ["PBE"]
+
+    if solicitante_dia.codigo_horario == "DISPO" or receptor_dia.codigo_horario == "DISPO":
+        estadoCambio = "pendiente"
+        comentarios = "El cambio queda a la espera de ser autorizado por el ADM"
+        Cambios_de_turnos.objects.create(
+            codigo_solicitante=codigoSolicitante,
+            nombre_solicitante=solicitante_dia.nombre,
+            turno_solicitante_original=solicitante_dia.codigo_horario,
+            turno_solicitante_nuevo=receptor_dia.codigo_horario,
+            cargo_solicitante=solicitante_dia.empleado.cargo,
+            formacion_solicitante = solicitante.formacion,
+            codigo_receptor=codigoReceptor,
+            nombre_receptor=receptor_dia.nombre,
+            turno_receptor_original=receptor_dia.codigo_horario,
+            turno_receptor_nuevo=solicitante_dia.codigo_horario,
+            cargo_receptor=receptor_dia.empleado.cargo,
+            formacion_receptor = receptor.formacion, 
+            fecha_solicitud_cambio=fechaCambio,
+            estado_cambio_emp="pendiente",
+            estado_cambio_admin = estadoCambio,
+            comentarios = comentarios,
+            zonaSolicitante = solicitante.zona,
+            zonaReceptor = receptor.zona, 
+            transportable_solicitante = transportable_solicitante,
+            transportable_receptor = transportable_receptor
+        )
+        return Response({
+            "success": True,
+            "message": "Se registró correctamente la solicitud de cambio de turnos."
+            })
+        
     
     t = time.fromisoformat("05:00")
+    tNoche = time.fromisoformat("22:20")
+
     limiteMadrugada = datetime.combine(fechaCambio,t)
+    limiteNoche = datetime.combine(fechaCambio,tNoche)
 
     if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) <= limiteMadrugada and  datetime.combine(fechaCambio,receptor_dia.hora_inicio) <= limiteMadrugada:
         if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
@@ -1300,7 +1334,6 @@ def solicitar_cambio_turno(request):
         transportable_receptor = transportable_receptor
     )
 
-    
     #if noHaySucesionSiguienteSolicitante or noHaySucesionSiguienteReceptor:
      #   return Response({
       #      "success": True,
@@ -2118,5 +2151,5 @@ def cancelarSolicitudGt(request):
             solicitud = Solicitudes_Gt.objects.filter(id = idSolicitud).delete()
         return Response({"success":True, "message": f"Se elimino correctamente la solicitud con id: {idSolicitud}"})
     else:
-        return Response({"success":True, "message": f"El id de la solicitud es vacio: {idSolicitud}"})
+        return Response({"success":True, "message": f"El id de la solicitud esta vacio: {idSolicitud}"})
     
