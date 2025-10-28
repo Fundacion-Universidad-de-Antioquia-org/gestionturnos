@@ -2045,7 +2045,7 @@ def getTodosComunicados(request):
     if request.method == "GET":
 
         try:
-            archivos = Archivos.objects.all().order_by('fechaCarga')
+            archivos = Archivos.objects.all().order_by('-fechaCarga')[:30]
         except:
             return Response({"success":False, "message": "No existen comunicados"})
 
@@ -2060,7 +2060,8 @@ def getTodosComunicados(request):
                 "fechaCarga":a.fechaCarga,
                 "cargoVisualizacion": a.cargoVisualizacion,
                 "urlArchivo":a.urlArchivo,
-                "tipoArchivo":a.tipoArchivo
+                "tipoArchivo":a.tipoArchivo,
+                "vistos": ConfirmacionLectura.objects.filter(archivos_id = a.id, confirmacionLectura = "leido").count()
             })
         return Response({"success":True, "comunicados": data})
     else:

@@ -252,14 +252,15 @@
 
 <style>
 
-.w-id  { width: 25px; }
-.w-titulo { width: 200px; }
-.w-fechaCarga {width: 85px;}
+.w-id  { width: 40px; }
+.w-titulo { width: 220px; }
+.w-fechaCarga {width: 95px;}
 .w-usuarioCarga { width: 150px;}
-/*.w-tipoArchivo { width: 80px;} */
-.w-fechaVigencia {width: 100px; }
+.w-tipoArchivo { width: 90px;} 
+.w-fechaVigencia {width: 110px; }
 .w-tipoComunicado { width: 190px;}
-.w-cargoVisualizacion {width: 1000px;}
+.w-cargoVisualizacion {width: 480px;}
+.w-vistos {width: 70px; text-align: center;}
 
   .encabezado-modal {
   display: flex;
@@ -979,9 +980,10 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
                     <th class = "w-fechaCarga">Fecha carga</th>
                     <th class = "w-usuarioCarga">Usuario carga</th>
                     <th class = "w-tipoComunicado">Tipo comunicado</th>
-                    <th class = "w-fechaVigencia" >Fecha vigencia</th>
-                    <th>Cargo visualización</th> 
-                    <th>Vistos</th>
+                    <th class = "w-tipoArchivo" >Tipo archivo</th>
+                    <th class = "w-fechaVigencia">Fecha vigencia</th>
+                    <th w-cargoVisualizacion> Cargo visualización</th> 
+                    <th  class = "w-vistos">Vistos</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -992,8 +994,10 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
                     <td>${c.fechaCarga}</td>
                     <td>${c.usuarioCarga}</td>
                     <td>${c.tipoComunicado}</td>
-                    <td>${c.fechaVigencia}</td>
-                    <td>${ parseListString(c.cargoVisualizacion).length > 4 ? 'TODOS LOS CARGOS': c.cargoVisualizacion.replace("CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO", "CONDUCTOR")}</td>
+                    <td>${agregarEmoji(c.tipoArchivo )}</td>
+                    <td>${c.fechaVigencia == null ? 'vacio': c.fechaVigencia }</td>
+                    <td>${ parseListString(c.cargoVisualizacion).length > 4 ? 'TODOS LOS CARGOS': parseListString(c.cargoVisualizacion)}</td>
+                    <td>${c.vistos > 0 ? '🟢'+c.vistos: '🟡'+c.vistos }</td>
                     </tr>
                   
                   `).join('')
@@ -1037,27 +1041,61 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
 
 
 <script>
-  function parseListString(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
+function parseListString(value) {
+  if (value == null) return [];
 
-  const s = String(value).trim();
+  // 1) Normaliza a arreglo (soporta string JSON o arreglo real)
+  let arr;
+  if (Array.isArray(value)) {
+    arr = value.slice();
+  } else {
+    const raw = String(value);
+    try {
+      arr = JSON.parse(raw);
+    } catch {
+      // Extraer elementos entre comillas como respaldo
+      const quoted = [...raw.matchAll(/"([^"]+)"/g)].map(m => m[1]);
+      arr = quoted.length ? quoted : raw
+        .replace(/^\[|\]$/g, '')
+        .split(',')
+        .map(t => t.trim().replace(/^"|"$/g, ''))
+        .filter(Boolean);
+    }
+  }
 
-  // Caso ideal: viene como JSON válido
-  try {
-    const parsed = JSON.parse(s);
-    if (Array.isArray(parsed)) return parsed;
-  } catch {}
+  // 2) Prefijo a remover (tolerante a "(A)", acentos y plurales)
+  // - ^ inicio (puede haber espacios)
+  // - CONDUCTOR o CONDUCTOR(A)
+  // - VEHICULO/VEHÍCULO + opcional plural
+  // - TIPO ...
+  const PREFIX = /^\s*CONDUCTOR(?:\s*\(A\))?\s+DE\s+VEH[IÍ]CULO(?:S)?\s+DE\s+PASAJEROS\s+TIPO\s*/i;
 
-  // Respaldo: extraer elementos entre comillas
-  const quoted = [...s.matchAll(/"([^"]+)"/g)].map(m => m[1]);
-  if (quoted.length) return quoted;
+  // 3) Limpieza robusta de cada item
+  return arr.map((item) => {
+    // Normaliza espacios invisibles (NBSP, etc.) y espacios múltiples
+    let s = String(item)
+      .normalize('NFKC')             // homogeneiza caracteres Unicode
+      .replace(/\u00A0/g, ' ')       // NBSP -> espacio normal
+      .replace(/\s+/g, ' ')          // colapsa espacios
+      .trim();
 
-  // Último recurso: partir por comas y limpiar
-  return s.replace(/^\[|\]$/g, '')
-          .split(',')
-          .map(t => t.trim().replace(/^"|"$/g, ''))
-          .filter(Boolean);
+    // Quita el prefijo si está presente al inicio
+    s = s.replace(PREFIX, '');
+
+    return s.trim();
+  });
+}
+
+function agregarEmoji(cadena){
+  if(cadena == null){
+    return '💭'+"vacio"
+  }else if(cadena == 'image'){
+    return "🖼️"+"imagén"
+  }else if(cadena == 'video'){
+    return '🎬'+cadena
+  }else{
+    return '📑'+cadena
+  }
 }
 
 </script>
