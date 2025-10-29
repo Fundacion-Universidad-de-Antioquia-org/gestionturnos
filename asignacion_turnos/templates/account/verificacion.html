@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="usuario-bar-section">
+<div class="usuario-bar d-flex align-items-center justify-content-between px-3">
+
+<!-- Sección Izquierda: Foto + Usuario -->
+<div class="usuario-bar-logo-nombre">
+    <span class="material-symbols-outlined mb-1" style="color: white; font-size: 46px;">account_circle</span>
+    <div class="d-flex flex-column align-items-center flex-shrink-0">
+  
+    <!-- Nombre del usuario -->
+    <div class="saludo" style="color: white; font-weight: 500;">
+      {{ usuarioLogeado }}
+    </div>
+
+    <!-- Título de la página -->
+    <div class="saludo" style="color: #5a9138; font-size: 11px;">Verificación</div>
+    </div>
+  <div class="usuario-bar-centro">
+    <button title="Activar o desactivar filtros" id="btnActivarFiltros" ><span class="material-symbols-outlined">filter_alt</span></button>
+    <button title="Buscar cambio de turno" id="btnBuscarCambio" ><span class="material-symbols-outlined">search</span></button>
+    <button><span class="material-symbols-outlined" onclick="abrirModalHorarios()">find_replace</span></button>
+    <button><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
+  </div>
+
+</div>
+</div>
+</section>
+
+<!-- Acordeón de filtros -->
+ <section class="acordion-section" id="accordionHeader">
+<div class="accordion-container" style="margin-top: 14px;">
+  <div class="accordion-header"><span class="material-symbols-outlined">search</span>Filtros de Búsqueda</div>
+  <div class="accordion-body">
+    <div class="filtros-horizontal">
+      <div class="filtro-item">
+        <label for="filtroNombre">Nombre:</label>
+        <input type="text" id="filtroNombre" placeholder="Buscar por nombre">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCodigo">Código:</label>
+        <input type="text" id="filtroCodigo" placeholder="Buscar por código">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroTurno">Turno:</label>
+        <input type="text" id="filtroTurno" placeholder="Buscar por turno">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroCargo">Cargo:</label>
+        <select name="select" id="filtroCargo">
+          <option value="">Todos</option>
+          <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO
+          </option>
+          <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO
+            TRANVIA</option>
+          <option value="OPERADOR DE CONDUCCION">OPERADOR DE CONDUCCION</option>
+          <option value="MANIOBRISTA TRENES">MANIOBRISTA TRENES</option>
+          <option value="MANIOBRISTA TRANVIA">MANIOBRISTA TRANVIA</option>
+          <option value="INCONSISTENCIA">INCONSISTENCIA</option>
+        </select>
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Fecha de cambio:</label>
+        <input type="date" id="filtroFechaCambio">
+      </div>
+      <div class="filtro-item">
+        <label for="filtroFecha">Estado de solicitud:</label>
+        <select name="" id="filtroEstadoSolicitud">
+          <option value="todos">todos</option>
+          <option value="pendiente" selected>pendiente</option>
+          <option value="aprobado">aprobado</option>
+          <option value="desaprobado">desaprobado</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="table-section">
+    <table class="table styled-table display" id="tablaDatos">
+        <thead>
+            <tr>
+                <th>Turno</th>
+                <th>Codigo</th>
+                <th>Nombre</th>
+                <th>Lugar</th>
+                <th>Cir</th>
+                <th>Hora teorica</th>
+                <th>Hora real</th>
+                <th>Firma OC</th>
+                <th>Lugar</th>
+                <th>Cir</th>
+                <th>Hora teorica</th>
+                <th>Hora real</th>
+                <th>Firma OC</th>
+                <th>Observaciones</th>
+                <th>Novedad</th>
+                <th>Motivo extra</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in sucesion %}
+            <tr>
+                <td>{{ s.codigo_horario }}</td>
+                <td>{{ s.codigo }}</td>
+                <td>{{ s.nombre }}</td>
+                <td>{{ s.estado_inicio }}</td>
+                <td>{{ s.horario.inicir }}</td>
+                <td>{{ s.hora_inicio }}</td>
+                <td><input type="text" ></td>
+                <td></td>
+                <td>{{ s.estado_fin }}</td>
+                <td>{{ s.horario.finbalcir }}</td>
+                <td>{{ s.hora_fin }}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+</section>
+
+
+
+{% endblock %}

@@ -434,7 +434,29 @@ def vista_solicitudes_gestion_turnos(request,*, context):
             "success":False,
             "message":"Peticion invalida"
         })
-    
+
+@settings.AUTH.login_required
+def vista_verificacion(request, context):
+    if request.method == "GET":
+        user_claims = context["user"]               
+        usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
+        fecha = request.GET.get('fecha')
+        cargo = request.GET.get('cargo')
+        if fecha and cargo:
+            if Sucesion.objects.filter(fecha = fecha, cargo = cargo).exists():
+
+                sucesion = Sucesion.objects.filter( fecha = fecha, cargo = cargo).select_related('horario').order_by('hora_inicio')
+                return render(request, "account/verificacion.html",{
+                    "sucesion": sucesion,
+                    "usuarioLogeado": usuarioLogeado,
+                    "success": True
+                })
+            else:
+                return render(request, "account/verificacion.html",{
+                    "usuarioLogeado": usuarioLogeado,
+                    "success": False
+                })
+
 @settings.AUTH.login_required
 def vista_notificaciones(request,*, context):
 
@@ -1256,12 +1278,14 @@ def solicitar_cambio_turno(request):
         Cambios_de_turnos.objects.create(
             codigo_solicitante=codigoSolicitante,
             nombre_solicitante=solicitante_dia.nombre,
+            cedula_solicitante = solicitante.cedula,
             turno_solicitante_original=solicitante_dia.codigo_horario,
             turno_solicitante_nuevo=receptor_dia.codigo_horario,
             cargo_solicitante=solicitante_dia.empleado.cargo,
             formacion_solicitante = solicitante.formacion,
             codigo_receptor=codigoReceptor,
             nombre_receptor=receptor_dia.nombre,
+            cedula_receptor = receptor.cedula,
             turno_receptor_original=receptor_dia.codigo_horario,
             turno_receptor_nuevo=solicitante_dia.codigo_horario,
             cargo_receptor=receptor_dia.empleado.cargo,
@@ -1314,12 +1338,14 @@ def solicitar_cambio_turno(request):
 
         codigo_solicitante=codigoSolicitante,
         nombre_solicitante=solicitante_dia.nombre,
+        cedula_solicitante = solicitante.cedula,
         turno_solicitante_original=solicitante_dia.codigo_horario,
         turno_solicitante_nuevo=receptor_dia.codigo_horario,
         cargo_solicitante=solicitante_dia.empleado.cargo,
         formacion_solicitante = solicitante.formacion,
         codigo_receptor=codigoReceptor,
         nombre_receptor=receptor_dia.nombre,
+        cedula_receptor = receptor.cedula,
         turno_receptor_original=receptor_dia.codigo_horario,
         turno_receptor_nuevo=solicitante_dia.codigo_horario,
         cargo_receptor=receptor_dia.empleado.cargo,
@@ -1371,7 +1397,9 @@ def aprobar_solicitudes_cambios_turnos(request):
 
             if peticion == "intranet":
                 if solicitudCambio.estado_cambio_admin == "aprobado":
+                    
                     horario_relacion_solicitante = Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).first()
+
                     if solicitud['turnoSolicitanteDiaDeseado'] == "DISPO": #RECEPTOR TIENE DISPO
                         print(f"El receptor tiene el DISPO: {solicitud['turnoSolicitanteDiaDeseado']}") # DISPO:DISPO
                         #Actualizar sucesión del solicitante
@@ -1383,6 +1411,7 @@ def aprobar_solicitudes_cambios_turnos(request):
                                                         hora_fin = None)
                         #Actualizar sucesión  del receptor                                 #SOLICITANTE TURNO:
                         horario_relacion_receptor = Horario.objects.filter(turno=solicitud['turnoReceptorDiaDeseado']).first()
+
                         Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'],
                                                         horario = horario_relacion_receptor , estado_inicio = horario_relacion_receptor.inilugar, 
                                                         estado_fin = horario_relacion_receptor.finallugar,
@@ -2152,4 +2181,50 @@ def cancelarSolicitudGt(request):
         return Response({"success":True, "message": f"Se elimino correctamente la solicitud con id: {idSolicitud}"})
     else:
         return Response({"success":True, "message": f"El id de la solicitud esta vacio: {idSolicitud}"})
+    
+
+
+@api_view(["GET"])
+def misSolicitudesCambiosTurnos(request):
+    cedula = request.GET.get('cedula')
+    codigo = request.GET.get('codigo')
+    
+    if cedula and codigo:
+        if Cambios_de_turnos.objects.filter(Q(cedula_solicitante = cedula) | Q(cedula_receptor = cedula)).exists():
+            solicitudesCambios = []
+            solicitudes = Cambios_de_turnos.objects.filter(Q(cedula_solicitante = cedula) | Q(cedula_receptor = cedula)).order_by('-fechaCambio')
+            for c in solicitudes:
+                solicitudesCambios.append({
+                    "codigo_solicitante": c.codigo_solicitante,
+                    "nombre_solicitante": c.nombre_solicitante,
+                    "cedula_solicitante": c.cedula_solicitante,
+                    "cargo_solicitante": c.cargo_solicitante,
+                    "formacion_solicitante": c.formacion_solicitante,
+                    "turno_solicitante_original": c.turno_solicitante_original,
+                    "turno_solicitante_nuevo": c.turno_solicitante_nuevo,
+                    "codigo_receptor": c.codigo_receptor,
+                    "nombre_receptor": c.nombre_receptor,
+                    "cedula_receptor": c.cedula_receptor,
+                    "cargo_receptor": c.cargo_receptor,
+                    "formacion_receptor": c.formacion_receptor,
+                    "turno_receptor_original": c.turno_receptor_original,
+                    "turno_receptor_nuevo": c.turno_receptor_nuevo,
+                    "estado_cambio_emp": c.estado_cambio_emp,
+                    "estado_cambio_admin": c.estado_cambio_admin,
+                    "fecha_solicitud_cambio": c.fecha_solicitud_cambio,
+                    "comentarios": c.comentarios,
+                    "zonaSolicitante": c.zonaSolicitante,
+                    "zonaReceptor": c.zonaReceptor,
+                    "transportable_solicitante": c.transportable_solicitante,
+                    "transportable_receptor": c.transportable_receptor
+                })
+            return Response({
+                "success":True,
+                "message": "Se cargaron correctamente las solicitudes"
+            })
+        else:
+            return Response({
+                "success":False,
+                "message": "No tienes cambios de turnos por ahora"
+            })
     

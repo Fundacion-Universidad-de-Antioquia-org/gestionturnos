@@ -37,7 +37,7 @@
   </div>
 </div>
 
-      <!-- Modal de fechas GT -->
+      <!-- Modal de verificacion GT -->
 <div id="modalVerificacion" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
     <span class="cerrar-fechas-gt" onclick="cerrarModalVerificacion()">&times;</span>
@@ -45,11 +45,10 @@
 
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha:</label>
-      <input type="date" id="fechaInicioGT" class="input-fechas-gt">
+      <input type="date" id="fechaVerificacion" class="input-fechas-gt">
 
       <label for="cargoVerificacion">Cargo:</label>
-      <input type="text" id="cargoVerificacion" class="input-fechas-gt">
-      <select name="" id="cargoVerificacion">
+      <select class="input-fechas-gt" name="" id="cargoVerificacion">
             <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO" selected>CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO</option>
             <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA" >CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
             <option value="OPERADOR(A) DE CONDUCCION" >OPERADOR DE CONDUCCION</option>
@@ -57,7 +56,7 @@
             <option value="MANIOBRISTA TRANVIA" >MANIOBRISTA TRANVIA</option>
       </select>
 
-      <button class="btn-cargar-fechas-gt" onclick="cargarFechasGT()">Cargar</button>
+      <button class="btn-cargar-fechas-gt" onclick="cargarVerificacion()">Cargar</button>
     </div>
   </div>
 </div>
@@ -128,7 +127,7 @@
                 </li>
                 <li class="nav-item dropdown-container">
                     <a href="#" class="nav-link" title="Verificación" onclick="abrirModalVerificacion()">
-                        <span class="material-symbols-rounded">dashboard</span>
+                        <span class="material-symbols-rounded">document_scanner</span>
                         <span class="nav-label">Verificación</span>
                     </a>
                 </li>
@@ -167,11 +166,13 @@
      
         <script>
         const baseUrlSolicitudesGT = "{% url 'solicitudesGt' %}";
+        const baseUrlVerificacion = "{% url 'verificacion' %}";
         </script>
     
-    <script src="https://cdnfuadesarrollo.blob.core.windows.net/gestionturnos/script.js"></script>
+    <script src="https://cdnfuadesarrollo.blob.core.windows.net/gestionturnos/script.js"></script> 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
+   <!-- <script src="{% static 'js/script.js' %}"></script> -->
    
    
    {% block scripts %}

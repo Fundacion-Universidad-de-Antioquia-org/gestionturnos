@@ -106,7 +106,6 @@ function cargarFechasGT() {
                     icon: "warning",
                     title: "Fechas vacias",
                     text: "Debes cargar un rengo valido de fechas",
-                    width: '',
                     });
   }else{
 
@@ -132,4 +131,26 @@ function cerrarModalVerificacion() {
   setTimeout(() => {
     modal.style.display = "none";
   }, 300);
+}
+
+function cargarVerificacion(){
+  const fecha = document.getElementById('fechaVerificacion').value
+  const cargo = document.getElementById('cargoVerificacion').value
+  
+  if(fecha !== "" ){ 
+    const url = `${baseUrlVerificacion}?fecha=${fecha}&cargo=${cargo}`
+    window.location.href = url;
+  }else{
+     Swal.fire({
+                    icon: "warning",
+                    title: "Fecha vacia",
+                    text: "Por favor indica un fecha valida",
+                    });
+      cerrarModalVerificacion();                
+    }
+
+  
+
+  
+
 }
