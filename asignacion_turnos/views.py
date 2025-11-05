@@ -2187,9 +2187,7 @@ def cancelarSolicitudGt(request):
 @api_view(["GET"])
 def misSolicitudesCambiosTurnos(request):
     cedula = request.GET.get('cedula')
-    codigo = request.GET.get('codigo')
-    
-    if cedula and codigo:
+    if cedula:
         if Cambios_de_turnos.objects.filter(Q(cedula_solicitante = cedula) | Q(cedula_receptor = cedula)).exists():
             solicitudesCambios = []
             solicitudes = Cambios_de_turnos.objects.filter(Q(cedula_solicitante = cedula) | Q(cedula_receptor = cedula)).order_by('-fechaCambio')
@@ -2227,4 +2225,8 @@ def misSolicitudesCambiosTurnos(request):
                 "success":False,
                 "message": "No tienes cambios de turnos por ahora"
             })
-    
+    else:
+         return Response({
+                "success":False,
+                "message": f"Parametro vacio, cedula: {cedula}"
+            })
