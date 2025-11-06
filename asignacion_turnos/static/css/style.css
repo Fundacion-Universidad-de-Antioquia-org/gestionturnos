@@ -742,6 +742,11 @@ button.btn-eliminar {
     gap: 6px;
 }
 
+.botonEliminarModalCargos{
+  display: flex;
+  justify-content: center;
+}
+
 button.btn-eliminar:hover {
     background-color: #c0392b;
     border-color: #c0392b;

@@ -1821,6 +1821,7 @@ def reprogramar_turno(request):
 
 @api_view(["GET"])
 def cabeceras_turnos(request):
+    
     codigo = request.GET.get("codigo")
     cargo = Empleado_Oddo.objects.filter(codigo = codigo, estado = "Activo").first()
 

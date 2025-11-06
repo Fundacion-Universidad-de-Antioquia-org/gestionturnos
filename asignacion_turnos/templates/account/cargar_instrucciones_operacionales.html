@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block styles %}
+
+
 <style>
   .main-container {
     display: flex;
@@ -188,12 +190,13 @@
 
 /* Mejora del modal */
 .modal-content {
+  border-radius: 20px;
   animation: slideFadeIn 0.4s ease-in-out;
-  background-color: #0b0f12;
-  color: White;
+  background-color: #0c1118   !important; 
+  color: white;
   padding: 30px 35px;
   border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 20px rgb(8 101 32 / 54%);
   width: 90%;
   max-width: 650px;
   max-height: 90vh;
@@ -424,6 +427,7 @@
 {% endblock %}
 
 {% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 <section class="usuario-bar-section">
 <div class="usuario-bar d-flex align-items-center justify-content-between px-3">
 <div class="usuario-bar-logo-nombre">
@@ -484,7 +488,7 @@
      <div class="botones-formulario">
         <button class="btn-third" id="cargarArchivos" title="Cargar comunicado"><span class="material-symbols-outlined">upload_file</span></button>
         <button type="button" id="cargarPipo" class="btn-third">Cargar PIPO</button>
-        <button class="btn-third" id="traerComunicados" title="Comunicados cargados" ><span class="material-symbols-outlined">table_eye</span></button>
+        <button class="btn-third" id="traerComunicados" title="Comunicados cargados" ><span class="material-symbols-outlined" id="iconoBotonCarga">table_eye</span><span id="tituloBotonCarga"></span></button>
         </div>
 
   </div>
@@ -521,20 +525,31 @@
 <!-- Modal cargos-->
 <div class="modal-overlay" id="modalAgregarCargos" style="display: none;">
   <div class="modal-content">
-    <h3>Selecciona cargos para agregar</h3>
+    <h3 style="display: flex; gap:5px; justify-content: center;"><span class="material-symbols-outlined">group_add</span>Selección de cargos</h3>
     <table class="styled-table display">
       <thead>
-        <tr><th>Cargo</th><th>Acción</th></tr>
+        <tr><th>Cargo</th><th>Agregar</th></tr>
       </thead>
       <tbody>
-        <tr><td>CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO</td><td><button class="btn-third" type="button" onclick="agregarCargo('CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO')">➕Agregar</button></td></tr>
-        <tr><td>CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA</td><td><button class="btn-third" type="button" onclick="agregarCargo('CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA')">➕Agregar</button></td></tr>
-        <tr><td>OPERADOR(A) DE CONDUCCION</td><td><button class="btn-third" type="button" onclick="agregarCargo('OPERADOR(A) DE CONDUCCION')">➕Agregar</button></td></tr>
-        <tr><td>MANIOBRISTA TRENES</td><td><button class="btn-third" type="button" onclick="agregarCargo('MANIOBRISTA TRENES')">➕Agregar</button></td></tr>
-        <tr><td>MANIOBRISTA TRANVIA</td><td><button class="btn-third" type="button" onclick="agregarCargo('MANIOBRISTA TRANVIA')">➕Agregar</button></td></tr>
+        <tr><td>CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO</td><td><button class="btn-third" type="button" onclick="agregarCargo('CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO')">
+          <span class="material-symbols-outlined">person_apron</span></button></td></tr>
+        <tr><td>CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA</td><td><button class="btn-third" type="button" onclick="agregarCargo('CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA')">
+          <span class="material-symbols-outlined">person_apron</span></button></td></tr>
+        <tr><td>OPERADOR(A) DE CONDUCCION</td><td><button class="btn-third" type="button" onclick="agregarCargo('OPERADOR(A) DE CONDUCCION')">
+          <span class="material-symbols-outlined">person_apron</span>
+        </button></td></tr>
+        <tr><td>MANIOBRISTA TRENES</td><td><button class="btn-third" type="button" onclick="agregarCargo('MANIOBRISTA TRENES')">
+          <span class="material-symbols-outlined">person_apron</span>
+        </button></td></tr>
+        <tr><td>MANIOBRISTA TRANVIA</td><td><button class="btn-third" type="button" onclick="agregarCargo('MANIOBRISTA TRANVIA')">
+          <span class="material-symbols-outlined">person_apron</span>
+        </button></td></tr>
       </tbody>
     </table>
-    <button class="btn-eliminar" type="button" onclick="cerrarModalCargos()">Cerrar</button>
+    <div class="botonEliminarModalCargos">
+      <button class="btn-eliminar" type="button" onclick="cerrarModalCargos()">Cerrar</button>
+    </div>
+    
   </div>
 </div>
 
@@ -561,6 +576,10 @@
 {% endblock %}
 
 {% block scripts %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -575,8 +594,7 @@ document.addEventListener("DOMContentLoaded", function () {
     labelFechaVigencia.style.display = "none";
 
     document.getElementById("modalAgregarCargos").style.display = "none";
-  
-    
+
     selectTipo.addEventListener("change", function () {
       if (this.value === "PIPO") {
         botonPipo.style.display = "block";
@@ -595,8 +613,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     })
 
-
-    
 });
 
 
@@ -959,9 +975,16 @@ const btnAbrirCom = document.getElementById("traerComunicados");
 const btnCerrarCom = document.getElementById("cerrarModalComunicados");
 
   btnAbrirCom.addEventListener("click", function(){
+
+    const tituloBotonCarga = document.getElementById("tituloBotonCarga")
+    const iconoBotonCarga = document.getElementById("iconoBotonCarga")
+    iconoBotonCarga.innerHTML = `<div class="spinner-border" role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                                  </div>`
+    tituloBotonCarga.innerText = "Cargando tabla..."
     
     const contenedor = document.getElementById('tablaComunicados')
- 
+    
     fetch("{% url 'getTodosComunicados' %}",{
           method: "GET",
           headers:{/*"Content-Type": "application/json",*/
@@ -969,7 +992,6 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
           })
           .then(response => response.json())
           .then(data =>{
-            
               if(data.success){
                 contenedor.innerHTML = `
                 <table class="tabla-comunicados"> 
@@ -1018,7 +1040,13 @@ const btnCerrarCom = document.getElementById("cerrarModalComunicados");
  
   btnCerrarCom.onclick = () => modalCom.classList.remove("mostrar");
   window.onclick = (e) => {
-    if (e.target === modalCom) modalCom.classList.remove("mostrar");
+    if (e.target === modalCom){
+      modalCom.classList.remove("mostrar");
+      const tituloBotonCarga = document.getElementById("tituloBotonCarga");
+      const iconoBotonCarga = document.getElementById("iconoBotonCarga");
+      tituloBotonCarga.innerText = "";
+      iconoBotonCarga.innerHTML = `<span class="material-symbols-outlined">table_eye</span>`;
+    } 
   };
   </script>
 
