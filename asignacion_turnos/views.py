@@ -1823,38 +1823,81 @@ def reprogramar_turno(request):
 def cabeceras_turnos(request):
 
     codigo = request.GET.get("codigo")
-    empleado = Empleado_Oddo.objects.filter(codigo = codigo, estado = "Activo").first()
+
+    try:
+        empleado = Empleado_Oddo.objects.filter(codigo = codigo, estado = "Activo").first()
+    except Empleado_Oddo.DoesNotExist:
+        return Response({"success":False, "message": f"No existe un empleado activo con ese codigo:{codigo}"})
 
     if not codigo:
-        return Response({"success": False, "detail": "Parámetro 'codigo' es requerido."}, status=400)
+        return Response({"success": False, "message": "El parámetro 'codigo' es requerido"})
+
+    cargosSabadoViernes = ["CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO"]
+    cargosLunesDomingos = ["CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA",
+                           "OPERADOR(A) DE CONDUCCION","MANIOBRISTA TRENES","MANIOBRISTA TRANVIA",]
 
     # fecha (DateField) → DateTime para poder sumar/restar en DB
     fecha_dt = Cast(F("fecha"), DateTimeField())
 
-    # Duraciones tipadas
-    plus_2d = Value(timedelta(days=2), output_field=DurationField())
-    plus_6d = Value(timedelta(days=6), output_field=DurationField())
+    if empleado.cargo in cargosSabadoViernes:
 
+        # Duraciones tipadas
+        plus_2d = Value(timedelta(days=2), output_field=DurationField())
+        plus_6d = Value(timedelta(days=6), output_field=DurationField())
+
+
+        base_trunc   = TruncWeek(ExpressionWrapper(fecha_dt + plus_2d, output_field=DateTimeField()))
+        wk_start_dt  = ExpressionWrapper(base_trunc - plus_2d, output_field=DateTimeField())
+        wk_start     = Cast(wk_start_dt, DateField())
+        wk_end       = Cast(ExpressionWrapper(wk_start_dt + plus_6d, output_field=DateTimeField()), DateField())
+
+        qs = (Sucesion.objects
+            .filter(codigo=codigo, cargo = empleado.cargo, estado_sucesion = "publicado")
+            .annotate(week_start=wk_start, week_end=wk_end)
+            .values("week_start", "week_end")
+            .distinct()
+            .order_by("week_start"))
+
+        encabezados = [{
+            "titulo": f"Semana del {e['week_start']:%d/%m/%Y} al {e['week_end']:%d/%m/%Y}",
+            "inicio": e["week_start"].isoformat(),
+            "fin": e["week_end"].isoformat(),
+        } for e in qs]
+
+        return Response({"success": True, "encabezados": encabezados})
     
-    base_trunc   = TruncWeek(ExpressionWrapper(fecha_dt + plus_2d, output_field=DateTimeField()))
-    wk_start_dt  = ExpressionWrapper(base_trunc - plus_2d, output_field=DateTimeField())
-    wk_start     = Cast(wk_start_dt, DateField())
-    wk_end       = Cast(ExpressionWrapper(wk_start_dt + plus_6d, output_field=DateTimeField()), DateField())
+    elif empleado.cargo in cargosLunesDomingos:
+        plus_6d    = Value(timedelta(days=6), output_field=DurationField())
+        # 3) Semana LUN→DOM
+        base_trunc = TruncWeek(fecha_dt)  # lunes 00:00
+        wk_start_dt = base_trunc          # inicio (lunes)
+        wk_end_dt   = ExpressionWrapper(base_trunc + plus_6d, output_field=DateTimeField())
 
-    qs = (Sucesion.objects
-          .filter(codigo=codigo, cargo = empleado.cargo, estado_sucesion = "publicado")
-          .annotate(week_start=wk_start, week_end=wk_end)
-          .values("week_start", "week_end")
-          .distinct()
-          .order_by("week_start"))
+        # 4) Opcional: como Date “limpio”
+        wk_start = Cast(wk_start_dt, DateField())
+        wk_end   = Cast(wk_end_dt,   DateField())
 
-    encabezados = [{
-        "titulo": f"Semana del {e['week_start']:%d/%m/%Y} al {e['week_end']:%d/%m/%Y}",
-        "inicio": e["week_start"].isoformat(),
-        "fin": e["week_end"].isoformat(),
-    } for e in qs]
+        # 5) Uso en queryset
+        qs = (Sucesion.objects
+            .filter(codigo=codigo, cargo = empleado.cargo, estado_sucesion = "publicado")
+            .annotate(
+                fecha_dt=fecha_dt,
+                plus_6d=plus_6d,
+                base_trunc=base_trunc,
+                wk_start_dt=wk_start_dt,
+                wk_end_dt=wk_end_dt,
+                wk_start=wk_start,
+                wk_end=wk_end,
+            )).values('wk_start','wk_end').distinct().order_by('-wk_start')
+        
+        encabezados = [{
+            "titulo": f"Semana del {e['wk_start']:%d/%m/%Y} al {e['wk_end']:%d/%m/%Y}",
+            "inicio": e["wk_start"].isoformat(),
+            "fin": e["wk_end"].isoformat(),
+        } for e in qs]
 
-    return Response({"success": True, "encabezados": encabezados})
+        return Response({"success": True, "encabezados": encabezados})
+        
 
 
 @api_view(["GET"])
