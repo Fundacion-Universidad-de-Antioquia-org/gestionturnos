@@ -384,6 +384,7 @@ def vista_solicitudes_gestion_turnos(request,*, context):
                 indicadorAprobada = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "aprobado").count()
                 indicadorDesaprobado = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "desaprobado").count()
                 indicadorDesatendida = Solicitudes_Gt.objects.filter((Q(fecha_inicial__gte = fechaInicial) & Q(fecha_final__lte = fechaFinal)), estado = "desatendida").count()
+                print(f" DESATENDIDAS:: {indicadorDesatendida}")
 
                 #print("Si existen solicitudes entre estas fechas")
                 return render(request,"account/solicitudes_gestion_turnos.html",{
@@ -658,7 +659,7 @@ def get_mis_turnos(request):
 @api_view(["GET"])
 def get_sucesion_cargo(request):
     
-    cargo = request.GET.get('cargo','').strip() 
+    cargo = request.GET.get('cargo').strip() 
 
     if not cargo:
         return Response({"Error":"Parametro cargo es requerido"}, status=400)
@@ -1397,7 +1398,6 @@ def aprobar_solicitudes_cambios_turnos(request):
 
             if peticion == "intranet":
                 if solicitudCambio.estado_cambio_admin == "aprobado":
-                    
                     horario_relacion_solicitante = Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).first()
 
                     if solicitud['turnoSolicitanteDiaDeseado'] == "DISPO": #RECEPTOR TIENE DISPO
@@ -1411,14 +1411,15 @@ def aprobar_solicitudes_cambios_turnos(request):
                                                         hora_fin = None)
                         #Actualizar sucesión  del receptor                                 #SOLICITANTE TURNO:
                         horario_relacion_receptor = Horario.objects.filter(turno=solicitud['turnoReceptorDiaDeseado']).first()
-
                         Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'],
                                                         horario = horario_relacion_receptor , estado_inicio = horario_relacion_receptor.inilugar, 
                                                         estado_fin = horario_relacion_receptor.finallugar,
                                                         hora_inicio = horario_relacion_receptor.inihora, hora_fin = horario_relacion_receptor.finalhora)
+                        
                         # aca acentamos la aprobación del empleado
                         Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
-                        codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_emp = "aprobado")    
+                        codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_emp = "aprobado")
+
                     elif solicitud['turnoReceptorDiaDeseado'] == "DISPO":
                         print(f"El solicitante tiene el DISPO: {solicitud['turnoReceptorDiaDeseado']}") # DISPO:DISPO
                         #Actualizar sucesión  del receptor
@@ -1758,7 +1759,7 @@ def get_comunicados(request):
         if cargo in filtro.cargoVisualizacion:
             print("esta dentro de los cargos")
             if ConfirmacionLectura.objects.filter(codigo = codigo, archivos__id = filtro.id , confirmacionLectura = "leido").exists() == False:
-                listaArchivos.append(f"id: {filtro.id}, url: {filtro.urlArchivo}, tipo de archivo: {filtro.tipoArchivo}")
+                listaArchivos.append(f"titulo: {filtro.titulo}, id: {filtro.id}, url: {filtro.urlArchivo}, tipo de archivo: {filtro.tipoArchivo}")
 
     return Response({"success":True , "datos": listaArchivos})
 
@@ -1821,6 +1822,8 @@ def reprogramar_turno(request):
 @api_view(["GET"])
 def cabeceras_turnos(request):
     codigo = request.GET.get("codigo")
+    cargo = Empleado_Oddo.objects.filter(codigo = codigo, estado = "Activo").first()
+
     if not codigo:
         return Response({"success": False, "detail": "Parámetro 'codigo' es requerido."}, status=400)
 
@@ -1838,7 +1841,7 @@ def cabeceras_turnos(request):
     wk_end       = Cast(ExpressionWrapper(wk_start_dt + plus_6d, output_field=DateTimeField()), DateField())
 
     qs = (Sucesion.objects
-          .filter(codigo=codigo, estado_sucesion = "publicado")
+          .filter(codigo=codigo, cargo = cargo, estado_sucesion = "publicado")
           .annotate(week_start=wk_start, week_end=wk_end)
           .values("week_start", "week_end")
           .distinct()
