@@ -103,12 +103,22 @@ def vista_dashboard(request,*, context):
                 numSolicitudesDesa =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "desaprobado").count()
                 numSolicitudesPend =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "pendiente").count()
                 numSolicitudesTotal =  Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO").count()
+                numSolicitudesDesaten = Solicitudes_Gt.objects.filter(fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal, tipo_solicitud = "PERMISO ACADEMICO", estado = "desatendida").count()
 
                 print(f"# aprobadas: {numSolicitudesApro}, desaprobadas: {numSolicitudesDesa}, pendientes: {numSolicitudesPend}, total: {numSolicitudesTotal}")
-                porcentajeAprobacion = int(100* (numSolicitudesApro/numSolicitudesTotal))
-                porcentajeDesaprobadas = int( 100* (numSolicitudesDesa/numSolicitudesTotal))
-                porcentajePendientes = int (100* (numSolicitudesPend/numSolicitudesTotal))
+                
+                if numSolicitudesTotal != 0:
 
+                    porcentajeAprobacion = int(100* (numSolicitudesApro/numSolicitudesTotal))
+                    porcentajeDesaprobadas = int( 100* (numSolicitudesDesa/numSolicitudesTotal))
+                    porcentajePendientes = int (100* (numSolicitudesPend/numSolicitudesTotal))
+                    porcentajeDesatendidas = int(100* (numSolicitudesDesaten/numSolicitudesTotal))
+                else:
+
+                    porcentajeAprobacion = 0
+                    porcentajeDesaprobadas = 0
+                    porcentajePendientes = 0
+                    porcentajeDesatendidas = 0
                
                 solicitudesPorMes = Solicitudes_Gt.objects.filter(tipo_solicitud = "PERMISO ACADEMICO", fecha_inicial__gte = fechaInicial, fecha_final__lte = fechaFinal).annotate(mes = TruncMonth('fecha_solicitud')).values('mes').annotate(total = Count('id')).order_by('mes')
                 for s in solicitudesPorMes:
@@ -139,6 +149,7 @@ def vista_dashboard(request,*, context):
                     'porcentajeAprobacion': porcentajeAprobacion,
                     'porcentajeDesaprobadas': porcentajeDesaprobadas,
                     'porcentajePendientes':porcentajePendientes,
+                    'porcentajeDesatendidas': porcentajeDesatendidas,
                     'numSolicitudesTotal':numSolicitudesTotal,
                     'fechaIni':fechaInicial,
                     'fechaFin': fechaFinal,

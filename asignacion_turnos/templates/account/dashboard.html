@@ -68,6 +68,8 @@
   const aprobadasAcademicas = "{{ porcentajeAprobacion }}"
   const desaprobadasAcademicas = "{{ porcentajeDesaprobadas }}"
   const pendientesAcademicas = "{{ porcentajePendientes }}"
+  const desatendidasAcademicas = "{{ porcentajeDesatendidas }}"
+
   const totalAcademicas = "{{ numSolicitudesTotal }}"
   const fechaInicialAcademicas = "{{ fechaIni }}"
   const fechaFinalAcademicas = "{{ fechaFin }}"
@@ -112,7 +114,8 @@ const graficoCircular = echarts.init(document.getElementById('graficoCircularAca
       data: [
         { value: aprobadasAcademicas, name: 'Aprobadas', itemStyle: {color: '#587bf3'}},
         { value: desaprobadasAcademicas, name: 'Desaparobadas',itemStyle: {color: '#B5422B'}},
-        { value: pendientesAcademicas, name: 'Pendientes', itemStyle: {color: '#807979'}},
+        
+        {value: desatendidasAcademicas, name: 'Desatendidas', itemStyle: {color: '#F52802'}},
       ],
       emphasis: {
         itemStyle: {
