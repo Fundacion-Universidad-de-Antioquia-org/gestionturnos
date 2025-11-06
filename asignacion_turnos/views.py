@@ -1821,9 +1821,9 @@ def reprogramar_turno(request):
 
 @api_view(["GET"])
 def cabeceras_turnos(request):
-    
+
     codigo = request.GET.get("codigo")
-    cargo = Empleado_Oddo.objects.filter(codigo = codigo, estado = "Activo").first()
+    empleado = Empleado_Oddo.objects.filter(codigo = codigo, estado = "Activo").first()
 
     if not codigo:
         return Response({"success": False, "detail": "Parámetro 'codigo' es requerido."}, status=400)
@@ -1842,7 +1842,7 @@ def cabeceras_turnos(request):
     wk_end       = Cast(ExpressionWrapper(wk_start_dt + plus_6d, output_field=DateTimeField()), DateField())
 
     qs = (Sucesion.objects
-          .filter(codigo=codigo, cargo = cargo, estado_sucesion = "publicado")
+          .filter(codigo=codigo, cargo = empleado.cargo, estado_sucesion = "publicado")
           .annotate(week_start=wk_start, week_end=wk_end)
           .values("week_start", "week_end")
           .distinct()
