@@ -1479,15 +1479,18 @@ def aprobar_solicitudes_cambios_turnos(request):
                         else:
                             horario_relacion_solicitante = None
 
-                        sucesionReceptor = Sucesion.objects.filter(codigo_horario = solicitud['turnoSolicitanteDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+                        sucesionSolicitante = Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], codigo_horario = solicitud['turnoReceptorDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+                        sucesionReceptor = Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], codigo_horario = solicitud['turnoSolicitanteDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+                        
                         Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], fecha= solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoSolicitanteDiaDeseado'],
                                                         horario = horario_relacion_receptor, 
                                                         estado_inicio = sucesionReceptor.estado_inicio, 
                                                         estado_fin = sucesionReceptor.estado_fin ,
                                                         hora_inicio = sucesionReceptor.hora_inicio, 
                                                         hora_fin = sucesionReceptor.hora_fin)
-                            
-                        sucesionSolicitante = Sucesion.objects.filter(codigo_horario = solicitud['turnoReceptorDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+                        
+                        print(f"Peticion codigoSolicitante: {solicitud['codigoSolicitante']} , turno:{solicitud['turnoReceptorDiaDeseado']}, fecha = {solicitud['fechaCambio']}")
+                        
                         print(f"SUCESION SOLICITANTE:{Sucesion.objects.filter(codigo_horario = solicitud['turnoReceptorDiaDeseado'], fecha = solicitud['fechaCambio']).exists()}")
                         Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'], 
                                                         horario = horario_relacion_solicitante, 
