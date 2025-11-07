@@ -515,13 +515,15 @@ document.querySelectorAll(".btn-editar").forEach(boton => {
     const datosOriginales = {
       estacionIni: celdas[5].textContent.trim(),
       estacionFin: celdas[9].textContent.trim(),
-      circulacionIni: celdas[7].textContent,
-      circulacionFin: celdas[10].textContent,
-      horaIni: celdas[6].textContent,
-      horaFin: celdas[9].textContent,
-      duracion: celdas[11].textContent,
+      circulacionIni: celdas[7].textContent.trim(),
+      circulacionFin: celdas[10].textContent.trim(),
+      horaIni: celdas[6].textContent.trim(),
+      horaFin: celdas[9].textContent.trim(),
+      duracion: celdas[11].textContent.trim(),
       particularidades: celdas[12].textContent.trim()
     };
+
+    console.log(datosOriginales)
     localStorage.setItem("datosOriginales", JSON.stringify(datosOriginales));
     document.getElementById("modalEditar").style.display = "block";
   });
@@ -551,13 +553,15 @@ document.getElementById("guardarCambiosModalEditar").addEventListener("click", f
 
     }
 
-    if(datosOriginales.estacionIni !== datosNuevos.estacionIni || datosOriginales.estacionFin !== datosNuevos.estacionFin || 
+    if(datosOriginales.estacionIni !== datosNuevos.estacionIni ||
+       datosOriginales.estacionFin !== datosNuevos.estacionFin || 
         datosOriginales.horaIni !== datosNuevos.horaIni||
         datosOriginales.horaFin !== datosNuevos.horaFin ||
         datosOriginales.circulacionIni !== datosNuevos.circulacionIni || 
         datosOriginales.circulacionFin !== datosNuevos.circulacionFin ||
         datosOriginales.duracion !== datosNuevos.duracion ||
         datosOriginales.particularidades !== datosNuevos.particularidades){
+
          /*alert("se modifico el turno")*/
         /*Actualización de datos del turno*/
 

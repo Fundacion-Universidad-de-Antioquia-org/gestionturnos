@@ -712,15 +712,15 @@ document.getElementById("tablaBody").addEventListener("click", (e) => {
   document.getElementById("editParticularidades").value = celdas[9].textContent.trim();
 
   const datosOriginales = {
-    nombre: celdas[0].textContent,
-    codigo: celdas[1].textContent,
+    nombre: celdas[0].textContent.trim(),
+    codigo: celdas[1].textContent.trim(),
     cargo:  celdas[3].textContent.trim(),
-    turno:  celdas[2].textContent,
-    fecha:  celdas[4].textContent,
+    turno:  celdas[2].textContent.trim(),
+    fecha:  celdas[4].textContent.trim(),
     estacionIni: celdas[5].textContent.trim(),
     estacionFin: celdas[6].textContent.trim(),
-    horaIni: celdas[7].textContent,
-    horaFin: celdas[8].textContent,
+    horaIni: celdas[7].textContent.trim(),
+    horaFin: celdas[8].textContent.trim(),
     particularidades: celdas[9].textContent.trim()
   };
   localStorage.setItem("datosOriginales", JSON.stringify(datosOriginales));

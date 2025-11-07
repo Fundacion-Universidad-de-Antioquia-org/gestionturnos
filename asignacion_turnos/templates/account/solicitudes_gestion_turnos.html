@@ -42,7 +42,7 @@
 .indicadores {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 5px;
   margin-right: 15px;
 }
 
@@ -58,6 +58,8 @@
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   transition: transform 0.3s ease;
   white-space: nowrap;
+  font-family: "Material Symbols Outlined"; 
+  content: ""; 
 }
 
 .indicador-card.small:hover {
@@ -82,14 +84,18 @@
 .indicador-card.small .spinner.done {
   animation: none;
   border: none;
-  border-radius: 50%;
+  /* border-radius: 50%; */
   width: 18px;
   height: 18px;
+  
 }
+
 
 /* Colores */
 .total .spinner.done {
-  background-color: #007bff;   /* azul */
+  content: 'pending_actions';
+  background-color: #007bff;  
+  content: "pending_actions"; 
 }
 .pendiente .spinner.done {
   background-color: #ffc107;   /* amarillo */
@@ -340,7 +346,7 @@
             <td>{{s.fecha_final|date:"d/m/Y"}}</td>
             <td><span>{{ s.estado }}</span></td>
              <td>
-               <button class="btn-ver-respuesta btn-icon" onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.empleado.nombre|escapejs }}', '{{ s.empleado.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')"><span class="material-symbols-outlined">content_paste_search</span></button>
+               <button class="btn-ver-respuesta btn-icon btn-abrirModal"  onclick="abrirModal('{{ s.descripcion|escapejs }}', '{{ s.empleado.nombre|escapejs }}', '{{ s.empleado.codigo|escapejs }}', '{{ s.tipo_solicitud|escapejs }}', '{{ s.id|escapejs }}', '{{ s.estado|escapejs }}')"><span class="material-symbols-outlined">content_paste_search</span></button>
              </td> 
              
              <td>
@@ -1298,5 +1304,6 @@ function removeRowBySolicitudId(id) {
 // Ajusta los indicadores de “total / pendientes / aprobadas / rechazadas” en la UI
 
 </script>
+
 
 {% endblock %}

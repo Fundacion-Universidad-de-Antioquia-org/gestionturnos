@@ -679,6 +679,7 @@ def get_sucesion_cargo(request):
     data = []
     for t in turnos:
         data.append({
+            "foto": t.empleado.foto,
             "nombre":t.nombre,
             "codigo":t.codigo,
             "fecha":t.fecha,
