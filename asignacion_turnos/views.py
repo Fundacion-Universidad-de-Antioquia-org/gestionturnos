@@ -1454,18 +1454,30 @@ def aprobar_solicitudes_cambios_turnos(request):
                         codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_emp = "aprobado")
                     else:
                         print(f"NINGUNO DE LOS DOS TIENE DISPO")
-                        horario_relacion_receptor = Horario.objects.filter(turno = solicitud['turnoSolicitanteDiaDeseado'] ).first()
-                        Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], fecha=solicitud['fechaCambio']).update(codigo_horario =solicitud['turnoSolicitanteDiaDeseado'],
-                                                        horario = horario_relacion_receptor, estado_inicio = horario_relacion_receptor.inilugar , 
-                                                        estado_fin = horario_relacion_receptor.finallugar,hora_inicio = horario_relacion_receptor.inihora, hora_fin = horario_relacion_receptor.finalhora)
                         
-                        horario_relacion_solicitante = Horario.objects.filter(turno = solicitud['turnoReceptorDiaDeseado']).first()
+                        if Horario.objects.filter(turno = solicitud['turnoSolicitanteDiaDeseado']).exists():
+                            horario_relacion_receptor = Horario.objects.filter(turno = solicitud['turnoSolicitanteDiaDeseado']).first()
+                        else:
+                            horario_relacion_receptor = None
+
+                        if Horario.objects.filter(turno = solicitud['turnoReceptorDiaDeseado']).exists():
+                            horario_relacion_solicitante = Horario.objects.filter(turno = solicitud['turnoReceptorDiaDeseado']).first()
+                        else:
+                            horario_relacion_solicitante = None
+
+                        sucesionReceptor = Sucesion.objects.filter(codigo_horario = solicitud['turnoSolicitanteDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+                        Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoSolicitanteDiaDeseado'],
+                                                        horario = horario_relacion_receptor, estado_inicio = sucesionReceptor.estado_inicio, 
+                                                        estado_fin = sucesionReceptor.estado_fin ,hora_inicio = sucesionReceptor.hora_inicio, hora_fin = sucesionReceptor.hora_fin)
+                            
+                        sucesionSolicitante = Sucesion.objects.filter(codigo_horario = solicitud['turnoReceptorDiaDeseado'], fecha = solicitud['fechaCambio']).first()
                         Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'], 
                                                         horario = horario_relacion_solicitante, 
-                                                        estado_inicio = horario_relacion_solicitante.inilugar , 
-                                                        estado_fin = horario_relacion_solicitante.finallugar , 
-                                                        hora_inicio = horario_relacion_solicitante.inihora , 
-                                                        hora_fin = horario_relacion_solicitante.finalhora )
+                                                        estado_inicio = sucesionSolicitante.estado_inicio , 
+                                                        estado_fin = sucesionSolicitante.estado_fin , 
+                                                        hora_inicio = sucesionSolicitante.hora_inicio , 
+                                                        hora_fin = sucesionSolicitante.hora_fin )
+
                         Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
                             codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_emp = "aprobado")
                     

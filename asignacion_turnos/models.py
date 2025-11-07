@@ -120,6 +120,7 @@ class Cambios_de_turnos(models.Model):
     zonaReceptor = models.CharField(max_length=20, null=True)
     transportable_solicitante = models.BooleanField(default=False)
     transportable_receptor = models.BooleanField(default=False)
+    horaAprobacion =models.DateTimeField()
     
 class Solicitudes_Gt(models.Model):
     cargo = models.CharField(max_length=100)
