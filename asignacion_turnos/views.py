@@ -1207,6 +1207,16 @@ def solicitar_cambio_turno(request):
              "success": False,
             "mensaje": f"El empleado {receptor.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
         })
+    
+    
+    if solicitante.formacion != receptor.formacion:
+        if solicitante.formacion == "CAF" and receptor.formacion == "MAN":
+            sucesiSoli = Sucesion.objects.filter(codigo = solicitante.codigo, fecha = fechaCambio).first()
+            sucesiSoli.estado_inicio in ["SAB", "CIS", "SAM","EST","FLO","LUC","JAV"]       
+ 
+
+
+
        
     solicitante_siguiente = None
     receptor_siguiente = None
@@ -1481,7 +1491,7 @@ def aprobar_solicitudes_cambios_turnos(request):
 
                         sucesionSolicitante = Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], codigo_horario = solicitud['turnoReceptorDiaDeseado'], fecha = solicitud['fechaCambio']).first()
                         sucesionReceptor = Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], codigo_horario = solicitud['turnoSolicitanteDiaDeseado'], fecha = solicitud['fechaCambio']).first()
-                        
+
                         Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], fecha= solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoSolicitanteDiaDeseado'],
                                                         horario = horario_relacion_receptor, 
                                                         estado_inicio = sucesionReceptor.estado_inicio, 
@@ -1514,6 +1524,7 @@ def aprobar_solicitudes_cambios_turnos(request):
                             "AppGestionTurnos","Aprobar cambios", solicitudCambioTurno.id)      
                         
                 elif solicitudCambio.estado_cambio_admin == "pendiente":
+                        
                         Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
                         codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_emp = "aprobado")
                         return Response({
@@ -2229,6 +2240,10 @@ def getSolicitudesCambiosTurnos(request):
     fecha_solicitud_cambio = request.GET.get("fechaCambio")
     rol = None
     solicitudes = None
+
+    if codigo and fecha_solicitud_cambio:
+        return Response({"success":False, "message":"Parametros vacios"})
+    
     
     if Cambios_de_turnos.objects.filter(codigo_solicitante = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio).exists():
         rol = "solicitante"
@@ -2238,6 +2253,9 @@ def getSolicitudesCambiosTurnos(request):
         solicitudes = Cambios_de_turnos.objects.filter(codigo_receptor = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio)
     else:
         rol = None
+
+    if rol == None:
+        return Response({"success":False, "message":f"No tienes solicitudes de cambios de turnos para esta fecha: {fecha_solicitud_cambio}"})
 
     datos = []
 
