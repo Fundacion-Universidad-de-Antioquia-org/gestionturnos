@@ -2241,8 +2241,14 @@ def getSolicitudesCambiosTurnos(request):
     rol = None
     solicitudes = None
 
-    if codigo and fecha_solicitud_cambio:
+    print(f"codigo: {codigo}, fecha cambio: {fecha_solicitud_cambio}")
+
+    if codigo is None and fecha_solicitud_cambio is None:
         return Response({"success":False, "message":"Parametros vacios"})
+    
+    
+
+
     
     
     if Cambios_de_turnos.objects.filter(codigo_solicitante = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio).exists():
