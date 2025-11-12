@@ -1761,7 +1761,7 @@ def solicitud_gt(request):
                 "message":f"Error, ya tienes un solicitud de: {tipo_solicitud}, entre estas fechas, fecha inicial: {fecha_inicial}, fecha final: {fecha_final}"})
 
 
-        print(f"Este es el archivo que cargaste {archivo}")
+        print(f"#%#$%&/%$%&/&%$% >>> ARCHIVO CARGADOOOOOOOOOOOOOOO::::::::::::::::: {archivo}")
 
         empleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante,  estado = "Activo").first()
         solicitud_gt = Solicitudes_Gt.objects.create( cargo = empleado.cargo, 
