@@ -44,10 +44,6 @@
   </div>
   <div class="usuario-bar-centro">
     <button title="Refrescar página" onclick="refrescarPagina()" ><span class="material-symbols-outlined">refresh</span></button>
-    <button title="Buscar cambio de turno" id="btnBuscarCambio" ><span class="material-symbols-outlined">search</span></button>
-    <button><span class="material-symbols-outlined" onclick="abrirModalHorarios()">find_replace</span></button>
-    <button><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
-    
   </div>
  
   </div>
@@ -84,10 +80,6 @@
           <option value="MANIOBRISTA TRANVIA">MANIOBRISTA TRANVIA</option>
           <option value="INCONSISTENCIA">INCONSISTENCIA</option>
         </select>
-      </div>
-      <div class="filtro-item">
-        <label for="filtroFecha">Fecha de cambio:</label>
-        <input type="date" id="filtroFechaCambio">
       </div>
       <div class="filtro-item">
         <label for="filtroFecha">Estado de solicitud:</label>
@@ -352,7 +344,7 @@
     checkboxesSeleccionados.forEach(checkbox => {
       const fila = checkbox.closest('tr');
       const estadoAdmin = fila.querySelector('.aprobadoAdm')?.textContent.trim().toLowerCase();
-
+    
       if (estadoAdmin === "pendiente") {
         const codigoSolicitanteTabla = fila.querySelector('.codigoSolicitante')?.textContent.trim();
         codigoSolicitante = codigoSolicitanteTabla.replace(/\D/g, "");
@@ -368,72 +360,71 @@
             return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
           })()
           : fechaCambioTexto;
-        
+            datos.push({
+              fechaCambio,
+              codigoSolicitante,
+              codigoReceptor,
+              turnoSolicitanteDiaDeseado,
+              turnoReceptorDiaDeseado,
+              peticion
+            });
 
-        datos.push({
-          fechaCambio,
-          codigoSolicitante,
-          codigoReceptor,
-          turnoSolicitanteDiaDeseado,
-          turnoReceptorDiaDeseado,
-          peticion
-        });
+          fetch("{% url 'desaprobar_solicitudes_cambios_turnos' %}", {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({ solicitudes: datos })
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error("Error en la desaprobación");
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: "Solicitudes desaprobadas correctamente",
+                text: data.message,
+                width: 600,
+                padding: "3em",
+                color: "#ffffff",
+                background: "url(https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3lybnlpa2N3eG1ibGkxMmkwYXpmY2xkbXRzN2l2aWpkcjhnZjJlOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jJQC2puVZpTMO4vUs0/giphy.gif)",
+                backdrop: `rgba(198, 215, 207, 0.8)`
+              }).then(function () {
+                location.reload()
+              })
+
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "No se pudieron desaprobar los cambios",
+                text: data.message || "Ocurrió un error inesperado",
+              });
+            }
+          })
+          .catch(error => {
+            console.error("Error en fetch:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Error en la solicitud",
+              text: "Ocurrió un error en la comunicación con el servidor.",
+            });
+          });
+
+      }else if(estadoAdmin === "aprobado"){
+        Swal.fire({
+        icon: "warning",
+        title: "Error al desaprobar",
+        text: "Recuerda que solo es posible desaprobar solicitudes en estado = pendiente",
+      });
       }
     });
 
-    if (datos.length === 0) {
-      Swal.fire({
-        icon: "error",
-        title: "Solicitud invalida",
-        text: "Se debe selccionar al menos una solcitud",
-      });
-      return;
-    }
+  
 
-    fetch("{% url 'desaprobar_solicitudes_cambios_turnos' %}", {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ solicitudes: datos })
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Error en la desaprobación");
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
-          Swal.fire({
-            title: "Solicitudes desaprobadas correctamente",
-            text: data.message,
-            width: 600,
-            padding: "3em",
-            color: "#ffffff",
-            background: "url(https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3lybnlpa2N3eG1ibGkxMmkwYXpmY2xkbXRzN2l2aWpkcjhnZjJlOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jJQC2puVZpTMO4vUs0/giphy.gif)",
-            backdrop: `rgba(198, 215, 207, 0.8)`
-          }).then(function () {
-            location.reload()
-          })
-
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "No se pudieron desaprobar los cambios",
-            text: data.message || "Ocurrió un error inesperado",
-          });
-        }
-      })
-      .catch(error => {
-        console.error("Error en fetch:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error en la solicitud",
-          text: "Ocurrió un error en la comunicación con el servidor.",
-        });
-      });
 
     // Función para obtener CSRF
     function getCookie(name) {
@@ -471,8 +462,7 @@
     nombre: document.getElementById('filtroNombre'),
     codigo: document.getElementById('filtroCodigo'),
     cargo: document.getElementById('filtroCargo'),
-    fecha: document.getElementById('filtroFechaCambio'),
-    estado: document.getElementById('filtroEstadoSolicitud'),
+    estado: document.getElementById('filtroEstadoSolicitud')
   };
 
   // Asignar eventos
@@ -482,13 +472,12 @@
   });
 
   function aplicarFiltros() {
-    
+
     document.getElementById("tablaBody").style.display = "";
 
     const valorNombre = filtros.nombre.value.toLowerCase().trim();
     const valorCodigo = filtros.codigo.value.toLowerCase().trim();
     const valorCargo = filtros.cargo.value.toLowerCase().trim();
-    const valorFecha = filtros.fecha.value;
     const valorEstado = filtros.estado.value.toLowerCase().trim();
 
 
@@ -497,17 +486,15 @@
       const regexCodigo = row.cells[1].textContent.toLowerCase().trim()
       const tCodigo = regexCodigo.replace(/\D/g, "" );
       const tCargo = row.cells[2].textContent.toLowerCase().trim();
-      const tFecha = row.cells[5].textContent.trim();
       const tEstado = row.cells[12].textContent.toLowerCase().trim();
 
       const coincideNombre = !valorNombre || tNombre.includes(valorNombre);
       const coincideCodigo = !valorCodigo || tCodigo === valorCodigo;
       const coincideCargo = !valorCargo || tCargo === valorCargo; // Comparación exacta
-      const coincideFecha = !valorFecha || tFecha === valorFecha;
       const coincideEstado = !valorEstado || tEstado === valorEstado;
 
-      row.style.display = (coincideNombre && coincideCodigo && coincideCargo && coincideFecha && coincideEstado) ? 'table-row' : 'none';
-
+      row.style.display = (coincideNombre && coincideCodigo && coincideCargo  && coincideEstado) ? 'table-row' : 'none';
+    
     });
   }
 
