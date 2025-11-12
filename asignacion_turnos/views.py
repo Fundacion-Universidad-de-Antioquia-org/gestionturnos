@@ -1790,7 +1790,7 @@ def solicitud_gt(request):
         if estadoEnvioCorreo:
             Notificaciones.objects.create(empleado = empleado, cargo = empleado.cargo, solicitudes_Gt = solicitud_gt,
                 fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "E-mail", estado = "Notificado")
-            return Response({"success":True, "message":f"Se registro exitosamente la solicitud, {tipo_solicitud}, con fecha de registro: {fecha_solicitud}"})
+            return Response({"success":True, "message":f"Se registro exitosamente la solicitud con id: {solicitud_gt.id}, tipo solicitud: {tipo_solicitud} y con fecha de registro: {fecha_solicitud}"})
         else:
             Notificaciones.objects.create(empleado = empleado, cargo = empleado.cargo, solicitudes_Gt = solicitud_gt,
                 fecha_notificacion = fecha_notificacion, correo = "sbastianpp@gmail.com", medio = "E-mail", estado = "No notificado")
