@@ -696,7 +696,8 @@ def get_sucesion_cargo(request):
     if not cargo:
         return Response({"Error":"Parametro cargo es requerido"}, status=400)
     
-    turnos = Sucesion.objects.filter(empleado__cargo=cargo, empleado__estado = "Activo", estado_sucesion = "publicado")
+    turnos = Sucesion.objects.filter(Q(fecha__gte = fechaInicial) and Q(fecha__lte = fechaFinal), cargo= cargo, empleado__estado = "Activo", estado_sucesion = "publicado")
+
     data = []
     for t in turnos:
         data.append({
@@ -712,7 +713,7 @@ def get_sucesion_cargo(request):
             "particularidades": t.horario.observaciones if t.horario and t.horario.observaciones else "Sin observaciones",
             "duracion":t.horario.duracion if t.horario and t.horario.duracion else "" 
         })
-    return Response(data)
+    return Response({"success":True, "data":data})
 
 #Esta vista actualiza los detalles de un turno en el modelo Horario, por ejemplo: COD SRM548 -> modifica hora de inicio, final, estacion inicial, final y particularidades
 @api_view(["POST"])
@@ -1984,7 +1985,6 @@ def cabeceras_turnos(request):
             return Response({"success": True, "encabezados": encabezados})
         elif peticion == "todo":
             
-            # Duraciones tipadas
             plus_2d = Value(timedelta(days=2), output_field=DurationField())
             plus_6d = Value(timedelta(days=6), output_field=DurationField())
 
@@ -2007,8 +2007,8 @@ def cabeceras_turnos(request):
             } for e in qsTodaSucesion]
 
             return Response({"success": True, "encabezados": encabezados})
-
-
+        else:
+            return Response({"success": False,"message":f"La peticion llego con valores no definidos {peticion}"})
     elif empleado.cargo in cargosLunesDomingos:
         plus_6d    = Value(timedelta(days=6), output_field=DurationField())
         # 3) Semana LUN→DOM
@@ -2038,10 +2038,33 @@ def cabeceras_turnos(request):
             "inicio": e["wk_start"].isoformat(),
             "fin": e["wk_end"].isoformat(),
         } for e in qs]
+        return Response({"success": True, "encabezados": encabezados})
+    elif peticion == "todo":
+
+        plus_2d = Value(timedelta(days=2), output_field=DurationField())
+        plus_6d = Value(timedelta(days=6), output_field=DurationField())
+
+        base_trunc   = TruncWeek(ExpressionWrapper(fecha_dt + plus_2d, output_field=DateTimeField()))
+        wk_start_dt  = ExpressionWrapper(base_trunc - plus_2d, output_field=DateTimeField())
+        wk_start     = Cast(wk_start_dt, DateField())
+        wk_end       = Cast(ExpressionWrapper(wk_start_dt + plus_6d, output_field=DateTimeField()), DateField())
+
+        qsTodaSucesion = (Sucesion.objects
+            .filter(cargo = empleado.cargo, estado_sucesion = "publicado")
+            .annotate(week_start=wk_start, week_end=wk_end)
+            .values("week_start", "week_end")
+            .distinct()
+            .order_by("week_start"))
+            
+        encabezados = [{
+            "titulo": f"Semana del {e['week_start']:%d/%m/%Y} al {e['week_end']:%d/%m/%Y}",
+            "inicio": e["week_start"].isoformat(),
+            "fin": e["week_end"].isoformat(),
+        } for e in qsTodaSucesion]
 
         return Response({"success": True, "encabezados": encabezados})
-        
-
+    else:
+        return Response({"success": False,"message":f"La peticion llego con valores no definidos {peticion}"})
 
 @api_view(["GET"])
 def mis_solicitudes_cambios_turnos(request):
