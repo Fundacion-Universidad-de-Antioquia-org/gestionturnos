@@ -1746,8 +1746,6 @@ def solicitud_gt(request):
     descripcion = request.data.get('descripcion')
     archivo = request.FILES.get('archivo')
 
-    
-
     if codigoSolicitante is not None and cedulaSolicitante is not None:
 
         if Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante, estado = "Activo").exists() == False:
@@ -1762,6 +1760,8 @@ def solicitud_gt(request):
                 "success":False, 
                 "message":f"Error, ya tienes un solicitud de: {tipo_solicitud}, entre estas fechas, fecha inicial: {fecha_inicial}, fecha final: {fecha_final}"})
 
+
+        print(f"Este es el archivo que cargaste {archivo}")
 
         empleado = Empleado_Oddo.objects.filter(codigo = codigoSolicitante, cedula = cedulaSolicitante,  estado = "Activo").first()
         solicitud_gt = Solicitudes_Gt.objects.create( cargo = empleado.cargo, 
