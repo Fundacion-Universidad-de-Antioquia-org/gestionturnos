@@ -320,15 +320,26 @@ def vista_configuraciones(request,*, context):
 
 @settings.AUTH.login_required
 def get_solicitudes_cambios_turnos(request,*, context):
+    fecha = request.GET.get('fecha')
+    cargaDatos = None
+    cargarDatosSolicitudes = None
     user_claims = context["user"]               
     usuarioLogeado = user_claims.get("name") or user_claims.get("preferred_username")
-    if request.method == "GET":   
-        cargarDatosSolicitudes =  Cambios_de_turnos.objects.all()
+
+    if request.method == "GET" and fecha: 
+        if Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = fecha).exists():
+            cargarDatosSolicitudes =  Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = fecha)
+            cargaDatos = "ok"
+        else:
+            cargarDatosSolicitudes = None
+            cargaDatos = "error"
+
         #fechaSolicitudes = timezone.localdate(timezone=ZoneInfo("America/Bogota")) + timedelta(days=1)
         # cargarDatosSolicitudes =  Cambios_de_turnos.objects.filter(fecha_solicitud_cambio= fechaSolicitudes)
     return render(request,'account/cambios_turnos.html',{
         'resultadosCambiosTurnos':cargarDatosSolicitudes,
-        'usuarioLogeado':usuarioLogeado
+        'usuarioLogeado':usuarioLogeado,
+        'cargaDatos': cargaDatos
         })
     
 @settings.AUTH.login_required
@@ -646,10 +657,14 @@ def get_mis_turnos(request):
     fechaFinal = request.GET.get('fechaFinal')
     cedula = request.GET.get('cedula')
 
-    if not codigo and fechaInicial and fechaFinal and cedula:
-        return Response({"success":True, "message": f"Error de parametros, codigo: {codigo}, fecha incial: {fechaInicial}, fecha final {fechaFinal}, cedula: {'cedula'}"})
+    if not codigo and not fechaInicial and not fechaFinal and not cedula:
+        return Response({"success":True, "message": f"Error de parametros, codigo: {codigo}, fecha incial: {fechaInicial}, fecha final {fechaFinal}, cedula: {cedula}"})
     
-    turnos  = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)), codigo = codigo, cedula = cedula, estado_sucesion = "publicado" ).order_by('fecha')
+    try:
+        turnos  = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)), codigo = codigo, cedula = cedula, estado_sucesion = "publicado" ).order_by('fecha')
+    except Sucesion.DoesNotExist:
+        return Response({"success":False, "message":f"Para este rango de fechas no fue posible cargar la sucesión"})
+
     data = []
     for t in turnos:
         data.append({
@@ -662,6 +677,10 @@ def get_mis_turnos(request):
             "particularidades": t.horario.observaciones if t.horario and t.horario.observaciones else "Sin observaciones",
             "duracion":t.horario.duracion if t.horario and t.horario.duracion else "" 
         })
+
+    if len(data)> 1:
+        print(f"Data tiene datos {data}")
+
     return Response(data)
 
 
@@ -670,7 +689,9 @@ def get_mis_turnos(request):
 @api_view(["GET"])
 def get_sucesion_cargo(request):
     
-    cargo = request.GET.get('cargo').strip() 
+    cargo = request.GET.get('cargo').strip()
+    fechaInicial = request.GET.get("fechaInicio")
+    fechaFinal = request.GET.get("fechaFinal")
 
     if not cargo:
         return Response({"Error":"Parametro cargo es requerido"}, status=400)
@@ -1208,16 +1229,20 @@ def solicitar_cambio_turno(request):
             "mensaje": f"El empleado {receptor.nombre} ya tiene una solicitud de cambio para la fecha {fechaCambio}"
         })
     
-    
-    if solicitante.formacion != receptor.formacion:
-        if solicitante.formacion == "CAF" and receptor.formacion == "MAN":
-            sucesiSoli = Sucesion.objects.filter(codigo = solicitante.codigo, fecha = fechaCambio).first()
-            sucesiSoli.estado_inicio in ["SAB", "CIS", "SAM","EST","FLO","LUC","JAV"]       
- 
 
+    if solicitante.cargo == "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO" and receptor.cargo == "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO":
+        linea_B = ["SAB", "CIS", "SAM","EST","FLO","LUC","JAV"]
+        if solicitante.formacion != receptor.formacion:
+            if solicitante.formacion == "CAF": #Receptor MAN
+                sucesiSoli = Sucesion.objects.filter(codigo = solicitante.codigo, fecha = fechaCambio).first()
+                if sucesiSoli.estado_inicio not in linea_B: #LINEA B
+                    return Response({"success":False, "message":f"El solicitante tiene formación CAF y no esta en LB"})
+            elif receptor.formacion == "CAF": # Solicitante MAN
+                sucesiRece = Sucesion.objects.filter(codigo = receptor.codigo, fecha = fechaCambio).first()
+                if sucesiRece.estado_inicio not in linea_B:
+                    return Response({"success":False, "message":f"El receptor tiene formación CAF y no esta en LB"})
+                
 
-
-       
     solicitante_siguiente = None
     receptor_siguiente = None
     comentarios = ""
@@ -1436,6 +1461,7 @@ def aprobar_solicitudes_cambios_turnos(request):
                             horario_relacion_receptor = Horario.objects.filter(turno=solicitud['turnoReceptorDiaDeseado']).first()
                         else:
                             horario_relacion_receptor = None
+
                         sucesionSolicitante = Sucesion.objects.filter(codigo_horario = solicitud['turnoReceptorDiaDeseado'], fecha = solicitud['fechaCambio']).first()
 
                         Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'],
@@ -1535,9 +1561,16 @@ def aprobar_solicitudes_cambios_turnos(request):
                             "success":True, "message": "El cambio de turno fue rechazado. Si consideras que debes discutir la solicitud, contacta al OC-SAA ó Gestión de turnos"
                             })
             elif peticion == "admin": 
+
                 if solicitudCambio.estado_cambio_emp == "aprobado":
-                    horario_relacion_solicitante = Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).first()
-                    if solicitud['turnoSolicitanteDiaDeseado'] == "DISPO": #RECEPTOR TIENE DISPO
+
+                    if Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).exists():
+                        horario_relacion_solicitante = Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).first()
+                    else:
+                           horario_relacion_solicitante = None
+                    
+                    if solicitud['turnoSolicitanteDiaDeseado'] == "DISPO": #TURNO RECEPTOR == DISPO
+                        
                         print(f"El receptor tiene el DISPO: {solicitud['turnoSolicitanteDiaDeseado']}") # DISPO:DISPO
                         #Actualizar sucesión del solicitante
                         Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], fecha=solicitud['fechaCambio']).update(codigo_horario =solicitud['turnoSolicitanteDiaDeseado'],
@@ -1547,48 +1580,74 @@ def aprobar_solicitudes_cambios_turnos(request):
                                                         hora_inicio = None ,
                                                         hora_fin = None)
                         #Actualizar sucesión  del receptor                                 #SOLICITANTE TURNO:
-                        horario_relacion_receptor = Horario.objects.filter(turno=solicitud['turnoReceptorDiaDeseado']).first()
+                        if Horario.objects.filter(turno=solicitud['turnoReceptorDiaDeseado']).exists():
+                            horario_relacion_receptor = Horario.objects.filter(turno=solicitud['turnoReceptorDiaDeseado']).first()    
+                        else:
+                            horario_relacion_receptor = None
+                        sucesionSolicitante = Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], codigo_horario = solicitud['turnoReceptorDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+                    
                         Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'],
-                                                        horario = horario_relacion_receptor , estado_inicio = horario_relacion_receptor.inilugar, 
-                                                        estado_fin = horario_relacion_receptor.finallugar,
-                                                        hora_inicio = horario_relacion_receptor.inihora, hora_fin = horario_relacion_receptor.finalhora)
+                                                        horario = horario_relacion_receptor , 
+                                                        estado_inicio = sucesionSolicitante.estado_inicio, 
+                                                        estado_fin = sucesionSolicitante.estado_fin,
+                                                        hora_inicio = sucesionSolicitante.hora_inicio, 
+                                                        hora_fin = sucesionSolicitante.hora_fin)
                         # aca acentamos la aprobación del empleado
                         Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
-                        codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_admin = "aprobado")    
-                    elif solicitud['turnoReceptorDiaDeseado'] == "DISPO":
-                        print(f"El solicitante tiene el DISPO: {solicitud['turnoReceptorDiaDeseado']}") # DISPO:DISPO
+                            codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_admin = "aprobado")    
+                    elif solicitud['turnoReceptorDiaDeseado'] == "DISPO": #El DISPO lo tiene el Solicitante
+                        print(f"El solicitante tiene el DISPO: {solicitud['turnoReceptorDiaDeseado']}") 
                         #Actualizar sucesión  del receptor
-                        Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario =solicitud['turnoReceptorDiaDeseado'],
+                        Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'],
                                                         horario = None, 
                                                         estado_inicio = None, 
                                                         estado_fin = None,
                                                         hora_inicio = None, 
                                                         hora_fin = None)
                         #Actualizar sucesión del solicitante.
-                        horario_relacion_solicitante = Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).first()
-                        Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'], 
+                        if Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).exists():
+                            horario_relacion_solicitante = Horario.objects.filter(turno=solicitud['turnoSolicitanteDiaDeseado']).first()
+                        else:
+                            horario_relacion_solicitante = None
+                        sucesionReceptor = Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], codigo_horario = solicitud['turnoSolicitanteDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+                        Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoSolicitanteDiaDeseado'], 
                                                         horario = horario_relacion_solicitante, 
-                                                        estado_inicio = horario_relacion_solicitante.inilugar, 
-                                                        estado_fin = horario_relacion_solicitante.finallugar , 
-                                                        hora_inicio = horario_relacion_solicitante.inihora , 
-                                                        hora_fin = horario_relacion_solicitante.finalhora)
+                                                        estado_inicio = sucesionReceptor.estado_inicio, 
+                                                        estado_fin = sucesionReceptor.estado_fin , 
+                                                        hora_inicio = sucesionReceptor.hora_inicio , 
+                                                        hora_fin = sucesionReceptor.hora_fin)
                         
                         Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
-                        codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_admin = "aprobado")
+                            codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_admin = "aprobado")
                     else:
                         print(f"NINGUNO DE LOS DOS TIENE DISPO")
-                        horario_relacion_receptor = Horario.objects.filter(turno = solicitud['turnoSolicitanteDiaDeseado'] ).first()
+
+                        if Horario.objects.filter(turno = solicitud['turnoSolicitanteDiaDeseado']).exists():
+                            horario_relacion_receptor = Horario.objects.filter(turno = solicitud['turnoSolicitanteDiaDeseado']).first()
+                        else:
+                            horario_relacion_receptor = None
+                        sucesionReceptor = Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], codigo_horario = solicitud['turnoSolicitanteDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+
                         Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], fecha=solicitud['fechaCambio']).update(codigo_horario =solicitud['turnoSolicitanteDiaDeseado'],
-                                                        horario = horario_relacion_receptor, estado_inicio = horario_relacion_receptor.inilugar , 
-                                                        estado_fin = horario_relacion_receptor.finallugar,hora_inicio = horario_relacion_receptor.inihora, hora_fin = horario_relacion_receptor.finalhora)
-                        
-                        horario_relacion_solicitante = Horario.objects.filter(turno = solicitud['turnoReceptorDiaDeseado']).first()
+                                                        horario = horario_relacion_receptor, 
+                                                        estado_inicio = sucesionReceptor.estado_inicio, 
+                                                        estado_fin = sucesionReceptor.estado_fin,
+                                                        hora_inicio = sucesionReceptor.hora_inicio,
+                                                        hora_fin = sucesionReceptor.hora_fin)
+                        if Horario.objects.filter(turno = solicitud['turnoReceptorDiaDeseado']).exists():
+                            horario_relacion_solicitante = Horario.objects.filter(turno = solicitud['turnoReceptorDiaDeseado']).first()
+                        else:
+                            horario_relacion_solicitante = None
+                            
+                        sucesionSolicitante = Sucesion.objects.filter(codigo = solicitud['codigoSolicitante'], codigo_horario = solicitud['turnoReceptorDiaDeseado'], fecha = solicitud['fechaCambio']).first()
+
                         Sucesion.objects.filter(codigo = solicitud['codigoReceptor'], fecha=solicitud['fechaCambio']).update(codigo_horario = solicitud['turnoReceptorDiaDeseado'], 
                                                         horario = horario_relacion_solicitante, 
-                                                        estado_inicio = horario_relacion_solicitante.inilugar , 
-                                                        estado_fin = horario_relacion_solicitante.finallugar , 
-                                                        hora_inicio = horario_relacion_solicitante.inihora , 
-                                                        hora_fin = horario_relacion_solicitante.finalhora )
+                                                        estado_inicio = sucesionSolicitante.estado_inicio , 
+                                                        estado_fin = sucesionSolicitante.estado_fin, 
+                                                        hora_inicio = sucesionSolicitante.hora_inicio, 
+                                                        hora_fin = sucesionSolicitante.hora_fin)
+                        
                         Cambios_de_turnos.objects.filter(fecha_solicitud_cambio = solicitud['fechaCambio'], codigo_solicitante = solicitud['codigoSolicitante'], 
                             codigo_receptor = solicitud['codigoReceptor'] ).update(estado_cambio_admin = "aprobado")
                     
@@ -2246,11 +2305,6 @@ def getSolicitudesCambiosTurnos(request):
     if codigo is None and fecha_solicitud_cambio is None:
         return Response({"success":False, "message":"Parametros vacios"})
     
-    
-
-
-    
-    
     if Cambios_de_turnos.objects.filter(codigo_solicitante = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio).exists():
         rol = "solicitante"
         solicitudes = Cambios_de_turnos.objects.filter(codigo_solicitante = codigo, fecha_solicitud_cambio = fecha_solicitud_cambio)
@@ -2294,7 +2348,7 @@ def cancelarSolicitudGt(request):
     idSolicitud = request.data.get("idSolicitud")
     if idSolicitud:
         if Solicitudes_Gt.objects.filter(id = idSolicitud).exists():
-            solicitud = Solicitudes_Gt.objects.filter(id = idSolicitud).delete()
+            Solicitudes_Gt.objects.filter(id = idSolicitud).delete()
         return Response({"success":True, "message": f"Se elimino correctamente la solicitud con id: {idSolicitud}"})
     else:
         return Response({"success":True, "message": f"El id de la solicitud esta vacio: {idSolicitud}"})

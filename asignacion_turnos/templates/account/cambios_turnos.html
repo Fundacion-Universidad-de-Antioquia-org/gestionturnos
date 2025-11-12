@@ -43,7 +43,7 @@
     <div class="saludo" style="color: #5a9138; font-size: 11px;">Cambios de turnos</div>
   </div>
   <div class="usuario-bar-centro">
-    <button title="Activar o desactivar filtros" id="btnActivarFiltros" ><span class="material-symbols-outlined">filter_alt</span></button>
+    <button title="Refrescar página" onclick="refrescarPagina()" ><span class="material-symbols-outlined">refresh</span></button>
     <button title="Buscar cambio de turno" id="btnBuscarCambio" ><span class="material-symbols-outlined">search</span></button>
     <button><span class="material-symbols-outlined" onclick="abrirModalHorarios()">find_replace</span></button>
     <button><span class="material-symbols-outlined" style="color: white;">browse_activity</span></button>
@@ -77,11 +77,9 @@
         <label for="filtroCargo">Cargo:</label>
         <select name="select" id="filtroCargo">
           <option value="">Todos</option>
-          <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO METRO
-          </option>
-          <option value="CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO TRANVIA">CONDUCTOR DE VEHICULOS DE PASAJEROS TIPO
-            TRANVIA</option>
-          <option value="OPERADOR DE CONDUCCION">OPERADOR DE CONDUCCION</option>
+          <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO">CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO</option>
+          <option value="CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA">CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA</option>
+          <option value="OPERADOR(A) DE CONDUCCION">OPERADOR(A) DE CONDUCCION</option>
           <option value="MANIOBRISTA TRENES">MANIOBRISTA TRENES</option>
           <option value="MANIOBRISTA TRANVIA">MANIOBRISTA TRANVIA</option>
           <option value="INCONSISTENCIA">INCONSISTENCIA</option>
@@ -219,7 +217,12 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     aplicarFiltros();
+
   })
+
+  function refrescarPagina(){
+    window.location.reload()
+  }
 </script>
 
 <!--Script boton aprobar cambios de turnos-->
@@ -479,6 +482,7 @@
   });
 
   function aplicarFiltros() {
+    
     document.getElementById("tablaBody").style.display = "";
 
     const valorNombre = filtros.nombre.value.toLowerCase().trim();

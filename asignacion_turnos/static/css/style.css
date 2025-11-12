@@ -1768,7 +1768,7 @@ label {
   width: 100%;
   max-width: 400px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  position: relative;
+  position: relative; 
 }
 
 .cerrar-fechas-gt {
@@ -1777,7 +1777,7 @@ label {
   right: 16px;
   font-size: 24px;
   font-weight: bold;
-  color: #555;
+  color: #dd0b0b;
   cursor: pointer;
 }
 

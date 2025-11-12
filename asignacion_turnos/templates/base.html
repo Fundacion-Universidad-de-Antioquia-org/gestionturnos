@@ -23,7 +23,7 @@
 <div id="modalFechasGT" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
     <span class="cerrar-fechas-gt" onclick="cerrarModalFechasGT()">&times;</span>
-    <div class="icon-title"><span class="material-symbols-outlined">assignment</span><h3 class="titulo-fechas-gt">Solicitudes GT</h3></div>
+    <div class="icon-title"><span class="material-symbols-outlined" style="color: #fc9700;">assignment</span><h3 class="titulo-fechas-gt">Solicitudes GT</h3></div>
 
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha inicial:</label>
@@ -37,11 +37,24 @@
   </div>
 </div>
 
-      <!-- Modal de verificacion GT -->
+      <!-- Modal de cambios de turnos -->
+<div id="modalCambiosTurnos" class="modal-fechas-gt">
+  <div class="modal-fechas-gt-contenido">
+    <span class="cerrar-fechas-gt" onclick="cerrarModalCambiosTurnos()">&times;</span>
+    <div class="icon-title"><span class="material-symbols-outlined" style="color: #15c9cf;">autorenew</span><h3 class="titulo-fechas-gt">Cambios de turnos</h3></div>
+
+    <div class="formulario-fechas-gt">
+      <label for="fechaCambios">Fecha de solicitud:</label>
+      <input type="date" id="fechaInicialCambios" class="input-fechas-gt">
+      <button class="btn-cargar-fechas-gt" onclick="cargarCambiosTurnos()">Cargar</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalVerificacion" class="modal-fechas-gt">
   <div class="modal-fechas-gt-contenido">
     <span class="cerrar-fechas-gt" onclick="cerrarModalVerificacion()">&times;</span>
-    <div class="icon-title"><span class="material-symbols-outlined">assignment</span><h3 class="titulo-fechas-gt">Verificación</h3></div>
+    <div class="icon-title"><span class="material-symbols-outlined" style="color: #d6ec09;">assignment</span><h3 class="titulo-fechas-gt">Verificación</h3></div>
 
     <div class="formulario-fechas-gt">
       <label for="fechaInicioGT">Fecha:</label>
@@ -108,7 +121,7 @@
                     </a>
                 </li>
                   <li class="nav-item">
-                    <a href="{% url 'cambios_turnos' %}" title="Cambios de turno" class="nav-link">
+                    <a href="#" title="Cambios de turno" class="nav-link" onclick="abrirModalCambiosTurnos()">
                         <span class="material-symbols-rounded">autorenew</span>
                         <span class="nav-label">Autorizar cambios</span>
                     </a>
@@ -167,12 +180,13 @@
         <script>
         const baseUrlSolicitudesGT = "{% url 'solicitudesGt' %}";
         const baseUrlVerificacion = "{% url 'verificacion' %}";
+        const baseUrlCambiosTurnos = "{% url 'cambios_turnos'%}"
         </script>
     
-    <script src="https://cdnfuadesarrollo.blob.core.windows.net/gestionturnos/script.js"></script> 
+    <!-- <script src="https://cdnfuadesarrollo.blob.core.windows.net/gestionturnos/script.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
-   <!-- <script src="{% static 'js/script.js' %}"></script> -->
+   <script src="{% static 'js/script.js' %}"></script>
    
    
    {% block scripts %}
