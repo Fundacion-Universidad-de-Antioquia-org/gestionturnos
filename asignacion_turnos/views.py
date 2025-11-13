@@ -7,6 +7,7 @@ from .resources import peticion_Oddo
 from .resources.cargarSucesion import procesar_sucesion_multifila
 from .resources.cargarCuadroTunos import procesar_cuadro_turnos
 from .resources.validarExtension import validarExcel
+from .resources.revisarFestivos import es_festivo_o_domingo
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -693,10 +694,12 @@ def get_sucesion_cargo(request):
     fechaInicial = request.GET.get("fechaInicio")
     fechaFinal = request.GET.get("fechaFinal")
 
+    #print(f" cargo: {cargo}, fechaIni: {fechaInicial}, fechafin: {fechaFinal}")
+
     if not cargo:
         return Response({"Error":"Parametro cargo es requerido"}, status=400)
     
-    turnos = Sucesion.objects.filter(Q(fecha__gte = fechaInicial) and Q(fecha__lte = fechaFinal), cargo= cargo, empleado__estado = "Activo", estado_sucesion = "publicado")
+    turnos = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)) , cargo= cargo, empleado__estado = "Activo", estado_sucesion = "publicado")
 
     data = []
     for t in turnos:
@@ -711,7 +714,7 @@ def get_sucesion_cargo(request):
             "hora_ini":t.hora_inicio if t.hora_inicio else  'Sin hora',
             "hora_fin":t.hora_fin if t.hora_fin else  'Sin hora',
             "particularidades": t.horario.observaciones if t.horario and t.horario.observaciones else "Sin observaciones",
-            "duracion":t.horario.duracion if t.horario and t.horario.duracion else "" 
+            "duracion":t.horario.duracion if t.horario and t.horario.duracion else "00:00" 
         })
     return Response({"success":True, "data":data})
 
@@ -1353,34 +1356,50 @@ def solicitar_cambio_turno(request):
             "message": "Se registró correctamente la solicitud de cambio de turnos."
             })
         
-    
-    t = time.fromisoformat("05:00")
-    tNoche = time.fromisoformat("22:20")
+    #Limites de madrugada y noche TRENES
+    horaSemanaMadrugada = time.fromisoformat("05:00")
+    horaSemanaNoche = time.fromisoformat("22:20")
 
-    limiteMadrugada = datetime.combine(fechaCambio,t)
-    limiteNoche = datetime.combine(fechaCambio,tNoche)
+    limiteMadrugada = datetime.combine(fechaCambio,horaSemanaMadrugada)
+    limiteNoche = datetime.combine(fechaCambio,horaSemanaNoche)
 
-    if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) <= limiteMadrugada and  datetime.combine(fechaCambio,receptor_dia.hora_inicio) <= limiteMadrugada:
-        if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
-            comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
+    #Fin de semana
+    horaFinSemanaMadrugada = time.fromisoformat("05:00")
+    horaFinSemanaNoche = time.fromisoformat("22:20")
+
+    limiteMadrugadaFin = datetime.combine(fechaCambio,horaSemanaMadrugada)
+    limiteNocheFin = datetime.combine(fechaCambio,horaSemanaNoche)
+
+    festivo_domingo = es_festivo_o_domingo(fechaCambio)
+
+    if solicitante.cargo == "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO" and receptor.cargo == "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO":
+
+        if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) < limiteMadrugada or  datetime.combine(fechaCambio,receptor_dia.hora_inicio) < limiteMadrugada:
+            if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
+                comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
+                transportable_solicitante = True
+                transportable_receptor = True
+                estadoCambio = "aprobado"
+            elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
+                comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
+                transportable_solicitante = True
+                transportable_receptor = True
+                estadoCambio = "aprobado"
+            else:
+                comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos empleados, comunicarse con el area Gestión de Turnos si usted asume su transporte"
+                transportable_solicitante = True
+                transportable_receptor = True
+                estadoCambio = "pendiente"
+        elif datetime.combine(fechaCambio, solicitante_dia.hora_fin) < limiteNoche or  datetime.combine(fechaCambio,receptor_dia.hora_fin) < limiteNoche:
+            comentarios = f"{comentarios}\n✅ Ambos cumplen, zona: No son transportables"
             transportable_solicitante = True
             transportable_receptor = True
             estadoCambio = "aprobado"
-        elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
-            comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
+        else:
+            comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos, comunicarse con el area Gestión de Turnos"
             transportable_solicitante = True
             transportable_receptor = True
-            estadoCambio = "aprobado"
-    elif solicitante.zona ==  receptor.zona:
-        comentarios = f"{comentarios}\n✅ Ambos cumplen, zona: No son transportables"
-        transportable_solicitante = True
-        transportable_receptor = True
-        estadoCambio = "aprobado"
-    else:
-        comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos, comunicarse con el area Gestión de Turnos"
-        transportable_solicitante = True
-        transportable_receptor = True
-        estadoCambio = "pendiente"
+            estadoCambio = "pendiente"
 
     #Crear solicitud de cambio
     Cambios_de_turnos.objects.create(
@@ -1417,7 +1436,7 @@ def solicitar_cambio_turno(request):
 
     return Response({
         "success": True,
-        "message": "Se registró correctamente la solicitud de cambio de turnos."
+        "message": "Se registró correctamente la solicitud de cambio de turnos"
     })
 
 

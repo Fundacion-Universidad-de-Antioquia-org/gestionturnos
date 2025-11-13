@@ -618,11 +618,13 @@
           <caption id="ms-caption" class="sr-only">Listado de tramos/sucesiones del solicitante</caption>
           <thead>
             <tr>
+              <th>Fecha</th>
               <th>Turno</th>
               <th>Estación incio</th>
               <th>Estación fin</th>
               <th>Hora incio</th>
               <th>Hora final</th>
+              <th>Particularidades</th>
               <th>Observaciónes</th>
             </tr>
           </thead>
@@ -1442,6 +1444,8 @@ function removeRowBySolicitudId(id) {
 <script>
   document.getElementById('cargarSucesion').addEventListener('click', function(){
     alert("prbeasdasdad")
+    const modal = document.getElementById("modalDescripcion");
+              
     codigo = document.getElementById('codigoEmpleado').textContent
     fechaInicial = toISODate(document.getElementById('fechaInicialSolicitud').textContent);
     fechaFinal = toISODate(document.getElementById('fechaFinalSolicitud').textContent);
@@ -1456,6 +1460,7 @@ fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${
 .then(data => {
     if(data.length >= 1){
       alert("Se cargo correctamente la sucesion")
+      modal.classList.remove("show");
       openSucesionModal(data)
     }else{
       alert("error")
@@ -1488,7 +1493,8 @@ fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${
   return `${year}-${String(mm).padStart(2,'0')}-${day}`;
 }
 
-  // ========= MODAL CONTROL & TABLE POPULATE =========
+  
+// ========= MODAL CONTROL & TABLE POPULATE =========
 (() => {
   const modal   = document.getElementById('modalSucesionSolicitante');
   const dialog  = modal?.querySelector('.ms-dialog');
@@ -1536,30 +1542,50 @@ fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${
 
   // API pública para abrir con datos
   window.openSucesionModal = function(rows){
-  
     if(!Array.isArray(rows)) rows = [];
-    // Limpia
+
+    // Limpia cuerpo de la tabla
     tbody.innerHTML = '';
-    // Render
+
     const frag = document.createDocumentFragment();
+
     rows.forEach(r => {
+      // Destructuramos por claridad
+      const {
+        fecha,
+        turno,
+        estacion_ini,
+        estacion_fin,
+        hora_ini,
+        hora_fin,
+        particularidades,
+        duracion 
+      } = r;
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
-      <td class="nowrap">${r.fecha ?? ''}</td>
-        <td class="nowrap">${r.turno ?? ''}</td>
-        <td class="nowrap">${r.estacion_ini ?? ''}</td>
-        <td class="nowrap">${r.estacion_fin ?? ''}</td>
-        <td class="nowrap">${r.hora_ini ?? ''}</td>
-        <td class="nowrap">${r.hora_fin ?? ''}</td>
-        <td class="wrap">${r.particularidades ?? ''}</td>
+        <td class="nowrap">${fecha ?? ''}</td>
+        <td class="nowrap">${turno ?? ''}</td>
+        <td class="nowrap">${estacion_ini ?? ''}</td>
+        <td class="nowrap">${estacion_fin ?? ''}</td>
+        <td class="nowrap">${hora_ini ?? ''}</td>
+        <td class="nowrap">${hora_fin ?? ''}</td>
+        <td class="wrap">${particularidades ?? ''}</td>
+        <td class="nowrap">${duracion ?? ''}</td>
       `;
       frag.appendChild(tr);
     });
+
     if(rows.length === 0){
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td colspan="6" style="text-align:center; color:var(--muted); padding:20px;">Sin registros</td>`;
+      // Ahora hay 8 columnas en total
+      tr.innerHTML = `
+        <td colspan="8" style="text-align:center; color:var(--muted); padding:20px;">
+          Sin registros
+        </td>`;
       frag.appendChild(tr);
     }
+
     tbody.appendChild(frag);
     open();
   };
@@ -1568,7 +1594,6 @@ fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${
   window.closeSucesionModal = close;
 
 })();
-
 
 </script>
 {% endblock %}
