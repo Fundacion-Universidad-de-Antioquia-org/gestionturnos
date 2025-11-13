@@ -699,7 +699,7 @@ def get_sucesion_cargo(request):
     if not cargo:
         return Response({"Error":"Parametro cargo es requerido"}, status=400)
     
-    turnos = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)) , cargo= cargo, empleado__estado = "Activo", estado_sucesion = "publicado")
+    turnos = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)) , cargo= cargo, empleado__estado = "Activo", estado_sucesion = "publicado").distinct()
 
     data = []
     for t in turnos:
