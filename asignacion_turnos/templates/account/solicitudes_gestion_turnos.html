@@ -1541,7 +1541,7 @@ fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${
   });
 
   
-  window.openSucesionModal = function(rows){
+  function openSucesionModal (rows){
     if(!Array.isArray(rows)) rows = [];
 
     // Limpia cuerpo de la tabla

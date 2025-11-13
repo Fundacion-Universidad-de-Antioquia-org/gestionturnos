@@ -1025,7 +1025,7 @@ def buscar_cambio_turno(request):
                                         ).filter(Q(fecha = fechaCambio), Q(empleado__cargo = empleado.cargo), ~Q(codigo_horario__in = turnosInvalidados), ~Q(codigo = codigoSolicitante),
                                         (Q(codigo_horario__in = ["DISPO"])) | (Q(inicio_cambio__gte = horaFinalTurnoAnterior))))
             else:
-                print("Sin sucesion del dia siguiente")
+                print("Sin sucesion cargada para el dia siguiente")
                 sucesionDiaCambio = (Sucesion.objects.select_related('empleado').annotate(inicio_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_inicio"), 
                                         output_field=DateTimeField(),
                                         ),
@@ -1132,6 +1132,7 @@ def buscar_cambio_turno(request):
             horaInicioDiaPosteriorCambio8Hrs
 
             if sucesionSolicitanteDiaPosterior is None:
+                print("Sin sucesion cargada para el dia siguiente")
                 sucesionDiaCambio = (Sucesion.objects.annotate(inicio_cambio = ExpressionWrapper(Cast(F("fecha"), DateTimeField()) + F("hora_inicio"), 
                                     output_field=DateTimeField(),
                                     ),
@@ -1143,7 +1144,6 @@ def buscar_cambio_turno(request):
                                     ),
                                     ).filter(Q(fecha = fechaCambio), Q(empleado__cargo = empleado.cargo), ~Q(codigo_horario__in = turnosInvalidados), ~Q(codigo = codigoSolicitante),
                                     (Q(codigo_horario__in = ["DISPO"])) | (Q(inicio_cambio__gte = horaFinalTurnoAnterior))))
-            
             
             for t in sucesionDiaCambio:
                 sucesionFiltrada.append({
@@ -1340,8 +1340,12 @@ def solicitar_cambio_turno(request):
     transportable_solicitante = False
     transportable_receptor =  False
     estadoCambio = ""
+    
     madrugadaLinea = ["ORIENTE","OCCIDENTE","SUR"]
-    madrugadaPatio = ["PBE"]
+    madrugadaPatio = ["PBE","ORIENTEPBE","NORORIENTE"]
+
+    nocheLinea = ["PRUBEA"]
+    nochePatio = ["PBE"]
 
     if solicitante_dia.codigo_horario == "DISPO" or receptor_dia.codigo_horario == "DISPO":
         estadoCambio = "pendiente"
@@ -1377,48 +1381,95 @@ def solicitar_cambio_turno(request):
         
     #Limites de madrugada y noche TRENES
     horaSemanaMadrugada = time.fromisoformat("05:00")
-    horaSemanaNoche = time.fromisoformat("22:20")
+    horaSemanaNoche = time.fromisoformat("22:50")
 
     limiteMadrugada = datetime.combine(fechaCambio,horaSemanaMadrugada)
     limiteNoche = datetime.combine(fechaCambio,horaSemanaNoche)
 
     #Fin de semana
     horaFinSemanaMadrugada = time.fromisoformat("05:00")
-    horaFinSemanaNoche = time.fromisoformat("22:20")
+    horaFinSemanaNoche = time.fromisoformat("21:40")
 
     limiteMadrugadaFin = datetime.combine(fechaCambio,horaSemanaMadrugada)
+    limiteMadrugadaFinNoEstoySeguro = datetime.combine(fechaCambio,horaSemanaMadrugada)
     limiteNocheFin = datetime.combine(fechaCambio,horaSemanaNoche)
 
     festivo_domingo = es_festivo_o_domingo(fechaCambio)
 
-    if solicitante.cargo == "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO" and receptor.cargo == "CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO":
+    cargos = ["CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO METRO","CONDUCTOR(A) DE VEHICULOS DE PASAJEROS TIPO TRANVIA"]
 
-        if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) < limiteMadrugada or  datetime.combine(fechaCambio,receptor_dia.hora_inicio) < limiteMadrugada:
-            if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
-                comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
-                transportable_solicitante = True
-                transportable_receptor = True
-                estadoCambio = "aprobado"
-            elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
-                comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
-                transportable_solicitante = True
-                transportable_receptor = True
-                estadoCambio = "aprobado"
+    if solicitante.cargo in cargos and receptor.cargo in cargos:
+        if festivo_domingo:
+            if datetime.combine(fechaCambio, solicitante_dia.hora_inicio) <= limiteMadrugadaFin or  datetime.combine(fechaCambio,receptor_dia.hora_inicio) <= limiteMadrugadaFin:
+                if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
+                    comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "aprobado"
+                elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
+                    comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "aprobado"
+                else:
+                    comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos empleados, comunicarse con el area Gestión de Turnos si usted asume su transporte"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "pendiente"
+            elif datetime.combine(fechaCambio, solicitante_dia.hora_fin) >= horaFinSemanaNoche or  datetime.combine(fechaCambio,receptor_dia.hora_fin) >= horaFinSemanaNoche:
+                if solicitante.zona in nocheLinea and receptor.zona in nocheLinea:
+                    comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "aprobado"
+                elif solicitante.zona in nochePatio and receptor.zona in nochePatio:
+                    comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "aprobado"
+                else:
+                    comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos empleados, comunicarse con el area Gestión de Turnos si usted asume su transporte"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "pendiente"
+        else:
+            if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) <= limiteMadrugada or  datetime.combine(fechaCambio,receptor_dia.hora_inicio) <= limiteMadrugada:
+                if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
+                    comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "aprobado"
+                elif solicitante.zona in madrugadaPatio and receptor.zona in madrugadaPatio:
+                    comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "aprobado"
+                else:
+                    comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos empleados, comunicarse con el area Gestión de Turnos si usted asume su transporte"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "pendiente"
+            elif datetime.combine(fechaCambio, solicitante_dia.hora_fin) >= limiteNoche or  datetime.combine(fechaCambio,receptor_dia.hora_fin) >= limiteNoche:
+                if solicitante.zona in nocheLinea and receptor.zona in nocheLinea:
+                    comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "aprobado"
+                elif solicitante.zona in nochePatio and receptor.zona in nochePatio:
+                    comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada PBE"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "aprobado"
+                else:
+                    comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos empleados, comunicarse con el area Gestión de Turnos si usted asume su transporte"
+                    transportable_solicitante = True
+                    transportable_receptor = True
+                    estadoCambio = "pendiente"
             else:
-                comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos empleados, comunicarse con el area Gestión de Turnos si usted asume su transporte"
+                comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos, comunicarse con el area Gestión de Turnos"
                 transportable_solicitante = True
                 transportable_receptor = True
                 estadoCambio = "pendiente"
-        elif datetime.combine(fechaCambio, solicitante_dia.hora_fin) < limiteNoche or  datetime.combine(fechaCambio,receptor_dia.hora_fin) < limiteNoche:
-            comentarios = f"{comentarios}\n✅ Ambos cumplen, zona: No son transportables"
-            transportable_solicitante = True
-            transportable_receptor = True
-            estadoCambio = "aprobado"
-        else:
-            comentarios = f"{comentarios}\n⛔ No se garantiza el servicio de transporte para uno ó ambos, comunicarse con el area Gestión de Turnos"
-            transportable_solicitante = True
-            transportable_receptor = True
-            estadoCambio = "pendiente"
 
     #Crear solicitud de cambio
     Cambios_de_turnos.objects.create(
