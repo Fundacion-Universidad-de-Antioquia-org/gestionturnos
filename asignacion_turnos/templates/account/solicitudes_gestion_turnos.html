@@ -1460,7 +1460,7 @@ fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${
 .then(data => {
     if(data.length >= 1){
       alert("Se cargo correctamente la sucesion")
-      modal.classList.remove("show");
+      //modal.classList.remove("show");
       openSucesionModal(data)
     }else{
       alert("error")
@@ -1540,7 +1540,7 @@ fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${
     if(el instanceof HTMLElement && el.dataset.close === 'true') close();
   });
 
-  // API pública para abrir con datos
+  
   window.openSucesionModal = function(rows){
     if(!Array.isArray(rows)) rows = [];
 
