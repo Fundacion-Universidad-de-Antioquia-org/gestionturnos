@@ -171,7 +171,6 @@ function cerrarModalCambiosTurnos() {
 function cargarCambiosTurnos(){
   const fecha = document.getElementById('fechaInicialCambios').value
   if(fecha !== ""){
-    alert(fecha)
     const url = `${baseUrlCambiosTurnos}?fecha=${fecha}`;
     window.location.href = url;
   }
