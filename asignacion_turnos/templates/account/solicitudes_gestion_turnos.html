@@ -60,7 +60,7 @@
 }
 
 /* ====== MODAL LAYOUT ====== */
-.ms-modal{position:fixed; inset:0; display:none; z-index:9999;}
+.ms-modal{position:fixed; inset:0; display:none; z-index:10000;}
 .ms-modal[aria-hidden="false"]{display:block;}
 .ms-backdrop{position:absolute; inset:0; background:rgba(0,0,0,.55); backdrop-filter: blur(2px);}
 .ms-dialog{
@@ -403,7 +403,8 @@
   </div>
 </div>
 </section>
-<section class="table-section"><table class="styled-table display" id="tablaDatos">
+<section class="table-section">
+  <table class="styled-table display" id="tablaDatos">
 <thead>
         <tr>
           <th>Foto</th>
@@ -603,7 +604,14 @@
 </div>
 
 <!-- ========== MODAL SUCESION SOLICITANTE ========== -->
-<div id="modalSucesionSolicitante" class="ms-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ms-title" tabindex="-1">
+<div id="modalSucesionSolicitante"
+     class="ms-modal"
+     aria-hidden="true"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="ms-title"
+     tabindex="-1">
+
   <div class="ms-backdrop" data-close="true"></div>
 
   <div class="ms-dialog" role="document">
@@ -615,21 +623,25 @@
     <div class="ms-body">
       <div class="ms-table-wrap">
         <table class="ms-table" aria-describedby="ms-caption">
-          <caption id="ms-caption" class="sr-only">Listado de tramos/sucesiones del solicitante</caption>
+          <caption id="ms-caption" class="sr-only">
+            Listado de tramos/sucesiones del solicitante
+          </caption>
+
           <thead>
             <tr>
               <th>Fecha</th>
               <th>Turno</th>
-              <th>Estación incio</th>
+              <th>Estación inicio</th>
               <th>Estación fin</th>
-              <th>Hora incio</th>
+              <th>Hora inicio</th>
               <th>Hora final</th>
               <th>Particularidades</th>
               <th>Observaciónes</th>
             </tr>
           </thead>
+
           <tbody id="ms-tbody">
-            <!-- Filas generadas por JS -->
+            <!-- Generado por JS -->
           </tbody>
         </table>
       </div>
@@ -1443,31 +1455,18 @@ function removeRowBySolicitudId(id) {
 
 <script>
   document.getElementById('cargarSucesion').addEventListener('click', function(){
-    alert("prbeasdasdad")
-    const modal = document.getElementById("modalDescripcion");
-              
+
     codigo = document.getElementById('codigoEmpleado').textContent
     fechaInicial = toISODate(document.getElementById('fechaInicialSolicitud').textContent);
     fechaFinal = toISODate(document.getElementById('fechaFinalSolicitud').textContent);
     cedula = document.getElementById('cedulaEmpleado').textContent
-    alert("codigo: "+codigo+"fehca inicial: "+fechaInicial+ "fecha final:"+fechaFinal )
 
-fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${encodeURIComponent(cedula)}&fechaInicial=${encodeURIComponent(fechaInicial)}&fechaFinal=${encodeURIComponent(fechaFinal)}`,{
-  method: 'GET',
-  headers: { 'Accept': 'application/json' }
-})
-.then(response => response.json())
-.then(data => {
-    if(data.length >= 1){
-      alert("Se cargo correctamente la sucesion")
-      //modal.classList.remove("show");
-      openSucesionModal(data)
-    }else{
-      alert("error")
-    }
-})
+    window.open(`{% url 'vistaSucesionSolicitudesGt' %}?codigo=${encodeURIComponent(codigo)}&cedula=${encodeURIComponent(cedula)}&fechaInicial=${encodeURIComponent(fechaInicial)}&fechaFinal=${encodeURIComponent(fechaFinal)}`,
+                "SucesionWindow",
+                "width=900,height=350,left=200,top=100,resizable=yes,scrollbars=yes"
+              )
 
-  })
+  });
 
   function toISODate(s) {
   // Limpia comillas tipográficas y espacios
@@ -1492,108 +1491,6 @@ fetch(`{% url 'get_mis_turnos' %}?codigo=${encodeURIComponent(codigo)}&cedula=${
 
   return `${year}-${String(mm).padStart(2,'0')}-${day}`;
 }
-
-  
-// ========= MODAL CONTROL & TABLE POPULATE =========
-(() => {
-  const modal   = document.getElementById('modalSucesionSolicitante');
-  const dialog  = modal?.querySelector('.ms-dialog');
-  const tbody   = modal?.querySelector('#ms-tbody');
-  let lastFocused = null;
-
-  function trapFocus(e){
-    if(e.key !== 'Tab') return;
-    const focusables = modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
-    const arr = Array.from(focusables).filter(el => !el.hasAttribute('disabled'));
-    if(arr.length === 0) return;
-    const first = arr[0], last = arr[arr.length-1];
-    if(e.shiftKey && document.activeElement === first){ last.focus(); e.preventDefault(); }
-    else if(!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
-  }
-
-  function onKey(e){
-    if(e.key === 'Escape') close();
-  }
-
-  function open(){
-    lastFocused = document.activeElement;
-    modal.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
-    modal.addEventListener('keydown', trapFocus);
-    window.addEventListener('keydown', onKey);
-    // Focus primer elemento útil
-    const target = modal.querySelector('.ms-close, .ms-btn') || modal;
-    target.focus();
-  }
-
-  function close(){
-    modal.setAttribute('aria-hidden','true');
-    document.body.style.overflow = '';
-    modal.removeEventListener('keydown', trapFocus);
-    window.removeEventListener('keydown', onKey);
-    if(lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
-  }
-
-  // Cerrar por backdrop o botones con data-close
-  modal.addEventListener('click', (e) => {
-    const el = e.target;
-    if(el instanceof HTMLElement && el.dataset.close === 'true') close();
-  });
-
-  
-  function openSucesionModal (rows){
-    if(!Array.isArray(rows)) rows = [];
-
-    // Limpia cuerpo de la tabla
-    tbody.innerHTML = '';
-
-    const frag = document.createDocumentFragment();
-
-    rows.forEach(r => {
-      // Destructuramos por claridad
-      const {
-        fecha,
-        turno,
-        estacion_ini,
-        estacion_fin,
-        hora_ini,
-        hora_fin,
-        particularidades,
-        duracion 
-      } = r;
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="nowrap">${fecha ?? ''}</td>
-        <td class="nowrap">${turno ?? ''}</td>
-        <td class="nowrap">${estacion_ini ?? ''}</td>
-        <td class="nowrap">${estacion_fin ?? ''}</td>
-        <td class="nowrap">${hora_ini ?? ''}</td>
-        <td class="nowrap">${hora_fin ?? ''}</td>
-        <td class="wrap">${particularidades ?? ''}</td>
-        <td class="nowrap">${duracion ?? ''}</td>
-      `;
-      frag.appendChild(tr);
-    });
-
-    if(rows.length === 0){
-      const tr = document.createElement('tr');
-      // Ahora hay 8 columnas en total
-      tr.innerHTML = `
-        <td colspan="8" style="text-align:center; color:var(--muted); padding:20px;">
-          Sin registros
-        </td>`;
-      frag.appendChild(tr);
-    }
-
-    tbody.appendChild(frag);
-    open();
-  };
-
-  // Opcional: cerrar expuesto
-  window.closeSucesionModal = close;
-
-})();
 
 </script>
 {% endblock %}

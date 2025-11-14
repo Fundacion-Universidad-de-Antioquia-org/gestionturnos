@@ -1,0 +1,113 @@
+
+{% load static %}
+
+{% block styles %}
+<style>
+
+body{
+    background-color: #252424;
+}
+
+.table-section {
+  display: flex;
+  justify-content: center;
+  
+}
+
+    /*Estilos de tabla*/
+.styled-table {
+    width: 85%;
+    align-items: center;
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    background-color: #0d1117;
+    /*font-size: 14px;*/
+    /*min-width: unset;*/
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+     /* que use todo el ancho disponible */
+}
+
+.style-table tbody{
+  background-color: #000000;
+}
+
+.styled-table thead tr {
+    background-color: #0b0f12;
+    color: #ffffff;
+    text-align: center;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 6px 10px;
+    border: 1px solid #0b0f12; /*Color de los bordes de la tabla */
+    text-align: center;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #0b0f12;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #0d1117;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #0b0f12;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #252222;
+    cursor: pointer;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="table-section">
+<table class="styled-table display">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Código</th>
+                <th>Fecha</th>
+                <th>Turno</th>
+                <th>Estación inicial</th>
+                <th>Estación final</th>
+                <th>Hora incio</th>
+                <th>Hora final</th>
+            </tr>
+        </thead>
+        <tbody>
+             {% for t in turnos %}
+            <tr>
+                <td>{{ t.nombre }}</td>
+                <td>{{ t.codigo }}</td>
+                <td>{{ t.fecha|date:"d/m/Y" }}</td>
+                <td>{{ t.codigo_horario}}</td>
+                <td>{{ t.estado_inicio }}</td>
+                <td>{{ t.estado_fin }}</td>
+                {% if t.hora_inicio %}
+                <td>{{ t.hora_inicio }}</td>
+                {% else %}
+                <td>Sin hora</td>
+                {% endif %}
+                {% if t.hora_fin %}
+                <td>{{ t.hora_fin }}</td>
+                {% else %}
+                <td>Sin hora</td>
+                {% endif %}
+            </tr>
+             {% empty %}
+            <tr>
+                <td colspan="12">No hay registros de sucesión</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+  
+</table>
+</section>  
+{% endblock %}

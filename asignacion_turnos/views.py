@@ -549,6 +549,30 @@ def vista_precarga(request, *, context):
         
     })
 
+@settings.AUTH.login_required
+def vistaSucesionSolicitudesGt(request,*,context):
+    if request.method == "GET":
+
+        codigo = request.GET.get('codigo')
+        fechaInicial = request.GET.get("fechaInicial")
+        fechaFinal = request.GET.get('fechaFinal')
+        cedula = request.GET.get('cedula')
+        data = []
+
+        try:
+            turnos  = Sucesion.objects.filter((Q(fecha__gte = fechaInicial) & Q(fecha__lte = fechaFinal)), codigo = codigo, cedula = cedula, estado_sucesion = "publicado" ).order_by('fecha')
+            existenDatos = True
+        except Sucesion.DoesNotExist:
+            existenDatos = False
+        return render(request,"account/sucesionSolicitudGt.html",{
+                "turnos":turnos,
+                "existenDatos":existenDatos
+            })
+    else:
+        return render(request,"account/sucesionSolicitudGt.html",{
+                "existenDatos":existenDatos
+            })
+
 # [ ------ API ------]
 
 @api_view(["GET"])
@@ -678,9 +702,6 @@ def get_mis_turnos(request):
             "particularidades": t.horario.observaciones if t.horario and t.horario.observaciones else "Sin observaciones",
             "duracion":t.horario.duracion if t.horario and t.horario.duracion else "" 
         })
-
-    if len(data)> 1:
-        print(f"Data tiene datos {data}")
 
     return Response(data)
 
@@ -1379,7 +1400,7 @@ def solicitar_cambio_turno(request):
             "message": "Se registró correctamente la solicitud de cambio de turnos."
             })
         
-    #Limites de madrugada y noche TRENES
+    #Horas limites de madrugada y noche TRENES - TRANVIA - Semana
     horaSemanaMadrugada = time.fromisoformat("05:00")
     horaSemanaNoche = time.fromisoformat("22:50")
 
@@ -1387,6 +1408,7 @@ def solicitar_cambio_turno(request):
     limiteNoche = datetime.combine(fechaCambio,horaSemanaNoche)
 
     #Fin de semana
+    horaFinSemanaMadrugadaTranvia = time.fromisoformat("03:00")
     horaFinSemanaMadrugada = time.fromisoformat("05:00")
     horaFinSemanaNoche = time.fromisoformat("21:40")
 
@@ -1432,7 +1454,7 @@ def solicitar_cambio_turno(request):
                     transportable_solicitante = True
                     transportable_receptor = True
                     estadoCambio = "pendiente"
-        else:
+        else: # SEMANA
             if  datetime.combine(fechaCambio, solicitante_dia.hora_inicio) <= limiteMadrugada or  datetime.combine(fechaCambio,receptor_dia.hora_inicio) <= limiteMadrugada:
                 if solicitante.zona in madrugadaLinea and receptor.zona in madrugadaLinea:
                     comentarios = f"{comentarios}\n✅ Ambos son transportables, zona: Madrugada Linea"
