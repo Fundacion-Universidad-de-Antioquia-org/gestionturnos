@@ -893,8 +893,7 @@ def buscar_cambio_turno(request):
     fechaCambio = datetime.strptime(request.GET.get('fechaCambio'),"%Y/%m/%d")
 
     
-    if not Sucesion.objects.filter(codigo = codigoSolicitante, fecha = fechaCambio, estado_sucesion = "publicado").exists():
-        return Response({"success":False, "message": f"Para esta fecha: {fechaCambio} no hay sucesión cargada"})
+    
 
     #horaActual = datetime.now().time()
     horaActual = datetime.now(ZoneInfo("America/Bogota")).time()
@@ -917,6 +916,9 @@ def buscar_cambio_turno(request):
             "success":False,
             "message":f"Estas intentando realizar una solicitud de cambio por fuera del horario establecido entre: {horaInicial} y {horaFinal}, hora actual: {horaActual}"
         })
+    
+    if not Sucesion.objects.filter(codigo = codigoSolicitante, fecha = fechaCambio, estado_sucesion = "publicado").exists():
+        return Response({"success":False, "message": f"Para esta fecha: {fechaCambio} no hay sucesión cargada"})
 
     fechaAnterior =  fechaCambio - timedelta(days=1)
     fechaPosterior = fechaCambio + timedelta(days=1)
@@ -1857,6 +1859,9 @@ def solicitud_gt(request):
     fecha_final = request.data.get('fechaFinal')
     descripcion = request.data.get('descripcion')
     archivo = request.FILES.get('archivo')
+
+    hoy = datetime.now(ZoneInfo("America/Bogota"))
+    parametros = Parametros.objects.all()
 
     if codigoSolicitante is not None and cedulaSolicitante is not None:
 
