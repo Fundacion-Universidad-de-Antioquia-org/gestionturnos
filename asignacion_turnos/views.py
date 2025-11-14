@@ -892,9 +892,6 @@ def buscar_cambio_turno(request):
     codigoSolicitante = request.GET.get('codigoSolicitante') #Formato para la fecha: Y/m/d
     fechaCambio = datetime.strptime(request.GET.get('fechaCambio'),"%Y/%m/%d")
 
-    
-    
-
     #horaActual = datetime.now().time()
     horaActual = datetime.now(ZoneInfo("America/Bogota")).time()
     parametros = Parametros.objects.first()
@@ -947,6 +944,8 @@ def buscar_cambio_turno(request):
             "success":False,
              "message": f"{sucesionSolicitanteDiaCambio.nombre}, No es posible cambiar dias LIBRE, COMPE, CP, INCAPACI, SUSPENSI , CAFTA , MAN , FUNDA, VACACION"
         })
+
+        sucesionSolicitanteDiaPosterior_horaIni = None
 
     if Sucesion.objects.filter(codigo = codigoSolicitante, fecha = fechaPosterior).exists():
         sucesionSolicitanteDiaPosterior = Sucesion.objects.filter(codigo = codigoSolicitante, fecha = fechaPosterior).first()
