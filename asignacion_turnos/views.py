@@ -1966,6 +1966,7 @@ def insertar_estado(request):
 def get_comunicados(request):
 
     codigo = request.GET.get('codigo')
+    hoy = datetime.now(ZoneInfo("America/Bogota"))
     
     try:
         empleado = Empleado_Oddo.objects.get(codigo = codigo , estado = "Activo")
@@ -1985,10 +1986,11 @@ def get_comunicados(request):
 
     for filtro in archivos:
         if cargo in filtro.cargoVisualizacion:
-            print("esta dentro de los cargos")
-            if ConfirmacionLectura.objects.filter(codigo = codigo, archivos__id = filtro.id , confirmacionLectura = "leido").exists() == False:
+            tieneComunicadosPendientes = ConfirmacionLectura.objects.filter(codigo = codigo, archivos__id = filtro.id , confirmacionLectura = "leido").exists()
+            if tieneComunicadosPendientes == False:
+                print(f"La empleada: {empleado.nombre} tiene el comunicado pendiente por leer { filtro.id}")
                 listaArchivos.append(f"titulo: {filtro.titulo}, id: {filtro.id}, url: {filtro.urlArchivo}, tipo de archivo: {filtro.tipoArchivo}")
-
+            
     return Response({"success":True , "datos": listaArchivos})
 
 @api_view(["POST"])
